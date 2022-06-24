@@ -117,8 +117,14 @@ if gen_network_header:
 			print(line)
 		print("")
 
-	EmitEnum(["SOUND_%s"%i.name.value.upper() for i in content.container.sounds.items], "NUM_SOUNDS")
-	EmitEnum(["WEAPON_%s"%i.name.value.upper() for i in content.container.weapons.id.items], "NUM_WEAPONS")
+	EmitEnum(["SOUND_%s" % i.name.value.upper() for i in content.container.sounds.items], "NUM_SOUNDS")
+	weapons = []
+	for i in content.container.weapons.id.items:
+		weapons.append("WEAPON_%s" % i.name.value.upper())
+	weapons.append("WEAPON_AXE")
+	weapons.append("WEAPON_KNIFE")
+	weapons.append("WEAPON_WAND")
+	EmitEnum(weapons, "NUM_WEAPONS")
 
 	print("""
 
