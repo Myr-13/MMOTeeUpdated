@@ -1056,7 +1056,7 @@ void CGameContext::OnTick()
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Check /rules"), NULL);
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Play only one server, if play 1-250 and play 250-500"), NULL);
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Account deleted, and if you leader clan reform."), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Join our discord server: https://discord.gg/szCYwagvva"), NULL);
+		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Join our discord server: https://discord.gg/jwDP6anpKP"), NULL);
 		
 	}
 
