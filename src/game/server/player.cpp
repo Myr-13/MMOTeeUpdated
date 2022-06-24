@@ -291,7 +291,7 @@ void CPlayer::RandomBoxTick()
 		if (m_pCharacter)
 			GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
 
-		GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:used} x{int:count} and get {str:get}"),
+		GameServer()->SendChatTarget_Localization(GetCID(), CHATCATEGORY_DEFAULT, _("{str:name} used {str:used} x{int:count} and get {str:get}"),
 			"name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, m_OpenBoxType, false), "count", &m_OpenBox, "get", m_GetFromBox.c_str(), NULL);
 	}
 
