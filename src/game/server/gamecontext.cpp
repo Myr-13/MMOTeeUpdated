@@ -3134,12 +3134,12 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 		} break;
 		case PEX_WINGS:
 		{
-			if (Server()->GetItemCount(ClientID, PIXI_DUST) < 300 || Server()->GetItemCount(ClientID, GOLDORE) < 400 || Server()->GetItemCount(ClientID, DIAMONDORE) < 300)
+			if (Server()->GetItemCount(ClientID, PIXI_DUST) < 800 || Server()->GetItemCount(ClientID, GOLDORE) < 400 || Server()->GetItemCount(ClientID, DIAMONDORE) < 300)
 			{
 				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Pixi Dust x300, Gold Ore x400, Diamond Ore x300", NULL);
 				return;
 			}
-			Server()->RemItem(ClientID, PIXI_DUST, 300, -1);
+			Server()->RemItem(ClientID, PIXI_DUST, 800, -1);
 			Server()->RemItem(ClientID, GOLDORE, 400, -1);
 			Server()->RemItem(ClientID, DIAMONDORE, 300, -1);
 		}

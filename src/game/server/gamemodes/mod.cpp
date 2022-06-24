@@ -22,7 +22,7 @@
 CGameControllerMOD::CGameControllerMOD(class CGameContext *pGameServer)
 : IGameController(pGameServer)
 {
-	m_pGameType = "RPG";
+	m_pGameType = "RPG 2.0";
 	m_pHeroFlag = 0;
 }
 
@@ -226,15 +226,15 @@ void CGameControllerMOD::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->IncreaseHealth(10);
 	pChr->GiveWeapon(WEAPON_HAMMER, -1);
 
-	// Подходим, подходим, пета забераем, не толпимся
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	if (Server()->GetItemEnquip(pChr->GetPlayer()->GetCID(), 18) != -1)
 		CPet* pet = new CPet(&GameServer()->m_World, vec2(0, 0), pChr->GetPlayer()->GetCID(), Server()->GetItemEnquip(pChr->GetPlayer()->GetCID(), 18));
 
-	// Крылья
+	// пїЅпїЅпїЅпїЅпїЅпїЅ
 	if (Server()->GetItemEnquip(pChr->GetPlayer()->GetCID(), 19) != -1)
 		new CWings(&GameServer()->m_World, vec2(0, 0), pChr->GetPlayer()->GetCID());
 
-	// Без хуйни вокруг тебя если ты премиум не уйдёшь, сука
+	// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ
 	if (Server()->GetItemCount(pChr->GetPlayer()->GetCID(), PREMIUM_GOVNO))
 		new CDrawPremiumHyeta(&GameServer()->m_World, pChr->GetPlayer()->GetCID());
 }

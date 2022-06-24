@@ -491,8 +491,10 @@ void CCharacter::FireWeapon()
 			{
 				if (distance(pPixi->m_Pos, m_Pos) < 30.0f && pPixi->m_SpawnTick == -1)
 				{
+					int dustcount = 1 + rand() % 3;
 					pPixi->m_SpawnTick = Server()->Tick() + Server()->TickSpeed() * 5;
-					Server()->GiveItem(m_pPlayer->GetCID(), PIXI_DUST, 1 + rand() % 3);
+					Server()->GiveItem(m_pPlayer->GetCID(), PIXI_DUST, dustcount);
+					GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(),-1,_("Pixi Dust + {int:count}"),"count", &dustcount, NULL);
 
 					return;
 				}

@@ -257,7 +257,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		return;
 	}
 
-	else if (!strncmp(Msg->m_pMessage, "/kilpl", 6))
+	else if (!strncmp(Msg->m_pMessage, "/kilpl", 6) && ClientAuth)
 	{
 		LastChat();
 		int id;
