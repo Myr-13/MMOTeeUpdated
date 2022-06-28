@@ -451,6 +451,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 				data += a;
 			}
 			else {
+				data += ' ';
 				args.push_back(data);
 				data.clear();
 			}

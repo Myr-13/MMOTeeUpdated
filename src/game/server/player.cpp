@@ -680,6 +680,8 @@ void CPlayer::Tick()
 
 		if(m_MapMenu > 0)
 			m_MapMenuTick++;
+
+		GameServer()->SendBroadcast_LDaily(m_ClientID);
 	}
 
 	// Rainbow
@@ -829,7 +831,7 @@ void CPlayer::MoneyAdd(int Size, bool ClanBonus, bool MoneyDouble)
 	if(MoneyDouble)
 	{
 		if(Server()->GetItemCount(m_ClientID, PREMIUM_GOVNO))
-			GetMoney += GetMoney * 2;
+			GetMoney += GetMoney * 3;
 		else if(Server()->GetItemCount(m_ClientID, X2MONEYEXPVIP))
 			GetMoney += GetMoney * 2;
 
@@ -874,7 +876,7 @@ void CPlayer::ExpAdd(int Size, bool Bonus)
 		if (m_ExperienceAdd)
 			ml += 2;
 		if (Server()->GetItemCount(m_ClientID, PREMIUM_GOVNO))
-			ml += 4;
+			ml += 2;
 		else if (Server()->GetItemCount(m_ClientID, X2MONEYEXPVIP))
 			ml += 2;
 	}

@@ -4024,7 +4024,7 @@ public:
 					"ClanAdded = '%d', "
 					"DailyQuest1 = '%d', "
 					"DailyQuest2 = '%d', "
-					"DailyQuest3 = '%d', "
+					"DailyQuest3 = '%d' "
 					"WHERE UserId = '%d';"
 					, pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].m_Level, m_pServer->m_aClients[m_ClientID].m_Exp,
 						m_pServer->m_aClients[m_ClientID].m_Class, m_pServer->m_aClients[m_ClientID].m_Money, m_pServer->m_aClients[m_ClientID].m_Gold, m_pServer->m_aClients[m_ClientID].m_Donate, m_pServer->m_aClients[m_ClientID].m_Rel,
@@ -4072,7 +4072,7 @@ public:
 		}
 		catch (sql::SQLException &e)
 		{
-			//dbg_msg("sql", "Can't update (MySQL Error: %s)", e.what());
+			dbg_msg("sql", "Can't update (MySQL Error: %s)", e.what());
 			return false;
 		}
 		return true;
