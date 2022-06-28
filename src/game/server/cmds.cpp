@@ -487,7 +487,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 		return;
 	}
-	if (!strncmp(Msg->m_pMessage, "/reset", 6))
+	if (!strncmp(Msg->m_pMessage, "/reset", 6) && ClientAuth)
 	{
 		GameServer()->Server()->ResetAllDailyQuests();
 		return;
