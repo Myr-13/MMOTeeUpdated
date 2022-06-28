@@ -596,7 +596,7 @@ int CServer::SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System)
 			for(i = 0; i < MAX_PLAYERS; i++)
 				if(m_aClients[i].m_State == CClient::STATE_INGAME)
 				{
-					Packet.m_ClientID = i;
+					Packet.m_ClientID = i % 64;
 					m_NetServer.Send(&Packet);
 				}
 		}
@@ -796,6 +796,9 @@ int CServer::DelClientCallback(int ClientID, const char *pReason, void *pUser)
 	pThis->m_aClients[ClientID].m_Pasive2 = 0;
 	pThis->m_aClients[ClientID].Upgrade = 0;
 	pThis->m_aClients[ClientID].SkillPoint = 0;
+	pThis->m_aClients[ClientID].m_DailyQuest1 = 0;
+	pThis->m_aClients[ClientID].m_DailyQuest2 = 0;
+	pThis->m_aClients[ClientID].m_DailyQuest3 = 0;
 
 	for(int i = 0; i < 7; i++)
 		pThis->m_aClients[ClientID].m_ItemCount[i] = 0;
@@ -2352,7 +2355,9 @@ int CServer::GetStat(int ClientID, int Type)
 		case DKILL: return m_aClients[ClientID].m_Kill; break;
 		case DWINAREA: return m_aClients[ClientID].m_WinArea; break;
 		case DCLANADDED: return m_aClients[ClientID].m_ClanAdded; break;
-		case DACCESSLEVEL: return m_aClients[ClientID].m_AccessLevel; break;
+		case DDAILYQUEST1: return m_aClients[ClientID].m_DailyQuest1; break;
+		case DDAILYQUEST2: return m_aClients[ClientID].m_DailyQuest1; break;
+		case DDAILYQUEST3: return m_aClients[ClientID].m_DailyQuest1; break;
 	}
 	return 0;
 }
@@ -2374,6 +2379,9 @@ void CServer::UpdateStat(int ClientID, int Type, int Size)
 		case DKILL: m_aClients[ClientID].m_Kill = Size; break;
 		case DWINAREA: m_aClients[ClientID].m_WinArea = Size; break;
 		case DCLANADDED: m_aClients[ClientID].m_ClanAdded = Size; break;
+		case DDAILYQUEST1: m_aClients[ClientID].m_DailyQuest1 = Size; break;
+		case DDAILYQUEST2: m_aClients[ClientID].m_DailyQuest2 = Size; break;
+		case DDAILYQUEST3: m_aClients[ClientID].m_DailyQuest3 = Size; break;
 	}
 }
 
@@ -3698,6 +3706,46 @@ void CServer::ListClan(int ClientID, int ClanID)
 	pJob->Start();
 }
 
+// Рессет даили квестов для всех челбасов
+class CSqlJob_Server_ResetAllDailyQuests : public CSqlJob
+{
+private:
+	CServer* m_pServer;
+
+public:
+	CSqlJob_Server_ResetAllDailyQuests(CServer* pServer)
+	{
+		m_pServer = pServer;
+	}
+
+	virtual bool Job(CSqlServer* pSqlServer)
+	{
+		try
+		{
+			pSqlServer->executeSqlQuery("SELECT UserId FROM tw_Users;");
+
+			char aBuf[256];
+			while (pSqlServer->GetResults()->next())
+			{
+				str_format(aBuf, sizeof(aBuf), "UPDATE tw_Users SET DailyQuest1 = 0, DailyQuest2 = 0, DailyQuest3 = 0 WHERE UserID = '%d'", pSqlServer->GetResults()->getInt("UserId"));
+				pSqlServer->executeSqlQuery(aBuf);
+			}
+		}
+		catch (sql::SQLException& e)
+		{
+			dbg_msg("sql", "Blyat, Kirya fixi blyat (MySQL Error: %s)", e.what());
+
+			return false;
+		}
+		return true;
+	}
+};
+void CServer::ResetAllDailyQuests()
+{
+	CSqlJob* pJob = new CSqlJob_Server_ResetAllDailyQuests(this);
+	pJob->Start();
+}
+
 // Обновление коинтов
 class CSqlJob_Server_UpClanCount : public CSqlJob
 {
@@ -3847,7 +3895,9 @@ public:
 				m_pServer->m_aClients[m_ClientID].m_Kill = (int)pSqlServer->GetResults()->getInt("Killing");
 				m_pServer->m_aClients[m_ClientID].m_WinArea = (int)pSqlServer->GetResults()->getInt("WinArea");
 				m_pServer->m_aClients[m_ClientID].m_ClanAdded = m_pServer->m_aClients[m_ClientID].m_ClanID > 0 ? (int)pSqlServer->GetResults()->getInt("ClanAdded") : 0;
-				m_pServer->m_aClients[m_ClientID].m_AccessLevel = (int)pSqlServer->GetResults()->getInt("Accesslevel");
+				m_pServer->m_aClients[m_ClientID].m_DailyQuest1 = (int)pSqlServer->GetResults()->getInt("DailyQuest1");
+				m_pServer->m_aClients[m_ClientID].m_DailyQuest2 = (int)pSqlServer->GetResults()->getInt("DailyQuest2");
+				m_pServer->m_aClients[m_ClientID].m_DailyQuest3 = (int)pSqlServer->GetResults()->getInt("DailyQuest3");
 
 				str_copy(m_pServer->m_aClients[m_ClientID].m_aUsername, pSqlServer->GetResults()->getString("Nick").c_str(), sizeof(m_pServer->m_aClients[m_ClientID].m_aUsername));
 				dbg_msg("infclass", "DT init %d ID acc", m_pServer->m_aClients[m_ClientID].m_UserID);
@@ -3971,12 +4021,16 @@ public:
 					"Killing = '%d', "
 					"WinArea = '%d', "
 					"Seccurity = '%d', "
-					"ClanAdded = '%d' "
+					"ClanAdded = '%d', "
+					"DailyQuest1 = '%d', "
+					"DailyQuest2 = '%d', "
+					"DailyQuest3 = '%d', "
 					"WHERE UserId = '%d';"
 					, pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].m_Level, m_pServer->m_aClients[m_ClientID].m_Exp,
 						m_pServer->m_aClients[m_ClientID].m_Class, m_pServer->m_aClients[m_ClientID].m_Money, m_pServer->m_aClients[m_ClientID].m_Gold, m_pServer->m_aClients[m_ClientID].m_Donate, m_pServer->m_aClients[m_ClientID].m_Rel,
 						m_pServer->m_aClients[m_ClientID].m_Jail, m_pServer->m_aClients[m_ClientID].m_Quest, m_pServer->m_aClients[m_ClientID].m_Kill,
 						m_pServer->m_aClients[m_ClientID].m_WinArea, m_pServer->m_aClients[m_ClientID].m_Seccurity, m_pServer->m_aClients[m_ClientID].m_ClanAdded,
+						m_pServer->m_aClients[m_ClientID].m_DailyQuest1, m_pServer->m_aClients[m_ClientID].m_DailyQuest2, m_pServer->m_aClients[m_ClientID].m_DailyQuest3,
 						m_UserID);
 
 				pSqlServer->executeSqlQuery(aBuf);

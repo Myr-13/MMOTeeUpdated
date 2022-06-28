@@ -1793,12 +1793,15 @@ void CCharacter::Die(int Killer, int Weapon)
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
 	// send the kill message
-	CNetMsg_Sv_KillMsg Msg;
-	Msg.m_Killer = Killer;
-	Msg.m_Victim = m_pPlayer->GetCID();
-	Msg.m_Weapon = Weapon;
-	Msg.m_ModeSpecial = ModeSpecial;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	if ((m_pPlayer->GetCID() > 0 && m_pPlayer->GetCID() < MAX_PLAYERS) && (Killer > 0 && Killer < MAX_PLAYERS))
+	{
+		CNetMsg_Sv_KillMsg Msg;
+		Msg.m_Killer = Killer;
+		Msg.m_Victim = m_pPlayer->GetCID();
+		Msg.m_Weapon = Weapon;
+		Msg.m_ModeSpecial = ModeSpecial;
+		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	}
 
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
@@ -1916,7 +1919,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			// АнтиПВП вся хуня
 			if(m_pPlayer->m_AntiPvpSmall && !m_pPlayer->IsBot() && !pFrom->IsBot() && m_pPlayer->GetCID() != From)
 				return true;
-				if(pFrom->m_AntiPvpSmall && !pFrom->IsBot() && !m_pPlayer->IsBot() && m_pPlayer->GetCID() != From)
+			if(pFrom->m_AntiPvpSmall && !pFrom->IsBot() && !m_pPlayer->IsBot() && m_pPlayer->GetCID() != From)
 				return true;
 
 			// Боссецкий
@@ -2097,7 +2100,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 				CreateDropRandom(ESUMMER, 1, 45, From, Force / (50 + randforce));
 
 			// Хуй кто Игроя получит :D
-			CreateDropRandom(PET_IGOR, 1, 100000, From, Force / (50 + randforce));
+			CreateDropRandom(PET_IGOR, 1, 130000, From, Force / (50 + randforce));
 
 			if(m_pPlayer->GetBotType() == BOT_L1MONSTER)
 			{
@@ -2115,6 +2118,16 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 					CreateDropRandom(PET_PIGGY, 1, 5000, From, Force / (50 + randforce));
 
 					Server()->GiveItem(From, PIG_XP, 1);
+
+					if (m_pPlayer->m_AcceptedDailyQuestID)
+					{
+						if (GameServer()->m_CurrentDailyQuest1 == QUEST_KILLPIGS)
+							m_pPlayer->m_CompleteDailyStep1 += 1;
+						if (GameServer()->m_CurrentDailyQuest2 == QUEST_KILLPIGS)
+							m_pPlayer->m_CompleteDailyStep2 += 1;
+						if (GameServer()->m_CurrentDailyQuest3 == QUEST_KILLPIGS)
+							m_pPlayer->m_CompleteDailyStep3 += 1;
+					}
 				}
 				else if(g_Config.m_SvCityStart == 1)
 				{
@@ -2140,6 +2153,16 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 					CreateDropRandom(PET_FROG, 1, 5000, From, Force / (50 + randforce));
 
 					Server()->GiveItem(From, KWAH_XP, 1);
+
+					if (m_pPlayer->m_AcceptedDailyQuestID)
+					{
+						if (GameServer()->m_CurrentDailyQuest1 == QUEST_KILLKWAHS)
+							m_pPlayer->m_CompleteDailyStep1 += 1;
+						if (GameServer()->m_CurrentDailyQuest2 == QUEST_KILLKWAHS)
+							m_pPlayer->m_CompleteDailyStep2 += 1;
+						if (GameServer()->m_CurrentDailyQuest3 == QUEST_KILLKWAHS)
+							m_pPlayer->m_CompleteDailyStep3 += 1;
+					}
 				}
 				else if(g_Config.m_SvCityStart == 1)
 				{
@@ -2163,6 +2186,16 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 					CreateDropRandom(PET_BOMB, 1, 5000, From, Force / (50 + randforce));
 
 					Server()->GiveItem(From, BOOM_XP, 1);
+
+					if (m_pPlayer->m_AcceptedDailyQuestID)
+					{
+						if (GameServer()->m_CurrentDailyQuest1 == QUEST_KILLBOOMS)
+							m_pPlayer->m_CompleteDailyStep1 += 1;
+						if (GameServer()->m_CurrentDailyQuest2 == QUEST_KILLBOOMS)
+							m_pPlayer->m_CompleteDailyStep2 += 1;
+						if (GameServer()->m_CurrentDailyQuest3 == QUEST_KILLBOOMS)
+							m_pPlayer->m_CompleteDailyStep3 += 1;
+					}
 				}
 				else if(g_Config.m_SvCityStart == 1)
 				{
@@ -2397,7 +2430,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 
 void CCharacter::Snap(int SnappingClient)
 {
-	int id = m_pPlayer->GetCID() % 65;
+	int id = m_pPlayer->GetCID();
 
 	if (!Server()->Translate(id, SnappingClient))
 		return;
@@ -2426,7 +2459,7 @@ void CCharacter::Snap(int SnappingClient)
 	}
 
 	// РИСУЕМ ИГРОКА
-	CNetObj_Character *pCharacter = static_cast<CNetObj_Character *>(Server()->SnapNewItem(NETOBJTYPE_CHARACTER, id, sizeof(CNetObj_Character)));
+	CNetObj_Character *pCharacter = static_cast<CNetObj_Character *>(Server()->SnapNewItem(NETOBJTYPE_CHARACTER, id % 64, sizeof(CNetObj_Character)));
 	if(!pCharacter)
 		return;
 

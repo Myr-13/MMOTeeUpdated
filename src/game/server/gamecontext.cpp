@@ -46,6 +46,15 @@ void CGameContext::Construct(int Resetting)
 	m_BossStartTick = 0;
 	m_WinWaitBoss = 0;
 	m_ChatResponseTargetID = -1;
+
+	// дейлики
+	m_CurrentDailyQuest1 = rand() % QUEST_COUNT;
+	m_CurrentDailyQuest2 = rand() % QUEST_COUNT;
+	m_CurrentDailyQuest3 = rand() % QUEST_COUNT;
+	while (m_CurrentDailyQuest2 == m_CurrentDailyQuest1 || m_CurrentDailyQuest2 == m_CurrentDailyQuest3)
+		m_CurrentDailyQuest2 = rand() % QUEST_COUNT;
+	while (m_CurrentDailyQuest3 == m_CurrentDailyQuest1 || m_CurrentDailyQuest3 == m_CurrentDailyQuest2)
+		m_CurrentDailyQuest3 = rand() % QUEST_COUNT;
 }
 
 CGameContext::CGameContext(int Resetting)
@@ -237,7 +246,7 @@ void CGameContext::CreateDeath(vec2 Pos, int ClientID)
 	{
 		pEvent->m_X = (int)Pos.x;
 		pEvent->m_Y = (int)Pos.y;
-		pEvent->m_ClientID = ClientID;
+		pEvent->m_ClientID = ClientID % 64;
 	}
 }
 
@@ -719,6 +728,22 @@ void CGameContext::SendBroadcast_Localization_P(int To, int Priority, int LifeSp
 	va_end(VarArgs);
 }
 
+void CGameContext::SendBroadcast_LDaily(int To)
+{
+	if (!m_apPlayers[To] || !m_apPlayers[To]->GetCharacter() || m_apPlayers[To]->IsBot() || !m_apPlayers[To]->m_AcceptedDailyQuestID)
+		return;
+
+	int Quest = GetDailyQuest(m_apPlayers[To]->m_AcceptedDailyQuestID);
+
+	dynamic_string Buffer;
+	SendBroadcast_Localization(To, 105, 100, "{str:spaces}Actived daily quest: {str:name}\n [{int:comp}/{int:needed}]",
+		"buff", "                                                                                                    ",
+		"name", GetDailyQuestName(Quest), "comp", m_apPlayers[To]->GetCurrentDailyQuestStep(), "needed", GetNeededForDailyQuest(Quest));
+
+	Buffer.clear();
+	return;
+}
+
 void CGameContext::SendChat(int ChatterClientID, int Team, const char *pText)
 {
 	if(Team == CGameContext::CHAT_ALL)
@@ -759,7 +784,7 @@ void CGameContext::SendChat(int ChatterClientID, int Team, const char *pText)
 void CGameContext::SendEmoticon(int ClientID, int Emoticon)
 {
 	CNetMsg_Sv_Emoticon Msg;
-	Msg.m_ClientID = ClientID;
+	Msg.m_ClientID = ClientID % 64;
 	Msg.m_Emoticon = Emoticon;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 }
@@ -1095,6 +1120,14 @@ void CGameContext::OnTick()
 				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 clans sorted {str:name}:"), "name", "Gold", NULL);
 				Server()->ShowTop10Clans(25, "Money", 2); break;
 		}
+	}
+
+	if (Server()->Tick() % (Server()->TickSpeed() * 86400) == 0)
+	{
+		Server()->ResetAllDailyQuests();
+
+		for (int i = 0; i < MAX_PLAYERS; i++)
+			m_apPlayers[i]->m_AcceptedDailyQuestID = 0;
 	}
 
 	AreaTick();
@@ -1969,7 +2002,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				}
 				else if(str_comp(aCmd, "bprem") == 0)
 				{
-					Server()->SetItemPrice(ClientID, SANTIPVP, 0, 1200);
+					Server()->SetItemPrice(ClientID, PREMIUM_BOX, 0, 1200);
 					BuyItem(PREMIUM_BOX, ClientID, 1);
 					return;
 				}
@@ -2238,6 +2271,27 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					{
 						m_apPlayers[ClientID]->m_SortedSelectTop = i;
 						ResetVotes(ClientID, TOPMENU);
+						return;
+					}
+				}
+
+				for (int i = 1; i < 4; i++)
+				{
+					char aBuf[16];
+					str_format(aBuf, sizeof(aBuf), "dailyquest%d", i);
+					if (str_comp(aCmd, aBuf) == 0)
+					{
+						if (m_apPlayers[ClientID]->m_AcceptedDailyQuestID == i)
+							m_apPlayers[ClientID]->m_AcceptedDailyQuestID = 0;
+						else
+							m_apPlayers[ClientID]->m_AcceptedDailyQuestID = i;
+
+						if ((m_apPlayers[ClientID]->AccData.DailyQuest1 && m_apPlayers[ClientID]->m_AcceptedDailyQuestID == 1) ||
+							(m_apPlayers[ClientID]->AccData.DailyQuest2 && m_apPlayers[ClientID]->m_AcceptedDailyQuestID == 2) || 
+							(m_apPlayers[ClientID]->AccData.DailyQuest3 && m_apPlayers[ClientID]->m_AcceptedDailyQuestID == 3))
+							m_apPlayers[ClientID]->m_AcceptedDailyQuestID = 0;
+
+						ResetVotes(ClientID, DAILY);
 						return;
 					}
 				}
@@ -3205,6 +3259,16 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 		SendChatTarget(ClientID, "Your reward:");
 		SendChatTarget(ClientID, "Gold ore x500");
 	}
+
+	if (m_apPlayers[ClientID]->m_AcceptedDailyQuestID)
+	{
+		if (m_CurrentDailyQuest1 == QUEST_CRAFT5ITEMS)
+			m_apPlayers[ClientID]->m_CompleteDailyStep1 += 1;
+		if (m_CurrentDailyQuest2 == QUEST_CRAFT5ITEMS)
+			m_apPlayers[ClientID]->m_CompleteDailyStep2 += 1;
+		if (m_CurrentDailyQuest3 == QUEST_CRAFT5ITEMS)
+			m_apPlayers[ClientID]->m_CompleteDailyStep3 += 1;
+	}
 }
 
 void CGameContext::BuySkill(int ClientID, int Price, int ItemID)
@@ -3300,6 +3364,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVoteMenu_Localization(ClientID, INVENTORY, MENUONLY, "☞ Inventory & Items");
 		AddVoteMenu_Localization(ClientID, CRAFTING, MENUONLY, "☞ Crafting item's");
 		AddVoteMenu_Localization(ClientID, QUEST, MENUONLY, "☞ Quest & Reward");
+		AddVoteMenu_Localization(ClientID, DAILY, MENUONLY, "☞ Daily quests");
 
 		AddVote("······················· ", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "✪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "Sub Menu Settings"));
@@ -3674,54 +3739,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddBack(ClientID);
 		return;
 	}
-
-
-	// ############################### Апгрейд за ачивки
-	/*else if (Type == ACHUPGRADE) {
-		m_apPlayers[ClientID]->m_UpdateMenu = Type;
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ Information ( ´ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "Upgrade Tree");
-		AddVote_Localization(ClientID, "null", "AUP - Count of achievement points");
-		AddVote_Localization(ClientID, "null", "You can get AUP for completing achievements");
-		// Мне лень с SQL работать по этому прокачка будет предметами xd
-		AddVote("", "null", ClientID);
-		char aBuf[256]; str_format(aBuf, 256, "AUP: %d", Server()->GetItemCount(ClientID, ACHIEVMENT_POINT));
-		AddVote(aBuf, "null", ClientID);
-		AddVote("", "null", ClientID);
-
-		// Silver
-		std::string data = "☐ -> ☐ -> ☐ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_SILVER) == 1) data = "☑ -> ☐ -> ☐ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_SILVER) == 2) data = "☑ -> ☑ -> ☐ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_SILVER) == 3) data = "☑ -> ☑ -> ☑ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_SILVER) == 4) data = "☑ -> ☑ -> ☑ -> ☑ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_SILVER) == 5) data = "☑ -> ☑ -> ☑ -> ☑ -> ☑";
-		data += " | Silver Bonus (+5%)";
-		AddVote(data.c_str(), "upacsil", ClientID);
-
-		// XP
-		data = "☐ -> ☐ -> ☐ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_XP) == 1) data = "☑ -> ☐ -> ☐ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_XP) == 2) data = "☑ -> ☑ -> ☐ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_XP) == 3) data = "☑ -> ☑ -> ☑ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_XP) == 4) data = "☑ -> ☑ -> ☑ -> ☑ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_XP) == 5) data = "☑ -> ☑ -> ☑ -> ☑ -> ☑";
-		data += " | XP Bonus (+5%)";
-		AddVote(data.c_str(), "upacxp", ClientID);
-
-		// DMG
-		data = "☐ -> ☐ -> ☐ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_DMG) == 1) data = "☑ -> ☐ -> ☐ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_DMG) == 2) data = "☑ -> ☑ -> ☐ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_DMG) == 3) data = "☑ -> ☑ -> ☑ -> ☐ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_DMG) == 4) data = "☑ -> ☑ -> ☑ -> ☑ -> ☐";
-		if (Server()->GetItemCount(ClientID, UP_BONUS_DMG) == 5) data = "☑ -> ☑ -> ☑ -> ☑ -> ☑";
-		data += " | DMG Bonus (+3%)";
-		AddVote(data.c_str(), "upacdmg", ClientID);
-
-		AddBack(ClientID);
-	}*/
 
 	// ############################### Клан основное меню
 	else if(Type == CLAN)
@@ -4150,6 +4167,39 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddVote_Localization(ClientID, "passquest", "- Pass Quest");
 		}
 		else AddVote_Localization(ClientID, "null", "You are not in the Quest Room");
+
+		AddBack(ClientID);
+		return;
+	}
+
+	else if (Type == DAILY)
+	{
+		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+
+		if (m_apPlayers[ClientID]->GetCharacter() && m_apPlayers[ClientID]->GetCharacter()->InQuest())
+		{
+			AddVote_Localization(ClientID, "null", "☪ Information ( ´ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "Daily Quest Menu");
+			AddVote("", "null", ClientID);
+
+			AddVote_Localization(ClientID, "dailyquest1", "{str:compl} {str:name} {str:accepted}",
+				"compl", m_apPlayers[ClientID]->AccData.DailyQuest1 ? "☑" : "☐",
+				"name", GetDailyQuestName(m_CurrentDailyQuest1),
+				"accepted", (m_apPlayers[ClientID]->m_AcceptedDailyQuestID == 1) ? "[ACCEPTED]" : "[NOT ACCEPTED]"
+			);
+			AddVote_Localization(ClientID, "dailyquest2", "{str:compl} {str:name} {str:accepted}",
+				"compl", m_apPlayers[ClientID]->AccData.DailyQuest2 ? "☑" : "☐",
+				"name", GetDailyQuestName(m_CurrentDailyQuest2),
+				"accepted", (m_apPlayers[ClientID]->m_AcceptedDailyQuestID == 2) ? "[ACCEPTED]" : "[NOT ACCEPTED]"
+			);
+			AddVote_Localization(ClientID, "dailyquest3", "{str:compl} {str:name} {str:accepted}",
+				"compl", m_apPlayers[ClientID]->AccData.DailyQuest3 ? "☑" : "☐",
+				"name", GetDailyQuestName(m_CurrentDailyQuest3),
+				"accepted", (m_apPlayers[ClientID]->m_AcceptedDailyQuestID == 3) ? "[ACCEPTED]" : "[NOT ACCEPTED]"
+			);
+		}
+		else
+			AddVote_Localization(ClientID, "null", "You are not in the Quest Room");
 
 		AddBack(ClientID);
 		return;
@@ -4707,7 +4757,9 @@ void CGameContext::GetStat(int ClientID) //set stat mysql pdata
 	m_apPlayers[ClientID]->AccData.Kill = Server()->GetStat(ClientID, DKILL);
 	m_apPlayers[ClientID]->AccData.WinArea = Server()->GetStat(ClientID, DWINAREA);
 	m_apPlayers[ClientID]->AccData.ClanAdded = Server()->GetStat(ClientID, DCLANADDED);
-	m_apPlayers[ClientID]->AccData.AccessLevel = Server()->GetStat(ClientID, DACCESSLEVEL);
+	m_apPlayers[ClientID]->AccData.DailyQuest1 = Server()->GetStat(ClientID, DDAILYQUEST1);
+	m_apPlayers[ClientID]->AccData.DailyQuest2 = Server()->GetStat(ClientID, DDAILYQUEST2);
+	m_apPlayers[ClientID]->AccData.DailyQuest3 = Server()->GetStat(ClientID, DDAILYQUEST3);
 
 	return;
 }
@@ -4725,6 +4777,9 @@ void CGameContext::UpdateStat(int ClientID) //update stat mysql pdata
 	Server()->UpdateStat(ClientID, DKILL, m_apPlayers[ClientID]->AccData.Kill);
 	Server()->UpdateStat(ClientID, DWINAREA, m_apPlayers[ClientID]->AccData.WinArea);
 	Server()->UpdateStat(ClientID, DCLANADDED, m_apPlayers[ClientID]->AccData.ClanAdded);
+	Server()->UpdateStat(ClientID, DDAILYQUEST1, m_apPlayers[ClientID]->AccData.DailyQuest1);
+	Server()->UpdateStat(ClientID, DDAILYQUEST2, m_apPlayers[ClientID]->AccData.DailyQuest2);
+	Server()->UpdateStat(ClientID, DDAILYQUEST3, m_apPlayers[ClientID]->AccData.DailyQuest3);
 	return;
 }
 void CGameContext::UpdateStats(int ClientID)
@@ -4945,6 +5000,16 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 						"name", Server()->ClientName(ClientID), "used", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, "pvar", &GetGold, "pvars", &GetSilv , NULL);
 
 					pPlayer->MoneyAdd(PackOne);
+
+					if (m_apPlayers[ClientID]->m_AcceptedDailyQuestID)
+					{
+						if (m_CurrentDailyQuest1 == QUEST_COLLECT100COPPER)
+							m_apPlayers[ClientID]->m_CompleteDailyStep1 += Count;
+						if (m_CurrentDailyQuest2 == QUEST_COLLECT100COPPER)
+							m_apPlayers[ClientID]->m_CompleteDailyStep2 += Count;
+						if (m_CurrentDailyQuest3 == QUEST_COLLECT100COPPER)
+							m_apPlayers[ClientID]->m_CompleteDailyStep3 += Count;
+					}
 				}
 			}
 			else if(ItemID == TOMATE)
@@ -5272,17 +5337,56 @@ const char *CGameContext::GetBossName(int BossType)
 		else if(g_Config.m_SvCityStart == 2)
 			return "Dark-King";
 		else
-			return "(unknow)";
+			return "(unknown)";
 	}
 	else
-		return "(unknow)";
+		return "(unknown)";
 }
 
-int CGameContext::GetSnapWeapon(int Weapon) {
-	if (Weapon <= WEAPON_NINJA) // Фильтруем стандартные оружки
-		return Weapon;
-	else
-		return WEAPON_NINJA; // Не стандартные оружки будут нинзьей, нихуя не знаю
+int CGameContext::GetSnapWeapon(int Weapon)
+{
+	return min(Weapon, 5); // min(Weapon, WEAPON_NINJA)
+}
 
-	return WEAPON_HAMMER;
+const char* CGameContext::GetDailyQuestName(int Quest)
+{
+	switch (Quest)
+	{
+	case QUEST_KILLPIGS: return "Kill pigs";
+	case QUEST_KILLKWAHS: return "Kill kwahs";
+	case QUEST_KILLBOOMS: return "Kill booms";
+	case QUEST_CRAFT5ITEMS: return "Craft items";
+	case QUEST_UP7LEVELS: return "Up levels";
+	case QUEST_CATCH200FISHES: return "Catch fishes";
+	case QUEST_COLLECT200CARROTS: return "Collect carrots";
+	case QUEST_COLLECT100COPPER: return "Collect copper";
+	case QUEST_USE2000MONEYBAGS: return "Use money bags";
+	default: return "(unknown)"; break;
+	}
+}
+
+int CGameContext::GetDailyQuest(int ID)
+{
+	switch (ID)
+	{
+	case 1: return m_CurrentDailyQuest1;
+	case 2: return m_CurrentDailyQuest2;
+	case 3: return m_CurrentDailyQuest3;
+	}
+}
+
+int CGameContext::GetNeededForDailyQuest(int Quest)
+{
+	switch (Quest)
+	{
+	case QUEST_KILLPIGS: return 200;
+	case QUEST_KILLKWAHS: return 150;
+	case QUEST_KILLBOOMS: return 100;
+	case QUEST_CRAFT5ITEMS: return 5;
+	case QUEST_UP7LEVELS: return 7;
+	case QUEST_CATCH200FISHES: return 200;
+	case QUEST_COLLECT200CARROTS: return 200;
+	case QUEST_COLLECT100COPPER: return 100;
+	case QUEST_USE2000MONEYBAGS: return 2000;
+	}
 }

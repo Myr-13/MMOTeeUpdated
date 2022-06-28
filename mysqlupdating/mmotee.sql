@@ -1,27 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.27, for Win64 (x86_64)
---
--- Host: localhost    Database: mmotee
--- ------------------------------------------------------
--- Server version	8.0.27
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `tw_clans`
---
-
 DROP TABLE IF EXISTS `tw_clans`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tw_clans` (
   `ClanID` int NOT NULL AUTO_INCREMENT,
   `Clanname` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT 'NOPE',
@@ -42,24 +19,11 @@ CREATE TABLE `tw_clans` (
   KEY `Clanname` (`Clanname`),
   KEY `Level` (`Level`)
 ) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tw_clans`
---
 
 LOCK TABLES `tw_clans` WRITE;
-/*!40000 ALTER TABLE `tw_clans` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tw_clans` ENABLE KEYS */;
 UNLOCK TABLES;
 
---
--- Table structure for table `tw_mail`
---
-
 DROP TABLE IF EXISTS `tw_mail`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tw_mail` (
   `ID` int NOT NULL AUTO_INCREMENT,
   `IDOwner` int NOT NULL,
@@ -69,47 +33,21 @@ CREATE TABLE `tw_mail` (
   PRIMARY KEY (`ID`),
   KEY `IDOwner` (`IDOwner`)
 ) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tw_mail`
---
 
 LOCK TABLES `tw_mail` WRITE;
-/*!40000 ALTER TABLE `tw_mail` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tw_mail` ENABLE KEYS */;
 UNLOCK TABLES;
 
---
--- Table structure for table `tw_materials`
---
-
 DROP TABLE IF EXISTS `tw_materials`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tw_materials` (
   `ID` int NOT NULL AUTO_INCREMENT,
   `Materials` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tw_materials`
---
 
 LOCK TABLES `tw_materials` WRITE;
-/*!40000 ALTER TABLE `tw_materials` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tw_materials` ENABLE KEYS */;
 UNLOCK TABLES;
 
---
--- Table structure for table `tw_uclass`
---
-
 DROP TABLE IF EXISTS `tw_uclass`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tw_uclass` (
   `UserID` int NOT NULL,
   `Username` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
@@ -128,24 +66,11 @@ CREATE TABLE `tw_uclass` (
   PRIMARY KEY (`UserID`),
   KEY `Username` (`Username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tw_uclass`
---
 
 LOCK TABLES `tw_uclass` WRITE;
-/*!40000 ALTER TABLE `tw_uclass` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tw_uclass` ENABLE KEYS */;
 UNLOCK TABLES;
 
---
--- Table structure for table `tw_uitemlist`
---
-
 DROP TABLE IF EXISTS `tw_uitemlist`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tw_uitemlist` (
   `il_id` int unsigned NOT NULL AUTO_INCREMENT,
   `item_type` int DEFAULT '0',
@@ -154,14 +79,8 @@ CREATE TABLE `tw_uitemlist` (
   PRIMARY KEY (`il_id`),
   KEY `item_type` (`item_type`)
 ) ENGINE=InnoDB AUTO_INCREMENT=124 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tw_uitemlist`
---
 
 LOCK TABLES `tw_uitemlist` WRITE;
-/*!40000 ALTER TABLE `tw_uitemlist` DISABLE KEYS */;
 INSERT INTO `tw_uitemlist` VALUES 
 (1,4,'Money Bag','- Random get 5-20000 silvers'),
 (2,3,'Quest Pig Meat','- Need for quest'),
@@ -353,17 +272,9 @@ INSERT INTO `tw_uitemlist` VALUES
 (188,12,'Premium Title','- Thx for premium :D'),
 (189,5,'Pixi Dust','- Craft Item'),
 (190,19,'Pex Wings','- Wings');
---(116,16,'Iron feet','- Health Armor +150'),(117,15,'Gold body','- Health Armor +250'),(118,16,'Gold feet','- Health Armor +150'),(119,15,'Diamond body','- Health Armor +300'),(120,16,'Diamond feet','- Health Armor +250'),(121,15,'Dragon body','- Health Armor +500'),(122,16,'Dragon feet','- Health Armor +400'),(123,10,'Title Enchanter','- Health Armor +1000'),(124,4,'BOSS SLIME BOX','- Drops from boss Slime'),(125,2,'SLIME SPHERE','- Gives 10% hp and 5 % armor'),(126,2,'SLIME NECKLACKE','- Gives 10% hp'),(127,5,'Pressed piece','- Need for craft ammo+5'),(128,4,'BOSS VAMPIRE BOX','- Drops from boss Vampire'),(129,2,'Vampire Fang','- Gives lifesteal'),(130,4,'DARK KING BOX','-Drops from boss Dark King'),(131,10,'PIG XP','-Count Pig kills'),(132,10,'KWAH XP','-Count Kwah kills'),(133,10,'BOOM XP','-Count Boomer kills'),(134,10,'PIGKILLER_1','-Achieve'),(135,10,'PIGKILLER_2','-Achieve'),(136,10,'PIGKILLER_3','-Achieve'),(137,10,'PIGKILLER_4','-Achieve'),(138,10,'PIGKILLER_5','-Achieve'),(139,10,'KWAHKILLER_1','-Achieve'),(140,10,'KWAHKILLER_2','-Achieve'),(141,10,'KWAHKILLER_3','-Achieve'),(142,10,'KWAHKILLER_4','-Achieve'),(143,10,'KWAHKILLER_5','-Achieve'),(144,10,'BOOMKILLER_1','-Achieve'),(145,10,'BOOMKILLER_2','-Achieve'),(146,10,'BOOMKILLER_3','-Achieve'),(147,10,'BOOMKILLER_4','-Achieve'),(148,10,'BOOMKILLER_5','-Achieve'),(149,10,'CRAFTMASTER_1','-Achieve'),(150,10,'CRAFTMASTER_2','-Achieve'),(151,10,'CRAFTMASTER_3','-Achieve'),(152,10,'CRAFTMASTER_4','-Achieve'),(153,10,'CRAFTMASTER_5','-Achieve'),(154,10,'CRAFTMASTER_6','-Achieve'),(155,10,'CRAFTMASTER_7','-Achieve'),(156,15,'Mithril Chestplate','- Health Armor +700'),(157,16,'Mithril Boots','- Health Armor +600'),(158,5,'Mithril Ore','- Craft Item'),(159,15,'Orihalcum Chestplate','- Health Armor +1000'),(160,16,'Orihalcum Boots','- Health Armor +900'),(161,5,'Orihalcum Ore','- Craft Item'),(162,15,'Titanium Chestplate','- Health Armor +1300'),(163,16,'Titanium Boots','- Health Armor +1200'),(164,5,'Titanium Ore','- Craft Item'),(165,15,'Astralium Chestplate','- Health Armor +1600'),(166,16,'Astralium Boots','- Health Armor +1500'),(167,5,'Astralium Ore','- Craft Item'),(168,5,'Slime Soul','- Craft Item'),(169,10,'CRAFT EXP','- Achieve'),(170,0,'Fishing Exp','- Fishing exp'),(171,4,'Common Fish','- You got 10 exp'),(172,4,'UnCommon Fish','- You got 15 exp'),(173,4,'Rare Fish','- You got 20 exp'),(174,4,'Epic Fish','- You got 30 exp'),(175,4,'Legendary Fish','- You got 45 exp'),(176,18,'Ice Fish Pet','Pet...'),(177,18,'Piggy Pet','Pet...'),(178,18,'Frog Pet','Pet...'),(179,18,'Bomb Pet','Pet...'),(180,18,'Dolphin Pet','Pet...'),(181,18,'Igor Pet','Pet...'),(182,18,'Tiger Pet','Pet...'),(183,18,'Monkey Pet','Pet...'),(184,18,'Mithril Golem Pet','Pet...'),(185,18,'Cleaver Pet','Pet...'),(186,4,'Ice Fish','- You got 35 exp'),(187,4,'Premium Packet','- Thx for premium :D'),(188,12,'Premium Title','- Thx for premium :D');
-/*!40000 ALTER TABLE `tw_uitemlist` ENABLE KEYS */;
 UNLOCK TABLES;
 
---
--- Table structure for table `tw_uitems`
---
-
 DROP TABLE IF EXISTS `tw_uitems`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tw_uitems` (
   `it_id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `il_id` int unsigned NOT NULL,
@@ -376,24 +287,11 @@ CREATE TABLE `tw_uitems` (
   KEY `item_owner` (`item_owner`),
   KEY `item_type` (`item_type`)
 ) ENGINE=InnoDB AUTO_INCREMENT=73064 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tw_uitems`
---
 
 LOCK TABLES `tw_uitems` WRITE;
-/*!40000 ALTER TABLE `tw_uitems` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tw_uitems` ENABLE KEYS */;
 UNLOCK TABLES;
 
---
--- Table structure for table `tw_users`
---
-
 DROP TABLE IF EXISTS `tw_users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tw_users` (
   `UserId` int NOT NULL AUTO_INCREMENT,
   `Username` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
@@ -427,24 +325,6 @@ CREATE TABLE `tw_users` (
   KEY `Username` (`Username`),
   KEY `UserId_2` (`UserId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2467 DEFAULT CHARSET=utf8mb3;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tw_users`
---
 
 LOCK TABLES `tw_users` WRITE;
-/*!40000 ALTER TABLE `tw_users` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tw_users` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2022-06-01  0:39:09

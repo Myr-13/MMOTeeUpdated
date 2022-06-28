@@ -15,7 +15,7 @@ CCmd::CCmd(CPlayer *pPlayer, CGameContext *pGameServer)
 void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 {
 	int ClientID = m_pPlayer->GetCID() >= 0 ? m_pPlayer->GetCID() : -1;
-	int ClientAuth = GameServer()->Server()->IsAuthed(ClientID) ? GameServer()->Server()->IsAuthed(ClientID) : m_pPlayer->AccData.AccessLevel;
+	int ClientAuth = GameServer()->Server()->IsAuthed(ClientID);
 
 	if(!strncmp(Msg->m_pMessage, "/login", 6))
 	{
@@ -48,7 +48,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 	else if(!strncmp(Msg->m_pMessage, "/giveitem", 9) && ClientAuth)
 	{
-		LastChat();
 		int id = 0, itemid = 0, citem = 0;
 		if ((sscanf(Msg->m_pMessage, "/giveitem %d %d %d", &id, &itemid, &citem)) != 3)
 			return GameServer()->SendChatTarget(ClientID, "Use: /giveitem <id> <itemid> <itemcount>");
@@ -60,7 +59,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 	else if(!strncmp(Msg->m_pMessage, "/sendmail", 9) && ClientAuth)
 	{
-		LastChat();
 		int id = 0, itemid = 0, citem = 0;
 		if ((sscanf(Msg->m_pMessage, "/sendmail %d %d %d", &id, &itemid, &citem)) != 3)
 			return GameServer()->SendChatTarget(ClientID, "Use: /sendmail <id> <itemid> <itemcount>");
@@ -72,7 +70,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 	else if(!strncmp(Msg->m_pMessage, "/givedonate", 11) && ClientAuth)
 	{
-		LastChat();
 		int id = 0, citem = 0;
 		if ((sscanf(Msg->m_pMessage, "/givedonate %d %d", &id, &citem)) != 2)
 			return GameServer()->SendChatTarget(ClientID, "Use: /givedonate <id> <money>");
@@ -89,7 +86,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 	else if (!strncmp(Msg->m_pMessage, "/tele", 5) && ClientAuth)
 	{
-		LastChat();
 		int id = 0, id2 = 0;
 		if ((sscanf(Msg->m_pMessage, "/tele %d %d", &id, &id2)) != 2)
 			return GameServer()->SendChatTarget(ClientID, "Use: /tele <id1> <id2>");
@@ -105,7 +101,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 	else if (!strncmp(Msg->m_pMessage, "/kick", 5) && ClientAuth)
 	{
-		LastChat();
 		int id = 0;
 		if ((sscanf(Msg->m_pMessage, "/kick %d", &id)) != 1)
 			return GameServer()->SendChatTarget(ClientID, "Use: /kick <id>");
@@ -120,7 +115,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 	else if (!strncmp(Msg->m_pMessage, "/telcur", 7) && ClientAuth)
 	{
-		LastChat();
 		float x = GameServer()->m_apPlayers[ClientID]->GetCharacter()->m_Input.m_TargetX;
 		float y = GameServer()->m_apPlayers[ClientID]->GetCharacter()->m_Input.m_TargetY;
 		x += GameServer()->m_apPlayers[ClientID]->GetCharacter()->m_Core.m_Pos.x;
@@ -132,7 +126,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	}
 	else if (!strncmp(Msg->m_pMessage, "/telkines", 9) && ClientAuth)
 	{
-		LastChat();
 		CCharacter* TempEnts[MAX_CLIENTS];
 		mem_zero(TempEnts, sizeof(TempEnts));
 
@@ -197,7 +190,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 	else if (!strncmp(Msg->m_pMessage, "/trah", 5) && ClientAuth)
 	{
-		LastChat();
 		int size = 0;
 		if ((sscanf(Msg->m_pMessage, "/trah %d", &size)) != 1)
 			return GameServer()->SendChatTarget(ClientID, "Please use: /trah <id>");
@@ -219,7 +211,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 	else if (!strncmp(Msg->m_pMessage, "/rename", 5) && ClientAuth)
 	{
-		LastChat();
 		int id = 0;
 		char Name[16];
 
@@ -249,8 +240,14 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 					Count = GameServer()->m_apPlayers[ClientID]->AccData.Gold;
 
 				GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, "Transfer {int:count} gold to {str:name}", "count", &Count, "name", Name);
+				GameServer()->SendChatTarget_Localization(i, CHATCATEGORY_DEFAULT, "You recieved {int:count} gold from {str:name}", "count", &Count, "name", GameServer()->Server()->ClientName(ClientID));
 				GameServer()->m_apPlayers[ClientID]->AccData.Gold -= Count;
 				GameServer()->m_apPlayers[i]->AccData.Gold += Count;
+
+				GameServer()->UpdateStats(ClientID);
+				GameServer()->UpdateStats(i);
+
+				return;
 			}
 		}
 
@@ -259,7 +256,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 	else if (!strncmp(Msg->m_pMessage, "/kilpl", 6) && ClientAuth)
 	{
-		LastChat();
 		int id;
 
 		if ((sscanf(Msg->m_pMessage, "/kilpl %d", &id)) != 1)
@@ -438,6 +434,62 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), Buffer.buffer());
 			Buffer.clear();
 		}
+		return;
+	}
+	else if (!strncmp(Msg->m_pMessage, "/me", 3))
+	{
+		LastChat();
+		std::string ln = Msg->m_pMessage;
+		ln += " ";
+
+		std::vector<std::string> args;
+		std::string data;
+		for (int i = 0; i < ln.size(); i++) {
+			char a = ln[i];
+
+			if (a != ' ') {
+				data += a;
+			}
+			else {
+				args.push_back(data);
+				data.clear();
+			}
+		}
+
+		data = "";
+		data += GameServer()->Server()->ClientName(ClientID);
+		data += " ";
+		for (int i = 0; i < args.size() - 1; i++)
+			data += args[i + 1];
+		
+		GameServer()->SendChatTarget(-1, data.c_str());
+
+		return;
+	}
+	else if (!strncmp(Msg->m_pMessage, "/rainbow", 8) && ClientAuth)
+	{
+		int id = 0;
+		if (sscanf(Msg->m_pMessage, "/rainbow %d", &id) == 1)
+		{
+			GameServer()->m_apPlayers[id]->m_Rainbow ^= 1;
+			if (GameServer()->m_apPlayers[id]->m_Rainbow)
+				GameServer()->SendChatTarget(id, "Now you rainbow");
+			else
+				GameServer()->SendChatTarget(id, "Now lost your rainbow");
+		}
+		else {
+			m_pPlayer->m_Rainbow ^= 1;
+			if (m_pPlayer->m_Rainbow)
+				GameServer()->SendChatTarget(ClientID, "Now you rainbow");
+			else
+				GameServer()->SendChatTarget(ClientID, "Now lost your rainbow");
+		}
+
+		return;
+	}
+	if (!strncmp(Msg->m_pMessage, "/reset", 6))
+	{
+		GameServer()->Server()->ResetAllDailyQuests();
 		return;
 	}
 

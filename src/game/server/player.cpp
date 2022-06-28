@@ -47,6 +47,9 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_MapMenuItem = -1;
 	m_MapMenuTick = -1;
 
+	m_Rainbow = false;
+	m_RainbowColor = 0;
+
 	m_PrevTuningParams = *pGameServer->Tuning();
 	m_NextTuningParams = m_PrevTuningParams;
 
@@ -56,6 +59,8 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	AccData.Level = AccUpgrade.SkillPoint = AccUpgrade.Upgrade = AccUpgrade.Speed = AccUpgrade.Health = AccUpgrade.Damage = -1;
 	AccData.Exp = AccData.Money = AccData.Rel = AccData.Gold = -1;
 	AccData.Class = PLAYERCLASS_NONE;
+
+	m_AcceptedDailyQuestID = 0;
 
 	m_pChatCmd = new CCmd(this, m_pGameServer);
 	SetLanguage(Server()->GetClientLanguage(ClientID));
@@ -242,8 +247,6 @@ void CPlayer::RandomBoxTick()
 			}
 
 			Server()->GiveItem(m_ClientID, getitem, Get);
-			//GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:used} x1 and get {str:get} x{int:num2}"),
-			//	"name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, BOSSBOX3, false), "get", Server()->GetItemName(m_ClientID, getitem, false), "num2", &Get, NULL);
 
 			m_GetFromBox += Server()->GetItemName(m_ClientID, getitem, false);
 			m_GetFromBox += ", ";
@@ -275,9 +278,6 @@ void CPlayer::RandomBoxTick()
 				case 1: getitem = FREEAZER; break;
 				case 3: getitem = RARESLIMEDIRT; break;
 				}
-
-				//GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:used} x1 and get {str:get} x{int:num2}"),
-				//	"name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, FARMBOX, false), "get", Server()->GetItemName(m_ClientID, getitem, false), "num2", &Get, NULL);
 			}
 
 			Server()->GiveItem(m_ClientID, getitem, Get);
@@ -347,13 +347,146 @@ void CPlayer::BasicAuthedTick()
 			GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("You have opened quest in vote quest."), NULL);
 		if(m_pCharacter)
 		{
-			GameServer()->CreateLolText(m_pCharacter, false, vec2(0,-75), vec2 (0,-1), 50, "Level ++");
+			GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 50, "Level ++");
 			GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
 		}
 		GameServer()->CreateSoundGlobal(SOUND_CTF_CAPTURE, m_ClientID);
 
+		if (m_AcceptedDailyQuestID)
+		{
+			if (GameServer()->m_CurrentDailyQuest1 == QUEST_UP7LEVELS)
+				m_CompleteDailyStep1 += 1;
+			if (GameServer()->m_CurrentDailyQuest2 == QUEST_UP7LEVELS)
+				m_CompleteDailyStep2 += 1;
+			if (GameServer()->m_CurrentDailyQuest3 == QUEST_UP7LEVELS)
+				m_CompleteDailyStep3 += 1;
+		}
+
 		GameServer()->UpdateUpgrades(m_ClientID);
 		GameServer()->UpdateStats(m_ClientID);
+	}
+
+	if (m_AcceptedDailyQuestID)
+	{
+		int Quest = GameServer()->GetDailyQuest(m_AcceptedDailyQuestID);
+
+		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
+		{
+			Server()->GiveItem(m_ClientID, MONEYBAG, 2000);
+
+			switch (m_AcceptedDailyQuestID)
+			{
+			case 1: AccData.DailyQuest1 = 1;
+			case 2: AccData.DailyQuest2 = 1;
+			case 3: AccData.DailyQuest3 = 1;
+			}
+
+			m_AcceptedDailyQuestID = 0;
+		}
+		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
+		{
+			Server()->GiveItem(m_ClientID, MONEYBAG, 3000);
+
+			switch (m_AcceptedDailyQuestID)
+			{
+			case 1: AccData.DailyQuest1 = 1;
+			case 2: AccData.DailyQuest2 = 1;
+			case 3: AccData.DailyQuest3 = 1;
+			}
+
+			m_AcceptedDailyQuestID = 0;
+		}
+		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
+		{
+			Server()->GiveItem(m_ClientID, MONEYBAG, 4000);
+
+			switch (m_AcceptedDailyQuestID)
+			{
+			case 1: AccData.DailyQuest1 = 1;
+			case 2: AccData.DailyQuest2 = 1;
+			case 3: AccData.DailyQuest3 = 1;
+			}
+
+			m_AcceptedDailyQuestID = 0;
+		}
+		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
+		{
+			Server()->GiveItem(m_ClientID, MONEYBAG, 1000);
+
+			switch (m_AcceptedDailyQuestID)
+			{
+			case 1: AccData.DailyQuest1 = 1;
+			case 2: AccData.DailyQuest2 = 1;
+			case 3: AccData.DailyQuest3 = 1;
+			}
+
+			m_AcceptedDailyQuestID = 0;
+		}
+		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
+		{
+			Server()->GiveItem(m_ClientID, MONEYBAG, 2000);
+
+			switch (m_AcceptedDailyQuestID)
+			{
+			case 1: AccData.DailyQuest1 = 1;
+			case 2: AccData.DailyQuest2 = 1;
+			case 3: AccData.DailyQuest3 = 1;
+			}
+
+			m_AcceptedDailyQuestID = 0;
+		}
+		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
+		{
+			Server()->GiveItem(m_ClientID, MONEYBAG, 3000);
+
+			switch (m_AcceptedDailyQuestID)
+			{
+			case 1: AccData.DailyQuest1 = 1;
+			case 2: AccData.DailyQuest2 = 1;
+			case 3: AccData.DailyQuest3 = 1;
+			}
+
+			m_AcceptedDailyQuestID = 0;
+		}
+		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
+		{
+			Server()->GiveItem(m_ClientID, MONEYBAG, 1000);
+
+			switch (m_AcceptedDailyQuestID)
+			{
+			case 1: AccData.DailyQuest1 = 1;
+			case 2: AccData.DailyQuest2 = 1;
+			case 3: AccData.DailyQuest3 = 1;
+			}
+
+			m_AcceptedDailyQuestID = 0;
+		}
+		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
+		{
+			Server()->GiveItem(m_ClientID, MONEYBAG, 1000);
+
+			switch (m_AcceptedDailyQuestID)
+			{
+			case 1: AccData.DailyQuest1 = 1;
+			case 2: AccData.DailyQuest2 = 1;
+			case 3: AccData.DailyQuest3 = 1;
+			}
+
+			m_AcceptedDailyQuestID = 0;
+		}
+		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
+		{
+			Server()->GiveItem(m_ClientID, EVENTBOX, 15);
+
+			switch (m_AcceptedDailyQuestID)
+			{
+			case 1: AccData.DailyQuest1 = 1;
+			case 2: AccData.DailyQuest2 = 1;
+			case 3: AccData.DailyQuest3 = 1;
+			}
+
+			m_AcceptedDailyQuestID = 0;
+		}
 	}
 }
 
@@ -548,6 +681,10 @@ void CPlayer::Tick()
 		if(m_MapMenu > 0)
 			m_MapMenuTick++;
 	}
+
+	// Rainbow
+	if (m_Rainbow)
+		m_RainbowColor = (m_RainbowColor + 1) % 256;
 
 	// do latency stuff
 	{
@@ -778,8 +915,10 @@ void CPlayer::Snap(int SnappingClient)
 	//	if (m_pCharacter->NetworkClipped(SnappingClient))
 	//		return;
 
-	int id = m_ClientID % 65;
+	int id = m_ClientID;
 	if (SnappingClient > -1 && !Server()->Translate(id, SnappingClient)) return;
+	if (id > 63)
+		id = id % 64;
 
 	CNetObj_ClientInfo *pClientInfo = static_cast<CNetObj_ClientInfo *>(Server()->SnapNewItem(NETOBJTYPE_CLIENTINFO, id, sizeof(CNetObj_ClientInfo)));
 	if(!pClientInfo)
@@ -797,10 +936,10 @@ void CPlayer::Snap(int SnappingClient)
 			float getlv = ((m_Health*100.0)/m_HealthStart)-1;
 			switch(GetBotType())
 			{
-				default: str_format(pSendName, sizeof(pSendName), "%d:%s[%d%%]", AccData.Level, Server()->ClientName(m_ClientID), (int)getlv);	break;
+				default: str_format(pSendName, sizeof(pSendName), "%d:%s[%d%%]", AccData.Level, Server()->ClientName(m_ClientID), (int)getlv); break;
 				case BOT_NPC:
 				case BOT_BOSSSLIME: str_format(pSendName, sizeof(pSendName), "%s[%d%%]", Server()->ClientName(m_ClientID), (int)getlv);	break;
-				case BOT_NPCW: str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID));	break;
+				case BOT_NPCW: str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID)); break;
 			}
 			StrToInts(&pClientInfo->m_Name0, 4, pSendName);
 		}
@@ -814,9 +953,17 @@ void CPlayer::Snap(int SnappingClient)
 	pClientInfo->m_Country = Server()->ClientCountry(m_ClientID);
 
 	StrToInts(&pClientInfo->m_Skin0, 6, m_TeeInfos.m_SkinName);
-	pClientInfo->m_UseCustomColor = m_TeeInfos.m_UseCustomColor;
-	pClientInfo->m_ColorBody = m_TeeInfos.m_ColorBody;
-	pClientInfo->m_ColorFeet = m_TeeInfos.m_ColorFeet;
+	if (!m_Rainbow)
+	{
+		pClientInfo->m_UseCustomColor = m_TeeInfos.m_UseCustomColor;
+		pClientInfo->m_ColorBody = m_TeeInfos.m_ColorBody;
+		pClientInfo->m_ColorFeet = m_TeeInfos.m_ColorFeet;
+	}
+	else {
+		pClientInfo->m_UseCustomColor = 1;
+		pClientInfo->m_ColorBody = m_RainbowColor * 0x010000 + 0xff00;
+		pClientInfo->m_ColorFeet = m_RainbowColor * 0x010000 + 0xff00;
+	}
 
 	CNetObj_PlayerInfo *pPlayerInfo = static_cast<CNetObj_PlayerInfo *>(Server()->SnapNewItem(NETOBJTYPE_PLAYERINFO, id, sizeof(CNetObj_PlayerInfo)));
 	if(!pPlayerInfo)
@@ -1227,10 +1374,10 @@ void CPlayer::ResetSkill(int ClientID)
 const char* CPlayer::TitleGot()
 {
 	// Admins
-	if ((m_Authed == AUTHED_ADMIN) && AccData.AccessLevel)
-		return "=>ADMIN<=";
-	if ((m_Authed == AUTHED_MOD) && AccData.AccessLevel)
-		return "=>MOD<=";
+	if (m_Authed == AUTHED_ADMIN)
+		return "_[ADMIN]_";
+	if (m_Authed == AUTHED_MOD)
+		return "_[MODER]_";
 
 	if (Server()->GetItemSettings(m_ClientID, PREMIUM_GOVNO))
 		return "_[PREM]_";

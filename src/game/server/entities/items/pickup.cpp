@@ -143,7 +143,17 @@ void CPickup::StartFarm(int ClientID)
 			{
 				case 0:	GameServer()->GiveItem(ClientID, TOMATE, LevelItem); break; 
 				case 1: GameServer()->GiveItem(ClientID, POTATO, LevelItem); break;
-				default: GameServer()->GiveItem(ClientID, CARROT, LevelItem); break;
+				default: 
+					GameServer()->GiveItem(ClientID, CARROT, LevelItem);
+					if (GameServer()->m_apPlayers[ClientID]->m_AcceptedDailyQuestID)
+					{
+						if (GameServer()->m_CurrentDailyQuest1 == QUEST_COLLECT200CARROTS)
+							GameServer()->m_apPlayers[ClientID]->m_CompleteDailyStep1 += LevelItem;
+						if (GameServer()->m_CurrentDailyQuest2 == QUEST_COLLECT200CARROTS)
+							GameServer()->m_apPlayers[ClientID]->m_CompleteDailyStep2 += LevelItem;
+						if (GameServer()->m_CurrentDailyQuest3 == QUEST_COLLECT200CARROTS)
+							GameServer()->m_apPlayers[ClientID]->m_CompleteDailyStep3 += LevelItem;
+					} break;
 			}
 			if(Server()->GetItemCount(ClientID, FARMLEVEL) % g_Config.m_SvFarmExp == 0)
 			{
@@ -282,8 +292,6 @@ void CPickup::StartFarm(int ClientID)
 			int Bonus = (Server()->GetItemEnquip(ClientID, 18) == PET_MITHRIL_GOLEM) ? 1 : 0;
 			if (Bonus) Bonus += Server()->GetItemEnchant(ClientID, PET_MITHRIL_GOLEM);
 
-			//dbg_msg("a", "%d %d", ItemDrop, a);
-
 			switch(rand()%ItemDrop)
 			{
 				case 4: GameServer()->GiveItem(ClientID, IRONORE, 1 + LevelItem / 15 + Bonus); break; 
@@ -294,7 +302,17 @@ void CPickup::StartFarm(int ClientID)
 				case 9: GameServer()->GiveItem(ClientID, ORIHALCIUMORE, 1 + Bonus); break;
 				case 10: GameServer()->GiveItem(ClientID, TITANIUMORE, 1 + Bonus); break;
 				case 11: GameServer()->GiveItem(ClientID, ASTRALIUMORE, 1 + Bonus); break; 
-				default: GameServer()->GiveItem(ClientID, COOPERORE, 1 + LevelItem / 15); break;
+				default: 
+					GameServer()->GiveItem(ClientID, COOPERORE, 1 + LevelItem / 15); 
+					if (GameServer()->m_apPlayers[ClientID]->m_AcceptedDailyQuestID)
+					{
+						if (GameServer()->m_CurrentDailyQuest1 == QUEST_COLLECT100COPPER)
+							GameServer()->m_apPlayers[ClientID]->m_CompleteDailyStep1 += LevelItem / 15;
+						if (GameServer()->m_CurrentDailyQuest2 == QUEST_COLLECT100COPPER)
+							GameServer()->m_apPlayers[ClientID]->m_CompleteDailyStep2 += LevelItem / 15;
+						if (GameServer()->m_CurrentDailyQuest3 == QUEST_COLLECT100COPPER)
+							GameServer()->m_apPlayers[ClientID]->m_CompleteDailyStep3 += LevelItem / 15;
+					} break;
 			}
 			GameServer()->GiveItem(ClientID, MINEREXP, 1);
 
@@ -394,6 +412,16 @@ void CPickup::StartFarm(int ClientID)
 			}
 
 			GameServer()->GiveItem(ClientID, FISHINGLEVEL, 1);
+
+			if (GameServer()->m_apPlayers[ClientID]->m_AcceptedDailyQuestID)
+			{
+				if (GameServer()->m_CurrentDailyQuest1 == QUEST_CATCH200FISHES)
+					GameServer()->m_apPlayers[ClientID]->m_CompleteDailyStep1 += 1;
+				if (GameServer()->m_CurrentDailyQuest2 == QUEST_CATCH200FISHES)
+					GameServer()->m_apPlayers[ClientID]->m_CompleteDailyStep2 += 1;
+				if (GameServer()->m_CurrentDailyQuest3 == QUEST_CATCH200FISHES)
+					GameServer()->m_apPlayers[ClientID]->m_CompleteDailyStep3 += 1;
+			}
 		}
 	}
 

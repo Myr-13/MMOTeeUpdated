@@ -95,7 +95,9 @@ public:
 		int WinArea;
 		int Rel;
 		bool Jail;
-		int AccessLevel;
+		int DailyQuest1;
+		int DailyQuest2;
+		int DailyQuest3;
 	} AccData;
 	struct
 	{
@@ -134,6 +136,22 @@ public:
 	int m_LastEmote;
 	int m_LastKill;
 	int m_AngryWroth;
+
+	// дейлики
+	int m_AcceptedDailyQuestID;
+
+	int m_CompleteDailyStep1;
+	int m_CompleteDailyStep2;
+	int m_CompleteDailyStep3;
+
+	int GetCurrentDailyQuestStep() {
+		switch (m_AcceptedDailyQuestID)
+		{
+		case 1: return m_CompleteDailyStep1;
+		case 2: return m_CompleteDailyStep1;
+		case 3: return m_CompleteDailyStep1;
+		}
+	}
 
 	// TODO: clean this up
 	struct
@@ -212,6 +230,9 @@ public:
 	// Tele
 	int m_GrabbedID = -1;
 	int m_Tele = false;
+
+	bool m_Rainbow;
+	int m_RainbowColor;
 
 private:
 	CCharacter *m_pCharacter;

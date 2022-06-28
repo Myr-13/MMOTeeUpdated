@@ -56,6 +56,7 @@ enum
 	CMONEY,
 	RESLIST,
 	QUEST,
+	DAILY,
 	INVENTORY,
 	SELITEM,
 	CRAFTING,
@@ -73,6 +74,22 @@ enum
 	RULEMENU,
 	MAXMENU,
 	
+};
+
+// daily quests type
+enum
+{
+	QUEST_KILLPIGS,
+	QUEST_KILLKWAHS,
+	QUEST_KILLBOOMS,
+	QUEST_CRAFT5ITEMS,
+	QUEST_UP7LEVELS,
+	QUEST_CATCH200FISHES,
+	QUEST_COLLECT200CARROTS,
+	QUEST_COLLECT100COPPER,
+	QUEST_USE2000MONEYBAGS,
+
+	QUEST_COUNT
 };
 
 // items
@@ -338,7 +355,9 @@ enum
 	DADDMONEY,
 	DCLANADDED,
 	DCHAIRHOUSE,
-	DACCESSLEVEL, // Гоша, ты очень это хотел...
+	DDAILYQUEST1,
+	DDAILYQUEST2,
+	DDAILYQUEST3,
 
 	DCOUNTUCLAN,
 	DMAXCOUNTUCLAN,
@@ -615,6 +634,7 @@ public:
 	virtual void ListClan(int ClientID, int ClanID) = 0;
 	virtual void ExitClanOff(int ClientID, const char* pName) = 0;
 	virtual void ChangeLeader(int ClanID, const char* pName) = 0;
+	virtual void ResetAllDailyQuests() = 0;
 	
 	// Инициализция сохранения
 	virtual void InitClan() = 0;

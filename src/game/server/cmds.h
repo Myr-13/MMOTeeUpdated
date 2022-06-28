@@ -4,6 +4,7 @@
 #ifndef GAME_SERVER_CMD_H
 #define GAME_SERVER_CMD_H
 #include "game/server/gamecontext.h"
+//#include "engine/server/server.h"
 
 class CCmd
 {

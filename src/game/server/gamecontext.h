@@ -275,6 +275,7 @@ public:
 	virtual void SendBroadcast_Localization(int To, int Priority, int LifeSpan, const char* pText, ...);
 	virtual void SendBroadcast_Localization_P(int To, int Priority, int LifeSpan, int Number, const char* pText, ...);
 	virtual void ClearBroadcast(int To, int Priority);
+	void SendBroadcast_LDaily(int To);
 
 	virtual void AddVote_Localization(int To, const char* aCmd, const char* pText, ...);
 	virtual void AddVoteMenu_Localization(int To, int MenuID, int Type, const char* pText, ...);
@@ -290,6 +291,15 @@ public:
 	// Сезоны
 	int m_Season;
 	void SeasonTick();
+
+	// Дейлики
+	const char* GetDailyQuestName(int Quest);
+	int GetDailyQuest(int ID);
+	int GetNeededForDailyQuest(int Quest);
+
+	int m_CurrentDailyQuest1;
+	int m_CurrentDailyQuest2;
+	int m_CurrentDailyQuest3;
 
 	// Основные функции
 	void SendChat(int ClientID, int Team, const char *pText);

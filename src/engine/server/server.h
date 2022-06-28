@@ -157,7 +157,9 @@ public:
 		bool m_Seccurity;
 		char m_Clan[64];
 		long int m_ClanAdded;
-		int m_AccessLevel;
+		int m_DailyQuest1;
+		int m_DailyQuest2;
+		int m_DailyQuest3;
 
 		int m_ItemCount[7];
 
@@ -431,6 +433,7 @@ public:
 	virtual void NewClan(int ClientID, const char* pName);
 	virtual void EnterClan(int ClientID, int ClanID);
 	virtual void ChangeLeader(int ClanID, const char* pName);
+	virtual void ResetAllDailyQuests();
 	
 	// Инициализация сохранение загрузка
 	virtual void InitClan();
