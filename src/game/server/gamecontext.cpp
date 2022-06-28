@@ -4178,7 +4178,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 	{
 		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
 
-		if (m_apPlayers[ClientID]->GetCharacter() && m_apPlayers[ClientID]->GetCharacter()->InQuest())
+		/*if (m_apPlayers[ClientID]->GetCharacter() && m_apPlayers[ClientID]->GetCharacter()->InQuest())
 		{
 			AddVote_Localization(ClientID, "null", "☪ Information ( ´ ω ` )?:");
 			AddVote_Localization(ClientID, "null", "Daily Quest Menu");
@@ -4201,7 +4201,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			);
 		}
 		else
-			AddVote_Localization(ClientID, "null", "You are not in the Quest Room");
+			AddVote_Localization(ClientID, "null", "You are not in the Quest Room");*/
+
+		AddVote_Localization(ClientID, "null", "Comming soon");
 
 		AddBack(ClientID);
 		return;
