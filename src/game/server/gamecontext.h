@@ -19,6 +19,7 @@
 #include "gamecontroller.h"
 #include "gameworld.h"
 #include "player.h"
+#include "admin.h"
 
 #ifdef _MSC_VER
 typedef __int32 int32_t;
@@ -121,9 +122,7 @@ class CGameContext : public IGameServer
 	CCollision m_Collision;
 	CNetObjHandler m_NetObjHandler;
 	CTuningParams m_Tuning;
-	int m_TargetToKill;
-	int m_TargetToKillCoolDown;
-
+	class CAdmin *m_pAdmin;
 
 	static bool ConTuneParam(IConsole::IResult *pResult, void *pUserData);
 	static bool ConTuneReset(IConsole::IResult *pResult, void *pUserData);
@@ -145,6 +144,7 @@ public:
 	class IConsole *Console() { return m_pConsole; }
 	CCollision *Collision() { return &m_Collision; }
 	CTuningParams *Tuning() { return &m_Tuning; }
+	class CAdmin *Admin() { return m_pAdmin; }
 	virtual class CLayers *Layers() { return &m_Layers; }
 
 	CGameContext();

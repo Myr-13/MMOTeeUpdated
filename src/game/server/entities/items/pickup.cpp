@@ -172,34 +172,6 @@ void CPickup::StartFarm(int ClientID)
 		int Broke = 0;
 		int Count = 0;
 		const char* ItemName = "Nope";
-		/*if (Server()->GetItemCount(ClientID, MITHRILPIX))
-		{
-			Count = Server()->GetItemCount(ClientID, MITHRILPIX);
-			Broke = 2000 * Server()->GetItemCount(ClientID, MITHRILPIX);
-			Dropable = Server()->GetItemSettings(ClientID, MITHRILPIX);
-			if (!Dropable)
-			{
-				Server()->RemItem(ClientID, MITHRILPIX, Server()->GetItemCount(ClientID, MITHRILPIX), -1);
-				GameServer()->SendChatTarget_Localization(ClientID, -1, _("~ Miner: {str:name} broke"), "name", Server()->GetItemName(ClientID, MITHRILPIX), NULL);
-			}
-			Server()->SetItemSettingsCount(ClientID, MITHRILPIX, Dropable - 1);
-			ItemName = Server()->GetItemName(ClientID, MITHRILPIX);
-			m_Drop += 50;
-		}
-		if (Server()->GetItemCount(ClientID, DRAGONPIX))
-		{
-			Count = Server()->GetItemCount(ClientID, DRAGONPIX);
-			Broke = 1000 * Server()->GetItemCount(ClientID, DRAGONPIX);
-			Dropable = Server()->GetItemSettings(ClientID, DRAGONPIX);
-			if (!Dropable)
-			{
-				Server()->RemItem(ClientID, DRAGONPIX, Server()->GetItemCount(ClientID, DRAGONPIX), -1);
-				GameServer()->SendChatTarget_Localization(ClientID, -1, _("~ Miner: {str:name} broke"), "name", Server()->GetItemName(ClientID, DRAGONPIX), NULL);
-			}
-			Server()->SetItemSettingsCount(ClientID, DRAGONPIX, Dropable - 1);
-			ItemName = Server()->GetItemName(ClientID, DRAGONPIX);
-			m_Drop += 50;
-		}*/
 		if(Server()->GetItemCount(ClientID, DIAMONDPIX))
 		{
 			Count = Server()->GetItemCount(ClientID, DIAMONDPIX);
@@ -338,7 +310,7 @@ void CPickup::StartFarm(int ClientID)
 
 		if(m_Drop >= 100)
 		{
-			GameServer()->GiveItem(ClientID, WOOD, 1 + bonus / 5);
+			GameServer()->GiveItem(ClientID, WOOD, 1 + (bonus) ? rand() % 4 : 0);
 			if (rand() % 500 == 0)
 				GameServer()->GiveItem(ClientID, PET_MONKEY, 1);
 		

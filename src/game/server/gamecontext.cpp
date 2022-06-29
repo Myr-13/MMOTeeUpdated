@@ -40,6 +40,8 @@ void CGameContext::Construct(int Resetting)
 	}
 	m_pController = 0;
 
+	m_pAdmin = new CAdmin(this);
+
 	// боссецкий чистка
 	m_BossStart = false;
 	m_BossType = 0;
@@ -73,6 +75,8 @@ CGameContext::~CGameContext()
 	{
 		delete m_apPlayers[i];
 	}
+
+	delete m_pAdmin;
 }
 
 void CGameContext::ClearVotes(int ClientID)
@@ -1134,7 +1138,7 @@ void CGameContext::OnTick()
 	BossTick();
 	SeasonTick();
 
-	if (Server()->Tick() % Server()->TickSpeed() * 5 == 0) {
+	if (Server()->Tick() % (Server()->TickSpeed() * 5) == 0) {
 		for (int i = 0; i < MAX_CLIENTS; i++)
 			if (m_apPlayers[i])
 				if (m_apPlayers[i]->GetCharacter())
@@ -1526,7 +1530,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				}
 
 				else if(str_comp(aCmd, "uaddmoney") == 0)
-					BuyUpgradeClan(ClientID, m_apPlayers[ClientID]->GetNeedForUpgClan(DADDMONEY), DADDEXP,"MoneyAdd");
+					BuyUpgradeClan(ClientID, m_apPlayers[ClientID]->GetNeedForUpgClan(DADDMONEY), DADDEXP, "MoneyAdd");
 
 				else if(str_comp(aCmd, "cm1") == 0)
 				{
@@ -2200,6 +2204,11 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					m_apPlayers[ClientID]->m_SelectItem = -1;
 					ResetVotes(ClientID, AUTH);
 					return;
+				}
+
+				if (!strncmp(aCmd, "adm_", 4))
+				{
+					m_pAdmin->OnMenuAction(ClientID, aCmd, pReason);
 				}
 
 				for(int i = 0; i < 20; i++)
@@ -3367,6 +3376,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVoteMenu_Localization(ClientID, CRAFTING, MENUONLY, "☞ Crafting item's");
 		AddVoteMenu_Localization(ClientID, QUEST, MENUONLY, "☞ Quest & Reward");
 		AddVoteMenu_Localization(ClientID, DAILY, MENUONLY, "☞ Daily quests");
+		AddVoteMenu_Localization(ClientID, ADMMENU, MENUONLY, "☞ Admin menu");
 
 		AddVote("······················· ", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "✪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "Sub Menu Settings"));
@@ -4206,6 +4216,15 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVote_Localization(ClientID, "null", "Comming soon");
 
 		AddBack(ClientID);
+		return;
+	}
+
+	else if (Type == ADMMENU)
+	{
+		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+
+		m_pAdmin->BuildVoteMenu(ClientID);
+
 		return;
 	}
 
