@@ -238,6 +238,9 @@ public:
 
 	int m_EndMuteTick;
 
+	//bool m_AntiHook;
+	//bool m_AntiDmg;
+
 private:
 	CCharacter *m_pCharacter;
 	CGameContext *m_pGameServer;

@@ -692,7 +692,7 @@ void CPlayer::Tick()
 	if (m_Rainbow)
 		m_RainbowColor = (m_RainbowColor + 1) % 256;
 
-	if (m_Bloody && Server()->Tick() % 10 == 0)
+	if (m_Bloody && Server()->Tick() % 10 == 0 && m_pCharacter)
 		GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
 
 	// do latency stuff

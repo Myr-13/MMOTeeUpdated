@@ -302,7 +302,7 @@ void CPickup::StartFarm(int ClientID)
 		m_Drop += 10 + rand() % 25 + bonus;
 		GameServer()->CreateSound(m_Pos, 20);
 
-		float getlv = (m_Drop*100.0)/100;
+		float getlv = (m_Drop * 100.0) / 100;
 		const char *Pick = GameServer()->LevelString(100, (int)getlv, 10, ':', ' ');
 		GameServer()->SendBroadcast_Localization(ClientID, 1000, 100, _("Job Woodcutter: Not Leveling\nPick: {str:got} / {int:gotp}%"), 
 			"got", Pick, "gotp", &m_Drop, NULL);
@@ -310,7 +310,7 @@ void CPickup::StartFarm(int ClientID)
 
 		if(m_Drop >= 100)
 		{
-			GameServer()->GiveItem(ClientID, WOOD, 1 + (bonus) ? rand() % 6 : 0);
+			GameServer()->GiveItem(ClientID, WOOD, 1 + ((bonus) ? rand() % 6 : 0));
 			if (rand() % 500 == 0)
 				GameServer()->GiveItem(ClientID, PET_MONKEY, 1);
 		
