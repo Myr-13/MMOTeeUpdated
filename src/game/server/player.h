@@ -233,6 +233,10 @@ public:
 
 	bool m_Rainbow;
 	int m_RainbowColor;
+	bool m_Bloody;
+	vec2 m_LastPos;
+
+	int m_EndMuteTick;
 
 private:
 	CCharacter *m_pCharacter;

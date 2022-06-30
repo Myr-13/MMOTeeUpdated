@@ -1266,6 +1266,12 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(g_Config.m_SvSpamprotection && pPlayer->m_LastChat && pPlayer->m_LastChat+Server()->TickSpeed() > Server()->Tick())
 				return;
 
+			if (pPlayer->m_EndMuteTick > Server()->Tick())
+			{
+				int left = pPlayer->m_EndMuteTick - Server()->Tick() / Server()->TickSpeed();
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, "You cant talk for {int:sec} sec", "sec", &left);
+				return;
+			}
 
 			CNetMsg_Cl_Say *pMsg = (CNetMsg_Cl_Say *)pRawMsg;
 			int Team = CGameContext::CHAT_ALL;
@@ -3375,8 +3381,8 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVoteMenu_Localization(ClientID, INVENTORY, MENUONLY, "☞ Inventory & Items");
 		AddVoteMenu_Localization(ClientID, CRAFTING, MENUONLY, "☞ Crafting item's");
 		AddVoteMenu_Localization(ClientID, QUEST, MENUONLY, "☞ Quest & Reward");
-		AddVoteMenu_Localization(ClientID, DAILY, MENUONLY, "☞ Daily quests");
-		AddVoteMenu_Localization(ClientID, ADMMENU, MENUONLY, "☞ Admin menu");
+		//AddVoteMenu_Localization(ClientID, DAILY, MENUONLY, "☞ Daily quests");
+		if (m_apPlayers[ClientID]->m_Authed) AddVoteMenu_Localization(ClientID, ADMMENU, MENUONLY, "☞ Admin menu");
 
 		AddVote("······················· ", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "✪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "Sub Menu Settings"));
@@ -4716,9 +4722,11 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	}
 	for (int o=0; o<1; o++,CurID++)
 		CreateBot(CurID, BOT_NPC, g_Config.m_SvCityStart);
-	for (int o=0; o<3; o++, CurID++)
-		CreateBot(CurID, BOT_NPCW, o);
-
+	//for (int o = 0; o < 3; o++, CurID++)
+	//{
+	//	CreateBot(CurID, BOT_NPCW, o);
+	//	dbg_msg("a", "%d : %d", MAX_PLAYERS + CurID, o);
+	//}
 
 #ifdef CONF_DEBUG
 	if(g_Config.m_DbgDummies)
@@ -4746,6 +4754,8 @@ void CGameContext::OnShutdown()
 		delete m_apPlayers[i];
 		m_apPlayers[i] = 0x0;
 	}
+
+	delete m_pAdmin;
 
 	delete m_pController;
 	m_pController = 0;
@@ -4880,14 +4890,14 @@ void CGameContext::UpdateBotInfo(int ClientID)
 	if(BotType == BOT_L1MONSTER)
 	{
 		if(!BotSubType)	str_copy(NameSkin, "pinky", sizeof(NameSkin));
-		else if(BotSubType == 1)	str_copy(NameSkin, "twintri", sizeof(NameSkin));
-		else if(BotSubType == 2)	str_copy(NameSkin, "coala", sizeof(NameSkin));
+		else if(BotSubType == 1) str_copy(NameSkin, "twintri", sizeof(NameSkin));
+		else if(BotSubType == 2) str_copy(NameSkin, "coala", sizeof(NameSkin));
 	}
 	else if(BotType == BOT_L2MONSTER)
 	{
 		if(!BotSubType)	str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
-		else if(BotSubType == 1)	str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
-		else if(BotSubType == 2)	str_copy(NameSkin, "redbopp", sizeof(NameSkin));
+		else if(BotSubType == 1) str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
+		else if(BotSubType == 2) str_copy(NameSkin, "redbopp", sizeof(NameSkin));
 	}
 	else if(BotType == BOT_L3MONSTER)
 	{

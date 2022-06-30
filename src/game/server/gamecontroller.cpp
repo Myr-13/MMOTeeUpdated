@@ -37,7 +37,7 @@ bool IGameController::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 
 bool IGameController::OnEntity(const char* pName, vec2 Pivot, vec2 P0, vec2 P1, vec2 P2, vec2 P3, int PosEnv)
 {
-	vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
+	vec2 Pos = (P0 + P1 + P2 + P3) / 4.0f;
 	
 	if(str_comp(pName, "NoRegister") == 0)
 		m_SpawnPoints[0].add(Pos);
@@ -75,6 +75,8 @@ bool IGameController::OnEntity(const char* pName, vec2 Pivot, vec2 P0, vec2 P1, 
 		m_SpawnPoints[16].add(Pos);
 	else if(str_comp(pName, "ClanSp2") == 0)
 		m_SpawnPoints[17].add(Pos);
+	else if (str_comp(pName, "AdminBase") == 0)
+		m_SpawnPoints[18].add(Pos);
 
 	return false;
 }

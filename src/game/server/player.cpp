@@ -49,6 +49,10 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 
 	m_Rainbow = false;
 	m_RainbowColor = 0;
+	m_Bloody = false;
+
+	m_LastPos = vec2(0, 0);
+	m_EndMuteTick = 0;
 
 	m_PrevTuningParams = *pGameServer->Tuning();
 	m_NextTuningParams = m_PrevTuningParams;
@@ -688,6 +692,9 @@ void CPlayer::Tick()
 	if (m_Rainbow)
 		m_RainbowColor = (m_RainbowColor + 1) % 256;
 
+	if (m_Bloody && Server()->Tick() % 10 == 0)
+		GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
+
 	// do latency stuff
 	{
 		IServer::CClientInfo Info;
@@ -1133,7 +1140,7 @@ void CPlayer::TryRespawn()
 	if (IsBot())
 	{
 		// жирный бот рандом
-		if(rand()% 20 == 10) m_BigBot = true;
+		if(rand() % 20 == 10) m_BigBot = true;
 		else m_BigBot = false;
 
 		GameServer()->UpdateBotInfo(m_ClientID);
@@ -1222,11 +1229,13 @@ void CPlayer::TryRespawn()
 			if(g_Config.m_SvCityStart == 1)
 			{
 				AccUpgrade.Damage = 180;
-				AccUpgrade.Health = (int)(AccData.Level);}
-				if(g_Config.m_SvCityStart == 2)
+				AccUpgrade.Health = (int)(AccData.Level);
+			}
+			if(g_Config.m_SvCityStart == 2)
 			{
 				AccUpgrade.Damage = 500;
-				AccUpgrade.Health = (int)(AccData.Level*3);}
+				AccUpgrade.Health = (int)(AccData.Level*3);
+			}
 		}
 		else if(m_BotType == BOT_NPC)
 		{

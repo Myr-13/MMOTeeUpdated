@@ -149,7 +149,8 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	{
 		LastChat();
 
-		m_pPlayer->GetCharacter()->m_Core.m_Pos = vec2(14080, 8096);
+		vec2 pos = GameServer()->m_pController->m_SpawnPoints[18][rand() % (GameServer()->m_pController->m_SpawnPoints[18].size() - 1)];
+		m_pPlayer->GetCharacter()->m_Core.m_Pos = pos;
 	
 		return;
 	}
