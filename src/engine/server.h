@@ -62,6 +62,7 @@ enum
 	CRAFTING,
 	ACHUPGRADE,
 	ADMMENU,
+	AUCTION,
 
 	TOPMENU,
 	EVENTLIST,
@@ -671,6 +672,8 @@ public:
 
 	virtual int* GetIdMap(int ClientID) = 0;
 	virtual void SetCustClt(int ClientID) = 0;
+
+	virtual void AddGold(const char* pName, int Add) = 0;
 }; 
 
 class IGameServer : public IInterface

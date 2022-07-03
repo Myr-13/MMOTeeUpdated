@@ -19,7 +19,9 @@
 #include "gamecontroller.h"
 #include "gameworld.h"
 #include "player.h"
-#include "admin.h"
+
+#include "components/admin.h"
+#include "components/auction.h"
 
 #ifdef _MSC_VER
 typedef __int32 int32_t;
@@ -122,7 +124,9 @@ class CGameContext : public IGameServer
 	CCollision m_Collision;
 	CNetObjHandler m_NetObjHandler;
 	CTuningParams m_Tuning;
+
 	class CAdmin *m_pAdmin;
+	class CAuction *m_pAuction;
 
 	static bool ConTuneParam(IConsole::IResult *pResult, void *pUserData);
 	static bool ConTuneReset(IConsole::IResult *pResult, void *pUserData);

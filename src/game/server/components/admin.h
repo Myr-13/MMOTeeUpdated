@@ -1,5 +1,5 @@
-#ifndef GAME_SERVER_ADMIN_H
-#define GAME_SERVER_ADMIN_H
+#ifndef GAME_SERVER_COMPONETNS_ADMIN_H
+#define GAME_SERVER_COMPONETNS_ADMIN_H
 
 #include "game/server/gamecontext.h"
 #include "engine/server.h"
@@ -26,6 +26,9 @@ enum {
 	ACTION_SETTITLE,
 	ACTION_GIVELEVEL,
 	ACTION_GIVEEXP,
+	ACTION_GOTO,
+	ACTION_SETWALLLIMIT,
+	ACTION_INFMANA,
 
 	ACTION_COUNT
 };
@@ -58,7 +61,6 @@ private:
 	int m_aPages[MAX_PLAYERS];
 	int m_aLastPages[MAX_PLAYERS];
 	int m_aSelectedPlayer[MAX_PLAYERS];
-
 };
 
 #endif

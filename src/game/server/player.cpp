@@ -54,6 +54,10 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_LastPos = vec2(0, 0);
 	m_EndMuteTick = 0;
 
+	m_WallLimit = 5;
+
+	m_InfMana = false;
+
 	m_PrevTuningParams = *pGameServer->Tuning();
 	m_NextTuningParams = m_PrevTuningParams;
 
@@ -95,7 +99,7 @@ bool CPlayer::GetWork()
 	return false;
 }
 
-void CPlayer::RandomBoxTick()
+/*void CPlayer::RandomBoxTick()
 {
 	m_OpeningBox = 0;
 	m_GetFromBox = "";
@@ -300,7 +304,7 @@ void CPlayer::RandomBoxTick()
 	}
 
 	m_OpenBox = 0;
-}
+}*/
 
 void CPlayer::BasicAuthedTick()
 {
@@ -513,14 +517,18 @@ void CPlayer::Tick()
 	if(!IsBot())
 	{
 		// Мана сучка ебал вас геи ебанные в рт вы шлюхи
-		if(m_Mana < GetNeedMana())
+		if (m_InfMana)
+			m_Mana = GetNeedMana();
+
+		if (m_Mana < GetNeedMana())
 		{
-			if(!m_ManaTick)
+			if (!m_ManaTick)
 			{
 				m_Mana++;
 				m_ManaTick = 10;
 				GameServer()->SendBroadcast_LStat(m_ClientID, 2, 50, -1);
-			} else m_ManaTick--;
+			}
+			else m_ManaTick--;
 		}
 
 		// Снимаем ангру
@@ -584,7 +592,7 @@ void CPlayer::Tick()
 				}
 			}
 			BasicAuthedTick();
-			RandomBoxTick();
+			//RandomBoxTick();
 		}
 
 		// Агресия и тюрьма

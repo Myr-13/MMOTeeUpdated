@@ -466,7 +466,7 @@ public:
 	virtual int GetUpgrade(int ClientID, int Type);
 	virtual void UpdateStat(int ClientID, int Type, int Size);
 	virtual void UpdateUpgrade(int ClientID, int Type, int Size);
-
+	virtual void AddGold(const char* pName, int Add);
 };
 
 #endif

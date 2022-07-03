@@ -1530,6 +1530,11 @@ void CCharacter::Tick()
 	//Hook protection
 	if(m_Core.m_HookedPlayer >= 0)
 	{
+		if (GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->m_AntiHook) {
+			m_Core.m_HookedPlayer = -1;
+			m_Core.m_HookState = HOOK_RETRACTED;
+			m_Core.m_HookPos = m_Pos;
+		}
 		if(GameServer()->m_apPlayers[m_Core.m_HookedPlayer] && GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->GetCharacter())
 		{
 			if(m_pPlayer && Server()->GetItemSettings(m_pPlayer->GetCID(), HOOKDAMAGE) && m_HookDmgTick + Server()->TickSpeed()*0.50f < Server()->Tick())
@@ -1890,6 +1895,10 @@ void CCharacter::Die(int Killer, int Weapon)
 
 bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 {
+	if (GameServer()->m_apPlayers[m_pPlayer->GetCID()])
+		if (GameServer()->m_apPlayers[m_pPlayer->GetCID()]->m_AntiDmg)
+			return true;
+
 	CPlayer *pFrom = GameServer()->m_apPlayers[From];
 	CCharacter *pChr = GameServer()->m_apPlayers[From]->GetCharacter();
 
@@ -1931,8 +1940,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 				return true;
 
 			// Сокланы
-			if(Server()->GetClanID(From) && Server()->GetClanID(m_pPlayer->GetCID()) == Server()->GetClanID(From)
-				&& m_pPlayer->GetCID() != From)
+			if(Server()->GetClanID(From) && Server()->GetClanID(m_pPlayer->GetCID()) == Server()->GetClanID(From) && m_pPlayer->GetCID() != From)
 				return true;
 
 			// Агрессия
@@ -2965,7 +2973,7 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 				if(pMine->m_Owner == m_pPlayer->GetCID())
 					NumMines++;
 			}
-			if(NumMines < 5) new CBiologistMine(GameWorld(), m_Pos, To, m_pPlayer->GetCID(), 280);
+			if(NumMines < m_pPlayer->m_WallLimit) new CBiologistMine(GameWorld(), m_Pos, To, m_pPlayer->GetCID(), 280);
 			else GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("You install max Wall's mine."), NULL);
 		}
 	}

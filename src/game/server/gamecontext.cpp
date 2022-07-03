@@ -15,6 +15,8 @@
 #include "gamemodes/mod.h"
 #include <game/server/entities/loltext.h>
 
+#include "components/box.h"
+
 #define BOSSID 62
 
 enum
@@ -41,6 +43,7 @@ void CGameContext::Construct(int Resetting)
 	m_pController = 0;
 
 	m_pAdmin = new CAdmin(this);
+	m_pAuction = new CAuction(this);
 
 	// боссецкий чистка
 	m_BossStart = false;
@@ -77,6 +80,7 @@ CGameContext::~CGameContext()
 	}
 
 	delete m_pAdmin;
+	delete m_pAuction;
 }
 
 void CGameContext::ClearVotes(int ClientID)
@@ -1094,7 +1098,7 @@ void CGameContext::OnTick()
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("### Our Team:"), NULL);
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("champloo - Owner"), NULL);
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Myr - Coder"), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Narkoman Gosha - Mapper"), NULL);
+		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Time Pause - Mapper"), NULL);
 	}
 
 	// вывод топ листа раз в 5 минут
@@ -1126,13 +1130,13 @@ void CGameContext::OnTick()
 		}
 	}
 
-	if (Server()->Tick() % (Server()->TickSpeed() * 86400) == 0)
+	/*if (Server()->Tick() % (Server()->TickSpeed() * 86400) == 0)
 	{
 		Server()->ResetAllDailyQuests();
 
 		for (int i = 0; i < MAX_PLAYERS; i++)
 			m_apPlayers[i]->m_AcceptedDailyQuestID = 0;
-	}
+	}*/
 
 	AreaTick();
 	BossTick();
@@ -1268,7 +1272,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			if (pPlayer->m_EndMuteTick > Server()->Tick())
 			{
-				int left = pPlayer->m_EndMuteTick - Server()->Tick() / Server()->TickSpeed();
+				int left = (pPlayer->m_EndMuteTick - Server()->Tick()) / Server()->TickSpeed();
 				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, "You cant talk for {int:sec} sec", "sec", &left);
 				return;
 			}
@@ -2118,7 +2122,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					int Get = chartoint(pReason, 100000);
 					if (SelectItem == RANDOMCRAFTITEM || SelectItem == EVENTBOX || SelectItem == FARMBOX ||
 						SelectItem == RESETINGUPGRADE || SelectItem == RESETINGSKILL || SelectItem == VIPPACKAGE || SelectItem == BOSSBOX || SelectItem == BOSSBOX2 || SelectItem == BOSSBOX3 || SelectItem == PREMIUM_BOX)
-						Get = chartoint(pReason, 15);
+						Get = chartoint(pReason, 100000);
 
 					Server()->RemItem(ClientID, SelectItem, Get, USEDUSE);
 					m_apPlayers[ClientID]->m_SelectItem = -1;
@@ -2212,10 +2216,8 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					return;
 				}
 
-				if (!strncmp(aCmd, "adm_", 4))
-				{
-					m_pAdmin->OnMenuAction(ClientID, aCmd, pReason);
-				}
+				m_pAdmin->OnMenuAction(ClientID, aCmd, pReason);
+				m_pAuction->OnMenuAction(ClientID, aCmd, pReason);
 
 				for(int i = 0; i < 20; i++)
 				{
@@ -3383,6 +3385,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVoteMenu_Localization(ClientID, QUEST, MENUONLY, "☞ Quest & Reward");
 		//AddVoteMenu_Localization(ClientID, DAILY, MENUONLY, "☞ Daily quests");
 		if (m_apPlayers[ClientID]->m_Authed) AddVoteMenu_Localization(ClientID, ADMMENU, MENUONLY, "☞ Admin menu");
+		AddVoteMenu_Localization(ClientID, AUCTION, MENUONLY, "☞ Auction");
 
 		AddVote("······················· ", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "✪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "Sub Menu Settings"));
@@ -4230,6 +4233,15 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
 
 		m_pAdmin->BuildVoteMenu(ClientID);
+
+		return;
+	}
+
+	else if (Type == AUCTION)
+	{
+		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+
+		m_pAuction->BuildVoteMenu(ClientID);
 
 		return;
 	}
@@ -5203,8 +5215,62 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 			else if(ItemID == RANDOMCRAFTITEM || ItemID == EVENTBOX || ItemID == FARMBOX || ItemID == BOSSBOX || ItemID == BOSSBOX2 || ItemID == BOSSBOX3)
 			{
 				//Count = 1;
-				m_apPlayers[ClientID]->m_OpenBox = Count;
-				m_apPlayers[ClientID]->m_OpenBoxType = ItemID;
+				//m_apPlayers[ClientID]->m_OpenBox = Count;
+				//m_apPlayers[ClientID]->m_OpenBoxType = ItemID;
+				CBox box(this, Server()->GetItemName(ClientID, ItemID, false));
+				switch (ItemID)
+				{
+				case RANDOMCRAFTITEM:
+					if (rand() % 100 > 6) // 7%
+					{
+						box.Add(FOOTKWAH);
+						box.Add(HEADBOOMER);
+						box.Add(PRESSEDPIECE);
+					}
+					else {
+						box.Add(FORMULAEARRINGS);
+						box.Add(FORMULAFORRING);
+						box.Add(FORMULAWEAPON);
+						box.Add(RARESLIMEDIRT);
+					}
+					box.Open(ClientID, Count);
+					break;
+				case EVENTBOX:
+					if (rand() % 100 > 4) // 5%
+						box.Add(MONEYBAG);
+					else
+						box.Add(RAREEVENTHAMMER);
+					box.Open(ClientID, Count);
+					break;
+				case BOSSBOX:
+					if (rand() % 100 > 6) // 7%
+					{
+						box.Add(MONEYBAG, 50);
+						box.Add(FARMBOX, 5);
+						box.Add(RANDOMCRAFTITEM);
+					}
+					else {
+						box.Add(SLIMENECKLACKE);
+						box.Add(SLIMESPHERE);
+					}
+					box.Open(ClientID, Count);
+					break;
+				case FARMBOX:
+					if (rand() % 100 > 7) // 8%
+					{
+						box.Add(FARMLEVEL, 5);
+						box.Add(MONEYBAG, 2);
+						box.Add(EVENTBOX, 5);
+					}
+					else {
+						box.Add(JUMPIMPULS);
+						box.Add(FREEAZER);
+						box.Add(RARESLIMEDIRT);
+					}
+					box.Open(ClientID, Count);
+					break;
+				}
+
 				break;
 			}
 			else

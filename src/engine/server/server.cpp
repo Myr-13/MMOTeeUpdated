@@ -4078,13 +4078,50 @@ public:
 		return true;
 	}
 };
-
 void CServer::UpdateStats(int ClientID, int Type)
 {
 	if(m_aClients[ClientID].m_Class < 0 || (m_aClients[ClientID].m_UserID < 0 && m_pGameServer))
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_UpdateStat(this, ClientID, m_aClients[ClientID].m_UserID, Type);
+	pJob->Start();
+}
+
+class CSqlJob_Server_AddGold : public CSqlJob
+{
+private:
+	CServer* m_pServer;
+	char m_aName[16];
+	int m_Add;
+
+public:
+	CSqlJob_Server_AddGold(CServer* pServer, const char *pName, int Add)
+	{
+		m_pServer = pServer;
+		str_copy(m_aName, pName, 16);
+		m_Add = Add;
+	}
+
+	virtual bool Job(CSqlServer* pSqlServer)
+	{
+		char aBuf[512];
+		try
+		{
+			str_format(aBuf, sizeof(aBuf), "UPDATE tw_Users SET Gold = Gold + %d WHERE Nickname = '%s';", m_Add, m_aName);
+
+			pSqlServer->executeSqlQuery(aBuf);
+		}
+		catch (sql::SQLException& e)
+		{
+			dbg_msg("sql", "Can't add gold (MySQL Error: %s)", e.what());
+			return false;
+		}
+		return true;
+	}
+};
+void CServer::AddGold(const char *pName, int Add)
+{
+	CSqlJob* pJob = new CSqlJob_Server_AddGold(this, pName, Add);
 	pJob->Start();
 }
 

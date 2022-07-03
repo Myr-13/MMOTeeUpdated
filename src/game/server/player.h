@@ -64,10 +64,10 @@ public:
 
 	int m_MoneyAdd;
 	int m_ExperienceAdd;
-	int m_OpenBox;
-	int m_OpenBoxType;
-	bool m_OpeningBox;
-	std::string m_GetFromBox;
+	//int m_OpenBox;
+	//int m_OpenBoxType;
+	//bool m_OpeningBox;
+	//std::string m_GetFromBox;
 	bool m_BigBot;
 	int m_InviteClanID;
 	bool m_ActiveChair;
@@ -189,11 +189,11 @@ public:
 	int m_Authed;
 	bool m_knownClass[NB_PLAYERCLASS];
 	
-	int GetClass(); 
+	int GetClass();
 	void SetClassSkin(int newClass, int State = 0);
 	void SetClass(int newClass);
-	void RandomBoxTick();
-	void BasicAuthedTick(); 
+	//void RandomBoxTick();
+	void BasicAuthedTick();
 	bool IsKownClass(int c);
 	
 	const char* GetLanguage();
@@ -227,7 +227,7 @@ public:
 
 	void SetMoveChar();
 
-	// Tele
+	// kek
 	int m_GrabbedID = -1;
 	int m_Tele = false;
 
@@ -238,8 +238,12 @@ public:
 
 	int m_EndMuteTick;
 
-	//bool m_AntiHook;
-	//bool m_AntiDmg;
+	bool m_AntiHook;
+	bool m_AntiDmg;
+
+	int m_WallLimit;
+
+	bool m_InfMana;
 
 private:
 	CCharacter *m_pCharacter;

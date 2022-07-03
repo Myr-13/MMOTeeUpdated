@@ -374,6 +374,8 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "2. Don't spawnkill (block out ways from city)");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "3. Nazi symbols banned");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "4. Don't use bags, cheats, macros");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "5. Don't be toxic");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "6. Be nice");
 		return;
 	}
 	else if (!strncmp(Msg->m_pMessage, "/weapon", 7))
@@ -387,6 +389,8 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		if (id > WEAPON_WAND)
 			id = WEAPON_WAND;
 		GameServer()->m_apPlayers[ClientID]->GetCharacter()->m_ActiveWeapon = id;
+
+		return;
 	}
 
 	else if(!strncmp(Msg->m_pMessage, "/lang", 5))
