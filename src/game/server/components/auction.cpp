@@ -69,11 +69,26 @@ void CAuction::OnMenuAction(int ClientID, const char* pMsg, const char* pReason)
 
 	if (!str_comp(pMsg, "auc_place"))
 	{
-		str_copy(m_aAuctionItems[ClientID].m_aItemName, Server()->GetItemName(ClientID, m_aClientItems[ClientID].m_ItemType, false), 128);
-		str_copy(m_aAuctionItems[ClientID].m_aSellerName, Server()->ClientName(ClientID), 16);
+		if (m_aClientItems[ClientID].m_ItemType < 0)
+			return;
+		if (m_aClientItems[ClientID].m_Cost <= 0)
+			return;
+		if (m_aClientItems[ClientID].m_ItemCount <= 0)
+			return;
+		if (m_aClientItems[ClientID].m_Seconds <= 0)
+			return;
+
+		int Pay = m_aClientItems[ClientID].m_Cost * 0.0625f + m_aClientItems[ClientID].m_Seconds / 1000;
+		if (GameServer()->m_apPlayers[ClientID]->AccData.Gold < Pay)
+			return;
+
+		str_copy(m_aClientItems[ClientID].m_aItemName, Server()->GetItemName(ClientID, m_aClientItems[ClientID].m_ItemType, false), 128);
+		str_copy(m_aClientItems[ClientID].m_aSellerName, Server()->ClientName(ClientID), 16);
 		m_aClientMenu[ClientID] = AUCTIONMENU_NONE;
 
 		m_aAuctionItems.push_back(m_aClientItems[ClientID]);
+
+		GameServer()->m_apPlayers[ClientID]->AccData.Gold -= Pay;
 
 		Server()->RemItem(ClientID, m_aClientItems[ClientID].m_ItemType, m_aClientItems[ClientID].m_ItemCount, 
 			Server()->GetItemType(ClientID, m_aClientItems[ClientID].m_ItemType));
@@ -199,8 +214,8 @@ void CAuction::ResetItem(AuctionItem& item)
 {
 	str_copy(item.m_aItemName, "", sizeof(item.m_aItemName));
 	str_copy(item.m_aSellerName, "", 16);
-	item.m_Cost = 0;
+	item.m_Cost = 100;
 	item.m_ItemCount = 0;
-	item.m_ItemType = 0;
-	item.m_Seconds = 0;
+	item.m_ItemType = -1;
+	item.m_Seconds = 1;
 }

@@ -36,7 +36,7 @@ public:
 	};
 
 protected:
-	IStorage *m_pStorage;
+	IStorage2 *m_pStorage;
 	IEngineMap *m_pMap;
 	IConsole *m_pConsole;
 	CDataFileWriter m_DataFile;
@@ -58,7 +58,7 @@ protected:
 
 protected:	
 	IEngineMap* Map() { return m_pMap; };
-	IStorage* Storage() { return m_pStorage; };
+	IStorage2* Storage() { return m_pStorage; };
 	IConsole* Console() { return m_pConsole; };
 	
 	void InitQuad(CQuad* pQuad);
@@ -82,7 +82,7 @@ protected:
 	void Finalize();
 
 public:
-	CMapConverter(IStorage *pStorage, IEngineMap *pMap, IConsole* pConsole);
+	CMapConverter(IStorage2 *pStorage, IEngineMap *pMap, IConsole* pConsole);
 	~CMapConverter();
 	
 	bool Load();

@@ -22,6 +22,7 @@
 
 #include "components/admin.h"
 #include "components/auction.h"
+#include "components/discord.h"
 
 #ifdef _MSC_VER
 typedef __int32 int32_t;
@@ -118,7 +119,7 @@ enum
 class CGameContext : public IGameServer
 {
 	IServer *m_pServer;
-	IStorage *m_pStorage;
+	IStorage2 *m_pStorage;
 	class IConsole *m_pConsole;
 	CLayers m_Layers;
 	CCollision m_Collision;
@@ -143,8 +144,10 @@ class CGameContext : public IGameServer
 	bool m_Resetting;
 
 public:
+	class CDiscord* m_pDiscord;
+
 	IServer *Server() const { return m_pServer; }
-	IStorage *Storage() const { return m_pStorage; }
+	IStorage2 *Storage() const { return m_pStorage; }
 	class IConsole *Console() { return m_pConsole; }
 	CCollision *Collision() { return &m_Collision; }
 	CTuningParams *Tuning() { return &m_Tuning; }

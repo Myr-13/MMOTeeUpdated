@@ -1,6 +1,6 @@
 #include <engine/server/mapconverter.h>
 
-CMapConverter::CMapConverter(IStorage *pStorage, IEngineMap *pMap, IConsole* pConsole) :
+CMapConverter::CMapConverter(IStorage2 *pStorage, IEngineMap *pMap, IConsole* pConsole) :
 	m_pStorage(pStorage),
 	m_pMap(pMap),
 	m_pConsole(pConsole),

@@ -26,10 +26,10 @@ public:
 
 	virtual bool Load(const char *pMapName)
 	{
-		IStorage *pStorage = Kernel()->RequestInterface<IStorage>();
+		IStorage2 *pStorage = Kernel()->RequestInterface<IStorage2>();
 		if(!pStorage)
 			return false;
-		return m_DataFile.Open(pStorage, pMapName, IStorage::TYPE_ALL);
+		return m_DataFile.Open(pStorage, pMapName, IStorage2::TYPE_ALL);
 	}
 
 	virtual bool IsLoaded()

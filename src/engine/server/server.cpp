@@ -155,7 +155,7 @@ void CSnapIDPool::FreeID(int ID)
 	}
 }
 
-void CServerBan::InitServerBan(IConsole *pConsole, IStorage *pStorage, CServer* pServer)
+void CServerBan::InitServerBan(IConsole *pConsole, IStorage2 *pStorage, CServer* pServer)
 {
 	CNetBan::Init(pConsole, pStorage);
 
@@ -1375,7 +1375,7 @@ int CServer::LoadMap(const char *pMapName)
 	str_format(aBuf, sizeof(aBuf), "maps/%s.map", pMapName);
 
 	// check for valid standard map
-	if(!m_MapChecker.ReadAndValidateMap(Storage(), aBuf, IStorage::TYPE_ALL))
+	if(!m_MapChecker.ReadAndValidateMap(Storage(), aBuf, IStorage2::TYPE_ALL))
 	{
 		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "mapchecker", "invalid standard map");
 		return 0;
@@ -1389,7 +1389,7 @@ int CServer::LoadMap(const char *pMapName)
 
 	{
 		CDataFileReader dfServerMap;
-		dfServerMap.Open(Storage(), aBuf, IStorage::TYPE_ALL);
+		dfServerMap.Open(Storage(), aBuf, IStorage2::TYPE_ALL);
 		unsigned ServerMapCrc = dfServerMap.Crc();
 		dfServerMap.Close();
 
@@ -1402,7 +1402,7 @@ int CServer::LoadMap(const char *pMapName)
 
 		CDataFileReader dfClientMap;
 		//The map is already converted
-		if(dfClientMap.Open(Storage(), pMapName, IStorage::TYPE_ALL))
+		if(dfClientMap.Open(Storage(), pMapName, IStorage2::TYPE_ALL))
 		{
 			m_CurrentMapCrc = dfClientMap.Crc();
 			dfClientMap.Close();
@@ -1414,7 +1414,7 @@ int CServer::LoadMap(const char *pMapName)
 			str_format(aClientMapDir, sizeof(aClientMapDir), "clientmaps/%s_%08x", pMapName, ServerMapCrc);
 
 			char aFullPath[512];
-			Storage()->GetCompletePath(IStorage::TYPE_SAVE, aClientMapDir, aFullPath, sizeof(aFullPath));
+			Storage()->GetCompletePath(IStorage2::TYPE_SAVE, aClientMapDir, aFullPath, sizeof(aFullPath));
 			if(fs_makedir(aFullPath) != 0)
 			{
 				dbg_msg("infclass", "Can't create the directory '%s'", aClientMapDir);
@@ -1424,7 +1424,7 @@ int CServer::LoadMap(const char *pMapName)
 				return 0;
 
 			CDataFileReader dfGeneratedMap;
-			dfGeneratedMap.Open(Storage(), aClientMapName, IStorage::TYPE_ALL);
+			dfGeneratedMap.Open(Storage(), aClientMapName, IStorage2::TYPE_ALL);
 			m_CurrentMapCrc = dfGeneratedMap.Crc();
 			dfGeneratedMap.Close();
 		}
@@ -1434,7 +1434,7 @@ int CServer::LoadMap(const char *pMapName)
 		Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", aBufMsg);
 
 		//Download the generated map in memory to send it to clients
-		IOHANDLE File = Storage()->OpenFile(aClientMapName, IOFLAG_READ, IStorage::TYPE_ALL);
+		IOHANDLE File = Storage()->OpenFile(aClientMapName, IOFLAG_READ, IStorage2::TYPE_ALL);
 		m_CurrentMapSize = (int)io_length(File);
 
 		free(m_pCurrentMapData);
@@ -1900,7 +1900,7 @@ void CServer::RegisterCommands()
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	m_pGameServer = Kernel()->RequestInterface<IGameServer>();
 	m_pMap = Kernel()->RequestInterface<IEngineMap>();
-	m_pStorage = Kernel()->RequestInterface<IStorage>();
+	m_pStorage = Kernel()->RequestInterface<IStorage2>();
 
 	// register console commands
 	Console()->Register("kick", "s<username or uid> ?r<reason>", CFGFLAG_SERVER, ConKick, this, "Kick player with specified id for any reason");
@@ -1979,7 +1979,7 @@ int main(int argc, const char **argv) // ignore_convention
 	IGameServer *pGameServer = CreateGameServer();
 	IConsole *pConsole = CreateConsole(CFGFLAG_SERVER|CFGFLAG_ECON);
 	IEngineMasterServer *pEngineMasterServer = CreateEngineMasterServer();
-	IStorage *pStorage = CreateStorage("Teeworlds", IStorage::STORAGETYPE_SERVER, argc, argv); // ignore_convention
+	IStorage2 *pStorage = CreateStorage("Teeworlds", IStorage2::STORAGETYPE_SERVER, argc, argv); // ignore_convention
 	IConfig *pConfig = CreateConfig();
 
 	pServer->m_pLocalization = new CLocalization(pStorage);

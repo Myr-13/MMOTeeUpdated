@@ -20,7 +20,7 @@ class CEngine : public IEngine
 {
 public:
 	IConsole *m_pConsole;
-	IStorage *m_pStorage;
+	IStorage2 *m_pStorage;
 	bool m_Logging;
 
 	static bool Con_DbgDumpmem(IConsole::IResult *pResult, void *pUserData)
@@ -30,7 +30,7 @@ public:
 		str_timestamp(aBuf, sizeof(aBuf));
 		//char aFilename[128];
 		//str_format(aFilename, sizeof(aFilename), "dumps/memory_%s.txt", aBuf);
-		//mem_debug_dump(pEngine->m_pStorage->OpenFile(aFilename, IOFLAG_WRITE, IStorage::TYPE_SAVE));
+		//mem_debug_dump(pEngine->m_pStorage->OpenFile(aFilename, IOFLAG_WRITE, IStorage2::TYPE_SAVE));
 		
 		return true;
 	}
@@ -51,8 +51,8 @@ public:
 			char aFilenameSent[128], aFilenameRecv[128];
 			str_format(aFilenameSent, sizeof(aFilenameSent), "dumps/network_sent_%s.txt", aBuf);
 			str_format(aFilenameRecv, sizeof(aFilenameRecv), "dumps/network_recv_%s.txt", aBuf);
-			CNetBase::OpenLog(pEngine->m_pStorage->OpenFile(aFilenameSent, IOFLAG_WRITE, IStorage::TYPE_SAVE),
-								pEngine->m_pStorage->OpenFile(aFilenameRecv, IOFLAG_WRITE, IStorage::TYPE_SAVE));
+			CNetBase::OpenLog(pEngine->m_pStorage->OpenFile(aFilenameSent, IOFLAG_WRITE, IStorage2::TYPE_SAVE),
+								pEngine->m_pStorage->OpenFile(aFilenameRecv, IOFLAG_WRITE, IStorage2::TYPE_SAVE));
 			pEngine->m_Logging = true;
 		}
 		
@@ -86,7 +86,7 @@ public:
 	void Init()
 	{
 		m_pConsole = Kernel()->RequestInterface<IConsole>();
-		m_pStorage = Kernel()->RequestInterface<IStorage>();
+		m_pStorage = Kernel()->RequestInterface<IStorage2>();
 
 		if(!m_pConsole || !m_pStorage)
 			return;

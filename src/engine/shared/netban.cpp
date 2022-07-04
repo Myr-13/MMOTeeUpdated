@@ -294,7 +294,7 @@ int CNetBan::Unban(T* pBanPool, const typename T::CDataType* pData)
 	return -1;
 }
 
-void CNetBan::Init(IConsole* pConsole, IStorage* pStorage)
+void CNetBan::Init(IConsole* pConsole, IStorage2* pStorage)
 {
 	m_pConsole = pConsole;
 	m_pStorage = pStorage;
@@ -532,7 +532,7 @@ bool CNetBan::ConBansSave(IConsole::IResult* pResult, void* pUser)
 	CNetBan* pThis = static_cast<CNetBan*>(pUser);
 
 	char aBuf[256];
-	IOHANDLE File = pThis->Storage()->OpenFile(pResult->GetString(0), IOFLAG_WRITE, IStorage::TYPE_SAVE);
+	IOHANDLE File = pThis->Storage()->OpenFile(pResult->GetString(0), IOFLAG_WRITE, IStorage2::TYPE_SAVE);
 	if(!File)
 	{
 		str_format(aBuf, sizeof(aBuf), "failed to save banlist to '%s'", pResult->GetString(0));

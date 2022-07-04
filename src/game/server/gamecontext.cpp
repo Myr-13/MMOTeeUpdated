@@ -17,6 +17,8 @@
 
 #include "components/box.h"
 
+#undef GetClassName
+
 #define BOSSID 62
 
 enum
@@ -44,6 +46,7 @@ void CGameContext::Construct(int Resetting)
 
 	m_pAdmin = new CAdmin(this);
 	m_pAuction = new CAuction(this);
+	m_pDiscord = new CDiscord(this);
 
 	// боссецкий чистка
 	m_BossStart = false;
@@ -81,6 +84,7 @@ CGameContext::~CGameContext()
 
 	delete m_pAdmin;
 	delete m_pAuction;
+	delete m_pDiscord;
 }
 
 void CGameContext::ClearVotes(int ClientID)
@@ -745,7 +749,7 @@ void CGameContext::SendBroadcast_LDaily(int To)
 
 	dynamic_string Buffer;
 	SendBroadcast_Localization(To, 105, 100, "{str:spaces}Actived daily quest: {str:name}\n [{int:comp}/{int:needed}]",
-		"buff", "                                                                                                    ",
+		"spaces", "                                                                                                    ",
 		"name", GetDailyQuestName(Quest), "comp", m_apPlayers[To]->GetCurrentDailyQuestStep(), "needed", GetNeededForDailyQuest(Quest));
 
 	Buffer.clear();
@@ -761,6 +765,8 @@ void CGameContext::SendChat(int ChatterClientID, int Team, const char *pText)
 		Msg.m_ClientID = ChatterClientID;
 		Msg.m_pMessage = pText;
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+
+		m_pDiscord->OnChat(Server()->ClientName(ChatterClientID), pText);
 	}
 	else
 	{
@@ -1197,6 +1203,8 @@ void CGameContext::OnClientEnter(int ClientID)
 
 	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} entered and joined the spectators"), "PlayerName", Server()->ClientName(ClientID), NULL);
 	SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("Welcome! Please login or create new account /cmdlist"), NULL);
+
+	m_pDiscord->OnLog(LOGTYPE_ENTER, ClientID);
 }
 
 void CGameContext::OnClientConnected(int ClientID)
@@ -1234,6 +1242,8 @@ void CGameContext::OnClientConnected(int ClientID)
 void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 {
 	//UpdateStats(ClientID);
+
+	m_pDiscord->OnLog(LOGTYPE_LEFT, ClientID);
 
 	m_apPlayers[ClientID]->OnDisconnect(pReason);
 	delete m_apPlayers[ClientID];
@@ -3209,7 +3219,7 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 		{
 			if (Server()->GetItemCount(ClientID, PIXI_DUST) < 800 || Server()->GetItemCount(ClientID, GOLDORE) < 400 || Server()->GetItemCount(ClientID, DIAMONDORE) < 300)
 			{
-				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Pixi Dust x300, Gold Ore x400, Diamond Ore x300", NULL);
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Pixi Dust x800, Gold Ore x400, Diamond Ore x300", NULL);
 				return;
 			}
 			Server()->RemItem(ClientID, PIXI_DUST, 800, -1);
@@ -4330,7 +4340,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddNewCraftVote(ClientID, "Astralium Orex400, Woodx150, Slime Soulx20, Titanium Feetx1", ASTRALIUM_FEET);
 				AddNewCraftVote(ClientID, "Mithril ore x900, Copper ore x15000", PET_MITHRIL_GOLEM);
 				AddNewCraftVote(ClientID, "Gold ore x500, Diamond ore x500, Copper ore x1000", PET_CLEVER);
-				AddNewCraftVote(ClientID, "Pixi dust x300, Gold ore x400, Diamond ore x300", PEX_WINGS);
+				AddNewCraftVote(ClientID, "Pixi dust x800, Gold ore x400, Diamond ore x300", PEX_WINGS);
 			}
 		}
 		else AddVote_Localization(ClientID, "null", "You are not in the Craft Room");
@@ -4641,7 +4651,7 @@ void CGameContext::EnterClan(int ClientID, int ClanID)
 void CGameContext::OnConsoleInit()
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
-	m_pStorage = Kernel()->RequestInterface<IStorage>();
+	m_pStorage = Kernel()->RequestInterface<IStorage2>();
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 
 	Console()->Register("tune", "s<param> i<value>", CFGFLAG_SERVER, ConTuneParam, this, "Tune variable to value");

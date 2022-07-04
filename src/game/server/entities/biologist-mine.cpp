@@ -85,20 +85,38 @@ void CBiologistMine::Tick()
 	}
 
 	// Find other players
-	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
+	for (CCharacter* p = (CCharacter*)GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter*)p->TypeNext())
 	{
-		int from = p->GetPlayer()->GetCID();
-		if(from != m_Owner && Server()->GetClanID(from) && Server()->GetClanID(m_Owner) != Server()->GetClanID(from))
+		/*int from = p->GetPlayer()->GetCID();
+		if(from != m_Owner && (Server()->GetClanID(from) && Server()->GetClanID(m_Owner) != Server()->GetClanID(from)))
 		{
 			vec2 IntersectPos = closest_point_on_line(m_Pos, m_EndPos, p->m_Pos);
 			float Len = distance(p->m_Pos, IntersectPos);
 			if(Len < 20)
 			{
-				GameServer()->CreateExplosionDisk(IntersectPos, 200.0f, 267.5f, 500, 42.0f, m_Owner, WEAPON_GRENADE, 0);
+				GameServer()->CreateExplosionDisk(IntersectPos, 200.0f, 267.5f, 500, 42.0f, m_Owner, WEAPON_GRENADE);
 				GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
 				GameServer()->m_World.DestroyEntity(this);
 				return;
 			}
+		}*/
+		int From = p->GetPlayer()->GetCID();
+
+		if (From == m_Owner) 
+			continue;
+		if (Server()->GetClanID(m_Owner))
+			if (Server()->GetClanID(m_Owner) == Server()->GetClanID(From)) 
+				continue;
+
+		vec2 IntersectPos = closest_point_on_line(m_Pos, m_EndPos, p->m_Pos);
+		float Len = distance(p->m_Pos, IntersectPos);
+
+		if (Len < 20)
+		{
+			GameServer()->CreateExplosionDisk(IntersectPos, 200.0f, 267.5f, 500, 42.0f, m_Owner, WEAPON_GRENADE);
+			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
+			GameServer()->m_World.DestroyEntity(this);
+			return;
 		}
 	}
 }

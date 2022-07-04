@@ -54,7 +54,7 @@ class CServerBan : public CNetBan
 public:
 	class CServer *Server() const { return m_pServer; }
 
-	void InitServerBan(class IConsole *pConsole, class IStorage *pStorage, class CServer* pServer);
+	void InitServerBan(class IConsole *pConsole, class IStorage2 *pStorage, class CServer* pServer);
 	virtual int BanAddr(const NETADDR *pAddr, int Seconds, const char *pReason);
 	virtual int BanRange(const CNetRange *pRange, int Seconds, const char *pReason);
 	static bool ConBanExt(class IConsole::IResult *pResult, void *pUser);
@@ -66,14 +66,14 @@ class CServer : public IServer
 {
 	class IGameServer *m_pGameServer;
 	class IConsole *m_pConsole;
-	class IStorage *m_pStorage;
+	class IStorage2 *m_pStorage;
 	CSqlServer* m_apSqlReadServers[MAX_SQLSERVERS];
 	CSqlServer* m_apSqlWriteServers[MAX_SQLSERVERS];
 	
 public:
 	class IGameServer *GameServer() { return m_pGameServer; }
 	class IConsole *Console() { return m_pConsole; }
-	class IStorage *Storage() { return m_pStorage; }
+	class IStorage2 *Storage() { return m_pStorage; }
 
 	enum
 	{

@@ -353,6 +353,7 @@ show_dependency_status("OpenSSL" OPENSSL)
 show_dependency_status("PythonInterp" PYTHONINTERP)
 show_dependency_status("Zlib" ZLIB)
 show_dependency_status("ICU" ICU)
+show_dependency_status("DPP" DPP)
 
 if(NOT(PYTHONINTERP_FOUND))
   message(SEND_ERROR "You must install Python to compile the ${PROJECT_NAME}")
@@ -361,8 +362,11 @@ if(NOT(MYSQL_FOUND))
   message(SEND_ERROR "You must install MySQL to compile the ${PROJECT_NAME}")
 endif()
 if(NOT(ICU_FOUND))
-  message(SEND_ERROR "You must install ICU to compile Teeworlds")
+  message(SEND_ERROR "You must install ICU to compile the ${PROJECT_NAME}")
 endif()
+#if(NOT(DPP_FOUND))
+#  message(SEND_ERROR "You must install DPP to compile the ${PROJECT_NAME}")
+#endif()
 
 #if(NOT(OPUS_FOUND))
 #  message(SEND_ERROR "You must install Opus to compile")
@@ -402,6 +406,7 @@ set(COPY_FILES
   ${CURL_COPY_FILES}
   ${OPENSSL_COPY_FILES}
   ${OPUSFILE_COPY_FILES}
+  ${DPP_COPY_FILES}
 )
 file(COPY ${COPY_FILES} DESTINATION .)
 
@@ -518,7 +523,7 @@ set(GAME_GENERATED_SHARED
 set(DEPS ${DEP_JSON} ${DEP_MD5} ${ZLIB_DEP})
 
 # Libraries
-set(LIBS ${OPENSSL_CRYPTO_LIBRARY} ${ZLIB_LIBRARIES} ${PLATFORM_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+set(LIBS ${DPP_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY} ${ZLIB_LIBRARIES} ${PLATFORM_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 
 # Targets  
 add_library(engine-shared EXCLUDE_FROM_ALL OBJECT ${ENGINE_INTERFACE} ${ENGINE_GENERATED_SHARED} ${ENGINE_SHARED} ${BASE})
@@ -558,6 +563,7 @@ set(LIBS_SERVER
   ${LIBS}
   ${MYSQL_LIBRARIES}
   ${ICU_LIBRARIES}
+  ${DPP_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -569,6 +575,7 @@ set(INCLUDES_SERVER
   ${MYSQL_INCLUDE_DIRS}
   ${ICU_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  "libraries/dpp/include"
 )
 
 target_include_directories(${TARGET_SERVER} PRIVATE ${INCLUDES_SERVER})

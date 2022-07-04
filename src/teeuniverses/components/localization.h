@@ -3,7 +3,7 @@
 
 /* BEGIN EDIT *********************************************************/
 #include <teeuniverses/tl/hashtable.h>
-#define CStorage IStorage
+#define CStorage IStorage2
 /* END EDIT ***********************************************************/
 
 #include <unicode/ucnv.h>

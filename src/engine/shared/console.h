@@ -45,7 +45,7 @@ class CConsole : public IConsole
 	};
 
 	CExecFile *m_pFirstExec;
-	class IStorage *m_pStorage;
+	class IStorage2 *m_pStorage;
 	int m_AccessLevel;
 
 	CCommand *m_pRecycleList;

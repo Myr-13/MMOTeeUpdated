@@ -95,7 +95,7 @@ CWings::CWings(CGameWorld* pGameWorld, vec2 Pos, int ClientID)
 }
 
 CWings::~CWings() {
-	for (int i = 0; i < 22; i++) {
+	for (int i = 0; i < 80; i++) {
 		Server()->SnapFreeID(m_IDs[i]);
 	}
 }

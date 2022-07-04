@@ -1811,6 +1811,9 @@ void CCharacter::Die(int Killer, int Weapon)
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
 
+	// logger
+	GameServer()->m_pDiscord->OnLog(LOGTYPE_KILL, Killer, m_pPlayer->GetCID());
+
 	// вся хуйня когда мрут боссы и игроки
 	if(GameServer()->m_BossStartTick < 10 && GameServer()->m_BossStart)
 	{

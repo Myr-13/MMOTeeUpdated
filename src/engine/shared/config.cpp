@@ -8,7 +8,7 @@ CConfiguration g_Config;
 
 class CConfig : public IConfig
 {
-	IStorage *m_pStorage;
+	IStorage2 *m_pStorage;
 	IOHANDLE m_ConfigFile;
 
 	struct CCallback
@@ -46,7 +46,7 @@ public:
 
 	virtual void Init()
 	{
-		m_pStorage = Kernel()->RequestInterface<IStorage>();
+		m_pStorage = Kernel()->RequestInterface<IStorage2>();
 		Reset();
 	}
 
@@ -76,7 +76,7 @@ public:
 	{
 		if(!m_pStorage)
 			return;
-		m_ConfigFile = m_pStorage->OpenFile("settings.cfg", IOFLAG_WRITE, IStorage::TYPE_SAVE);
+		m_ConfigFile = m_pStorage->OpenFile("settings.cfg", IOFLAG_WRITE, IStorage2::TYPE_SAVE);
 
 		if(!m_ConfigFile)
 			return;

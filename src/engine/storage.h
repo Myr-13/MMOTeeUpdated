@@ -5,7 +5,7 @@
 
 #include "kernel.h"
 
-class IStorage : public IInterface
+class IStorage2 : public IInterface
 {
 	MACRO_INTERFACE("storage", 0)
 public:
@@ -28,7 +28,7 @@ public:
 	virtual void GetCompletePath(int Type, const char *pDir, char *pBuffer, unsigned BufferSize) = 0;
 };
 
-extern IStorage *CreateStorage(const char *pApplicationName, int StorageType, int NumArgs, const char **ppArguments);
+extern IStorage2 *CreateStorage(const char *pApplicationName, int StorageType, int NumArgs, const char **ppArguments);
 
 
 #endif

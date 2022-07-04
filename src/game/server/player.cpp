@@ -598,8 +598,8 @@ void CPlayer::Tick()
 		// Агресия и тюрьма
 		if(!m_Search && AccData.Rel >= 1000)
 		{
-			m_Search = true;
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("Player {str:name}, in the wanted list"), "name", Server()->ClientName(m_ClientID), NULL);
+			//m_Search = true;
+			//GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("Player {str:name}, in the wanted list"), "name", Server()->ClientName(m_ClientID), NULL);
 		}
 		if(m_JailTick && AccData.Jail)
 		{

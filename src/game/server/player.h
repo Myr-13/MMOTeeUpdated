@@ -9,6 +9,8 @@
 #include <game/server/classes.h>
 #include "cmds.h"
 
+#undef GetClassName
+
 class CPlayer
 {
 	MACRO_ALLOC_POOL_ID()

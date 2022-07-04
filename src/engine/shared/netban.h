@@ -154,7 +154,7 @@ protected:
 	int Unban(T* pBanPool, const typename T::CDataType* pData);
 
 	class IConsole* m_pConsole;
-	class IStorage* m_pStorage;
+	class IStorage2* m_pStorage;
 	CBanAddrPool m_BanAddrPool;
 	CBanRangePool m_BanRangePool;
 	NETADDR m_LocalhostIPV4, m_LocalhostIPV6;
@@ -169,10 +169,10 @@ public:
 	};
 
 	class IConsole* Console() const { return m_pConsole; }
-	class IStorage* Storage() const { return m_pStorage; }
+	class IStorage2* Storage() const { return m_pStorage; }
 
 	virtual ~CNetBan() {}
-	void Init(class IConsole* pConsole, class IStorage* pStorage);
+	void Init(class IConsole* pConsole, class IStorage2* pStorage);
 	void Update();
 
 	virtual int BanAddr(const NETADDR* pAddr, int Seconds, const char* pReason);

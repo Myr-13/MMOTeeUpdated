@@ -27,7 +27,7 @@ CDemoRecorder::CDemoRecorder(class CSnapshotDelta *pSnapshotDelta)
 }
 
 // Record
-int CDemoRecorder::Start(class IStorage *pStorage, class IConsole *pConsole, const char *pFilename, const char *pNetVersion, const char *pMap, unsigned Crc, const char *pType)
+int CDemoRecorder::Start(class IStorage2 *pStorage, class IConsole *pConsole, const char *pFilename, const char *pNetVersion, const char *pMap, unsigned Crc, const char *pType)
 {
 	CDemoHeader Header;
 	CTimelineMarkers TimelineMarkers;
@@ -40,20 +40,20 @@ int CDemoRecorder::Start(class IStorage *pStorage, class IConsole *pConsole, con
 	char aMapFilename[128];
 	// try the normal maps folder
 	str_format(aMapFilename, sizeof(aMapFilename), "maps/%s.map", pMap);
-	IOHANDLE MapFile = pStorage->OpenFile(aMapFilename, IOFLAG_READ, IStorage::TYPE_ALL);
+	IOHANDLE MapFile = pStorage->OpenFile(aMapFilename, IOFLAG_READ, IStorage2::TYPE_ALL);
 	if(!MapFile)
 	{
 		// try the downloaded maps
 		str_format(aMapFilename, sizeof(aMapFilename), "downloadedmaps/%s_%08x.map", pMap, Crc);
-		MapFile = pStorage->OpenFile(aMapFilename, IOFLAG_READ, IStorage::TYPE_ALL);
+		MapFile = pStorage->OpenFile(aMapFilename, IOFLAG_READ, IStorage2::TYPE_ALL);
 	}
 	if(!MapFile)
 	{
 		// search for the map within subfolders
 		char aBuf[512];
 		str_format(aMapFilename, sizeof(aMapFilename), "%s.map", pMap);
-		if(pStorage->FindFile(aMapFilename, "maps", IStorage::TYPE_ALL, aBuf, sizeof(aBuf)))
-			MapFile = pStorage->OpenFile(aBuf, IOFLAG_READ, IStorage::TYPE_ALL);
+		if(pStorage->FindFile(aMapFilename, "maps", IStorage2::TYPE_ALL, aBuf, sizeof(aBuf)))
+			MapFile = pStorage->OpenFile(aBuf, IOFLAG_READ, IStorage2::TYPE_ALL);
 	}
 	if(!MapFile)
 	{
@@ -63,7 +63,7 @@ int CDemoRecorder::Start(class IStorage *pStorage, class IConsole *pConsole, con
 		return -1;
 	}
 
-	IOHANDLE DemoFile = pStorage->OpenFile(pFilename, IOFLAG_WRITE, IStorage::TYPE_SAVE);
+	IOHANDLE DemoFile = pStorage->OpenFile(pFilename, IOFLAG_WRITE, IStorage2::TYPE_SAVE);
 	if(!DemoFile)
 	{
 		io_close(MapFile);
@@ -578,7 +578,7 @@ void CDemoPlayer::Unpause()
 	}
 }
 
-int CDemoPlayer::Load(class IStorage *pStorage, class IConsole *pConsole, const char *pFilename, int StorageType)
+int CDemoPlayer::Load(class IStorage2 *pStorage, class IConsole *pConsole, const char *pFilename, int StorageType)
 {
 	m_pConsole = pConsole;
 	m_File = pStorage->OpenFile(pFilename, IOFLAG_READ, StorageType);
@@ -644,7 +644,7 @@ int CDemoPlayer::Load(class IStorage *pStorage, class IConsole *pConsole, const 
 	unsigned Crc = (m_Info.m_Header.m_aMapCrc[0]<<24) | (m_Info.m_Header.m_aMapCrc[1]<<16) | (m_Info.m_Header.m_aMapCrc[2]<<8) | (m_Info.m_Header.m_aMapCrc[3]);
 	char aMapFilename[128];
 	str_format(aMapFilename, sizeof(aMapFilename), "downloadedmaps/%s_%08x.map", m_Info.m_Header.m_aMapName, Crc);
-	IOHANDLE MapFile = pStorage->OpenFile(aMapFilename, IOFLAG_READ, IStorage::TYPE_ALL);
+	IOHANDLE MapFile = pStorage->OpenFile(aMapFilename, IOFLAG_READ, IStorage2::TYPE_ALL);
 
 	if(MapFile)
 	{
@@ -658,7 +658,7 @@ int CDemoPlayer::Load(class IStorage *pStorage, class IConsole *pConsole, const 
 		io_read(m_File, pMapData, MapSize);
 
 		// save map
-		MapFile = pStorage->OpenFile(aMapFilename, IOFLAG_WRITE, IStorage::TYPE_SAVE);
+		MapFile = pStorage->OpenFile(aMapFilename, IOFLAG_WRITE, IStorage2::TYPE_SAVE);
 		io_write(MapFile, pMapData, MapSize);
 		io_close(MapFile);
 
@@ -837,7 +837,7 @@ void CDemoPlayer::GetDemoName(char *pBuffer, int BufferSize) const
 	str_copy(pBuffer, pExtractedName, Length);
 }
 
-bool CDemoPlayer::GetDemoInfo(class IStorage *pStorage, const char *pFilename, int StorageType, CDemoHeader *pDemoHeader) const
+bool CDemoPlayer::GetDemoInfo(class IStorage2 *pStorage, const char *pFilename, int StorageType, CDemoHeader *pDemoHeader) const
 {
 	if(!pDemoHeader)
 		return false;

@@ -33,7 +33,7 @@ public:
 	CMasterInfo m_aMasterServers[MAX_MASTERSERVERS];
 	int m_State;
 	IEngine *m_pEngine;
-	IStorage *m_pStorage;
+	IStorage2 *m_pStorage;
 
 	CMasterServer()
 	{
@@ -115,7 +115,7 @@ public:
 	virtual void Init()
 	{
 		m_pEngine = Kernel()->RequestInterface<IEngine>();
-		m_pStorage = Kernel()->RequestInterface<IStorage>();
+		m_pStorage = Kernel()->RequestInterface<IStorage2>();
 	}
 
 	virtual void SetDefault()
@@ -131,7 +131,7 @@ public:
 			return -1;
 
 		// try to open file
-		IOHANDLE File = m_pStorage->OpenFile("masters.cfg", IOFLAG_READ, IStorage::TYPE_SAVE);
+		IOHANDLE File = m_pStorage->OpenFile("masters.cfg", IOFLAG_READ, IStorage2::TYPE_SAVE);
 		if(!File)
 			return -1;
 
@@ -184,7 +184,7 @@ public:
 			return -1;
 
 		// try to open file
-		IOHANDLE File = m_pStorage->OpenFile("masters.cfg", IOFLAG_WRITE, IStorage::TYPE_SAVE);
+		IOHANDLE File = m_pStorage->OpenFile("masters.cfg", IOFLAG_WRITE, IStorage2::TYPE_SAVE);
 		if(!File)
 			return -1;
 
