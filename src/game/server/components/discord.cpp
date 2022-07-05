@@ -7,13 +7,14 @@ CDiscord::CDiscord(CGameContext *pGameContext)
 	m_pGameContext = pGameContext;
 	m_Logger = true;
 
-	m_Bot = new dpp::cluster("", dpp::i_default_intents | dpp::i_message_content);
+	std::string data;
+	std::ifstream file("botconfig.txt");
+
+	file >> data;
+	m_Bot = new dpp::cluster(data, dpp::i_default_intents | dpp::i_message_content);
 	m_Bot->on_log(dpp::utility::cout_logger());
 
 	m_Bot->on_message_create([this](const dpp::message_create_t& event) { OnMessage(event); });
-
-	std::string data;
-	std::ifstream file("botconfig.txt");
 
 	file >> data;
 	m_IRCChat = strtoll(data.c_str(), NULL, 10);

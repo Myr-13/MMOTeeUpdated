@@ -17,8 +17,19 @@ void CBox::Add(int Item, int Count)
 	BoxItem item;
 	item.m_Type = Item;
 	item.m_Count = Count;
+	item.m_Proc = -1;
 
 	m_aItems.push_back(item);
+}
+
+void CBox::AddRare(int Item, int Proc, int Count)
+{
+	BoxItem item;
+	item.m_Type = Item;
+	item.m_Count = Count;
+	item.m_Proc = Proc;
+
+	m_aRareItems.push_back(item);
 }
 
 void CBox::Open(int ClientID, int Iterations) // Не читайте этот пиздец, лучше просто закройте xdd
@@ -28,6 +39,9 @@ void CBox::Open(int ClientID, int Iterations) // Не читайте этот пиздец, лучше п
 	for (int i = 0; i < Iterations; i++)
 	{
 		BoxItem item = m_aItems[rand() % m_aItems.size()];
+		for (BoxItem rare : m_aRareItems)
+			if (rand() % 100 < rare.m_Proc)
+				item = rare;
 
 		GetItems.push_back(item);
 

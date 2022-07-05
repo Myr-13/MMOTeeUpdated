@@ -7,6 +7,7 @@ struct BoxItem
 {
 	int m_Type;
 	int m_Count;
+	int m_Proc;
 };
 
 class CBox
@@ -14,6 +15,7 @@ class CBox
 	CGameContext* m_pGameContext;
 
 	std::vector<BoxItem> m_aItems;
+	std::vector<BoxItem> m_aRareItems;
 
 	char m_aBoxName[64];
 
@@ -23,6 +25,7 @@ public:
 	void SetName(const char* pName);
 
 	void Add(int Item, int Count = 1);
+	void AddRare(int Item, int Proc, int Count = 1);
 	void Open(int ClientID, int Iterations);
 };
 
