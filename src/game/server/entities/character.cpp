@@ -1072,234 +1072,58 @@ void CCharacter::Tick()
 			}
 		}
 
-		if(IndexShit == ZONE_CHAIRCLAN1)
+		if (IndexShit == ZONE_STOOL || IndexShit == ZONE_STOOL1 || IndexShit == ZONE_CHAIRCLAN1 || IndexShit == ZONE_CHAIRCLAN2 || IndexShit == ZONE_CHAIRCLAN3)
 		{
-			if(!m_ReloadOther)
-			{
-				int Exp = 20+Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0));
-				int Money = 500+(Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0))*50);
-				m_ReloadOther = Server()->TickSpeed();
-				if(Server()->GetItemCount(m_pPlayer->GetCID(), X2MONEYEXPVIP))
-				{
-					int gete = Exp*2;
-					int getm = Money*2;
+			m_pPlayer->m_ActiveChair = (IndexShit == ZONE_STOOL || IndexShit == ZONE_STOOL1);
 
-					int LegalExp = m_pPlayer->AccData.Exp + gete;
-					int LegalMoney = m_pPlayer->AccData.Money + getm;
-
-					m_pPlayer->AccData.Exp += gete;
-					m_pPlayer->AccData.Money += getm;
-
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), gete, getm);
-				
-					if(m_pPlayer->AccData.Exp > LegalExp || m_pPlayer->AccData.Money > LegalMoney)
-					{
-						Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-						return;
-					}
-				}
-				else
-				{
-					int gete = Exp+Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0));
-					int getm = Money+(Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0))*50);
-
-					int LegalExp = m_pPlayer->AccData.Exp + gete;
-					int LegalMoney = m_pPlayer->AccData.Money + getm;
-
-					m_pPlayer->AccData.Exp += gete;
-					m_pPlayer->AccData.Money += getm;
-
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), gete, getm);
-				
-					if(m_pPlayer->AccData.Exp > LegalExp || m_pPlayer->AccData.Money > LegalMoney)
-					{
-						Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-						return;
-					}
-				}
-			}
-		}
-		if(IndexShit == ZONE_CHAIRCLAN2)
-		{
-			if(!m_ReloadOther)
-			{
-				int Exp = 20+Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1));
-				int Money = 500+(Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1))*50);
-				m_ReloadOther = Server()->TickSpeed();
-				if(Server()->GetItemCount(m_pPlayer->GetCID(), X2MONEYEXPVIP))
-				{
-				int gete = Exp*2;
-				int getm = Money*2;
-
-				int LegalExp = m_pPlayer->AccData.Exp + gete;
-				int LegalMoney = m_pPlayer->AccData.Money + getm;
-
-				m_pPlayer->AccData.Exp += gete;
-				m_pPlayer->AccData.Money += getm;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), gete, getm);
-				
-				if(m_pPlayer->AccData.Exp > LegalExp || m_pPlayer->AccData.Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-				}
-				else
-				{
-				int gete = Exp+Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1));
-				int getm = Money+(Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1))*50);
-
-				int LegalExp = m_pPlayer->AccData.Exp + gete;
-				int LegalMoney = m_pPlayer->AccData.Money + getm;
-
-				m_pPlayer->AccData.Exp += gete;
-				m_pPlayer->AccData.Money += getm;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), gete, getm);
-				
-				if(m_pPlayer->AccData.Exp > LegalExp || m_pPlayer->AccData.Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-				}		
-			}
-		}
-
-		if(IndexShit == ZONE_CHAIRCLAN3)
-		{
-			if(!m_ReloadOther)
-			{
-				int Exp = 20+Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2));
-				int Money = 500+(Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2))*50);
-				m_ReloadOther = Server()->TickSpeed();
-				if(Server()->GetItemCount(m_pPlayer->GetCID(), X2MONEYEXPVIP))
-				{
-					int gete = Exp*2;
-					int getm = Money*2;
-
-					int LegalExp = m_pPlayer->AccData.Exp + gete;
-					int LegalMoney = m_pPlayer->AccData.Money + getm;
-
-					m_pPlayer->AccData.Exp += gete;
-					m_pPlayer->AccData.Money += getm;
-
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), gete, getm);
-				
-					if(m_pPlayer->AccData.Exp > LegalExp || m_pPlayer->AccData.Money > LegalMoney)
-					{
-						Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-						return;
-					}
-				}
-				else
-				{
-					int gete = Exp+Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2));
-					int getm = Money+(Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2))*50);
-
-					int LegalExp = m_pPlayer->AccData.Exp + gete;
-					int LegalMoney = m_pPlayer->AccData.Money + getm;
-
-					m_pPlayer->AccData.Exp += gete;
-					m_pPlayer->AccData.Money += getm;
-
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), gete, getm);
-				
-					if(m_pPlayer->AccData.Exp > LegalExp || m_pPlayer->AccData.Money > LegalMoney)
-					{
-						Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-						return;
-					}
-				}		
-			}
-		}
-
-		if(IndexShit == ZONE_STOOL)
-		{
-			m_pPlayer->m_ActiveChair = true;
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-				int	Exp = 10;
-				int	Money = 200;
-				if(Server()->GetItemCount(m_pPlayer->GetCID(), X2MONEYEXPVIP))
-				{
-					int gete = Exp*2;
-					int getm = Money*2;
-					int LegalExp = m_pPlayer->AccData.Exp + gete;
-					int LegalMoney = m_pPlayer->AccData.Money + getm;
-					m_pPlayer->AccData.Exp += gete;
-					m_pPlayer->AccData.Money += getm;
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), gete, getm);
-					if(m_pPlayer->AccData.Exp > LegalExp || m_pPlayer->AccData.Money > LegalMoney)
-					{
-						Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-						return;
-					}
-				}
-				else
-				{
-					int	LegalExp = m_pPlayer->AccData.Exp + Exp;
-					int	LegalMoney = m_pPlayer->AccData.Money + Money;
-
-					m_pPlayer->AccData.Exp += Exp;
-					m_pPlayer->AccData.Money += Money;
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-
-					if(m_pPlayer->AccData.Exp > LegalExp || m_pPlayer->AccData.Money > LegalMoney)
-					{
-						Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-						return;
-					}
-				}
-				
-			}
-		}
-
-		if(IndexShit == ZONE_STOOL1)
-		{
-			m_pPlayer->m_ActiveChair = true;
-			if(!m_ReloadOther)
+			if (!m_ReloadOther)
 			{
 				m_ReloadOther = Server()->TickSpeed();
 
-				int Exp = 15;
-				int Money = 400;
-
-				if(Server()->GetItemCount(m_pPlayer->GetCID(), X2MONEYEXPVIP))
-					{
-				int gete = Exp*2;
-				int getm = Money*2;
-				int LegalExp = m_pPlayer->AccData.Exp + gete;
-				int LegalMoney = m_pPlayer->AccData.Money + getm;
-					m_pPlayer->AccData.Exp += gete;
-					m_pPlayer->AccData.Money += getm;
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), gete, getm);
-				if(m_pPlayer->AccData.Exp > LegalExp || m_pPlayer->AccData.Money > LegalMoney)
-					{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-					}
-				}
-				else
+				int Exp = 0;
+				int Money = 0;
+				switch (IndexShit)
 				{
-				int	LegalExp = m_pPlayer->AccData.Exp + Exp;
-				int	LegalMoney = m_pPlayer->AccData.Money + Money;
-
-					m_pPlayer->AccData.Exp += Exp;
-					m_pPlayer->AccData.Money += Money;
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-				
-
-				if(m_pPlayer->AccData.Exp > LegalExp || m_pPlayer->AccData.Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
+				case ZONE_STOOL1:
+					Exp = 15;
+					Money = 400;
+					break;
+				case ZONE_CHAIRCLAN1:
+					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0));
+					Money = 500 + (Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0)) * 50);
+					break;
+				case ZONE_CHAIRCLAN2:
+					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1));
+					Money = 500 + (Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1)) * 50);
+					break;
+				case ZONE_CHAIRCLAN3:
+					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2));
+					Money = 500 + (Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2)) * 50);
+					break;
+				default:
+					Exp = 10;
+					Money = 200;
+					break;
 				}
-				}
+
+				int Mult = 0;
+				if (Server()->GetItemCount(m_pPlayer->GetCID(), PREMIUM_GOVNO))
+					Mult += 2;
+				else if (Server()->GetItemCount(m_pPlayer->GetCID(), X2MONEYEXPVIP))
+					Mult += 2;
+
+				Mult = (Mult == 0) ? 1 : Mult;
+
+				Exp *= Mult;
+				Money *= Mult;
+
+				m_pPlayer->AccData.Exp += Exp;
+				m_pPlayer->AccData.Money += Money;
+
+				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
 			}
 		}
+
 		else if(IndexShit != ZONE_STOOL && IndexShit != ZONE_STOOL1 && m_pPlayer->m_ActiveChair)
 		{
 			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 106, 20, -1);
