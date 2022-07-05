@@ -16,7 +16,6 @@
 #include <game/server/entities/loltext.h>
 
 #include "components/box.h"
-#include "components/craft.h"
 
 #undef GetClassName
 
@@ -2131,6 +2130,9 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					int SelectItem = m_apPlayers[ClientID]->m_SelectItem;
 
 					int Get = chartoint(pReason, 100000);
+					if (SelectItem == RANDOMCRAFTITEM || SelectItem == EVENTBOX || SelectItem == FARMBOX ||
+						SelectItem == RESETINGUPGRADE || SelectItem == RESETINGSKILL || SelectItem == VIPPACKAGE || SelectItem == BOSSBOX || SelectItem == BOSSBOX2 || SelectItem == BOSSBOX3 || SelectItem == PREMIUM_BOX)
+						Get = chartoint(pReason, 100000);
 
 					Server()->RemItem(ClientID, SelectItem, Get, USEDUSE);
 					m_apPlayers[ClientID]->m_SelectItem = -1;
@@ -2379,14 +2381,14 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					str_format(aBuf, sizeof(aBuf), "cra%d", i);
 					if(str_comp(aCmd, aBuf) == 0)
 					{
-						CreateItem(ClientID, i, chartoint(pReason, 1000));
+						CreateItem(ClientID, i, 1);
 						return;
 					}
 				}
 
 				// Кнопка забрать всё
 				if (str_comp(aCmd, "delallmail") == 0) {
-					//dbg_msg("mail", "deleted 20 messages");
+					dbg_msg("mail", "deleted 20 messages");
 
 					for (int i = 0; i < 20; i++)
 					{
@@ -2770,17 +2772,532 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 	if(!m_apPlayers[ClientID] || !m_apPlayers[ClientID]->GetCharacter())
 		return;
 
-	if (Count <= 0)
-		Count = 1;
-
 	if(m_apPlayers[ClientID]->m_LastChangeInfo && m_apPlayers[ClientID]->m_LastChangeInfo+Server()->TickSpeed()*3 > Server()->Tick())
 		return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("Please wait..."), NULL);
 
 	m_apPlayers[ClientID]->m_LastChangeInfo = Server()->Tick();
 
-	CCraft Craft(this, ItemID);
-	Craft.Build();
-	Craft.Craft(ClientID, Count);
+	switch(ItemID)
+	{
+		default: SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("Error in crafting"), NULL); break;
+		case RARERINGSLIME:
+		{
+			if(!Server()->GetItemCount(ClientID, RARESLIMEDIRT) || !Server()->GetItemCount(ClientID, FORMULAFORRING))
+				return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Formula Ring's, Slime Dirt", NULL);
+
+			Server()->RemItem(ClientID, RARESLIMEDIRT, Count, -1);
+			Server()->RemItem(ClientID, FORMULAFORRING, Count, -1);
+		} break;
+		case MODULEEMOTE:
+		{
+			if(!Server()->GetItemCount(ClientID, AHAPPY) || !Server()->GetItemCount(ClientID, AEVIL) ||
+				!Server()->GetItemCount(ClientID, ASUPRRISE) || !Server()->GetItemCount(ClientID, ABLINK) || !Server()->GetItemCount(ClientID, APAIN))
+				return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Module (happy, evil, surprise, blink, pain)", NULL);
+
+			Server()->RemItem(ClientID, AHAPPY, Count, -1);
+			Server()->RemItem(ClientID, AEVIL, Count, -1);
+			Server()->RemItem(ClientID, ASUPRRISE, Count, -1);
+			Server()->RemItem(ClientID, ABLINK, Count, -1);
+			Server()->RemItem(ClientID, APAIN, Count, -1);
+			Server()->RemItem(ClientID, APAIN, Count, -1);
+		} break;
+		case WEAPONPRESSED:
+		{
+			if(!Server()->GetItemCount(ClientID, IGUN) || !Server()->GetItemCount(ClientID, ISHOTGUN) ||
+				!Server()->GetItemCount(ClientID, IGRENADE) || !Server()->GetItemCount(ClientID, ILASER) || (Server()->GetItemCount(ClientID, PRESSEDPIECE) < 10))
+				return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Weapon's (gun, shotgun, grenade, laser and 10 pressed piece)", NULL);
+
+			Server()->RemItem(ClientID, IGUN, Count, -1);
+			Server()->RemItem(ClientID, ISHOTGUN, Count, -1);
+			Server()->RemItem(ClientID, IGRENADE, Count, -1);
+			Server()->RemItem(ClientID, ILASER, Count, -1);
+			Server()->RemItem(ClientID, PRESSEDPIECE, 10, -1);
+
+		} break;
+		case RINGBOOMER:
+		{
+			if(!Server()->GetItemCount(ClientID, FORMULAFORRING) || Server()->GetItemCount(ClientID, HEADBOOMER) < 100)
+				return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Formula Ring's, Body Boomer x100", NULL);
+
+			Server()->RemItem(ClientID, HEADBOOMER, 100, -1);
+			Server()->RemItem(ClientID, FORMULAFORRING, Count, -1);
+		} break;
+		case MODULESHOTGUNSLIME:
+		{
+			if(!Server()->GetItemCount(ClientID, FORMULAWEAPON) || !Server()->GetItemCount(ClientID, RINGBOOMER))
+				return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Formula Weapon's, Ring Boomer", NULL);
+
+			Server()->RemItem(ClientID, FORMULAWEAPON, Count, -1);
+			Server()->RemItem(ClientID, RINGBOOMER, Count, -1);
+		} break;
+		case EARRINGSKWAH:
+		{
+			if(!Server()->GetItemCount(ClientID, FORMULAEARRINGS) || Server()->GetItemCount(ClientID, FOOTKWAH) < 100)
+				return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Formula Earring's, Foot Kwah x100", NULL);
+
+			Server()->RemItem(ClientID, FORMULAEARRINGS, Count, -1);
+			Server()->RemItem(ClientID, FOOTKWAH, 100, -1);
+		} break;
+		case ZOMIBEBIGEYE:
+		{
+			if(Server()->GetItemCount(ClientID, ZOMBIEEYE) < 30)
+				return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Zombie Eyex30", NULL);
+
+			Server()->RemItem(ClientID, ZOMBIEEYE, 30, -1);
+		} break;
+		case SKELETSSBONE:
+		{
+			if(Server()->GetItemCount(ClientID, SKELETSBONE) < 30)
+				return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Skelet Bonex30", NULL);
+
+			Server()->RemItem(ClientID, SKELETSBONE, 30, -1);
+		} break;
+		case CUSTOMSKIN:
+		{
+			if(Server()->GetItemCount(ClientID, SKELETSSBONE) < 30 || Server()->GetItemCount(ClientID, ZOMIBEBIGEYE) < 30)
+				return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Skelet Fortified Bonex30, Big Zombie Eyex30", NULL);
+
+			Server()->RemItem(ClientID, SKELETSSBONE, 30, -1);
+			Server()->RemItem(ClientID, ZOMIBEBIGEYE, 30, -1);
+		} break;
+		case ENDEXPLOSION:
+		{
+			if(Server()->GetItemCount(ClientID, FORMULAWEAPON) < 25)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Formula Weaponx25", NULL);
+				return;
+			}
+
+			if (!Server()->GetItemCount(ClientID, BIGCRAFT))
+				GiveItem(ClientID, BIGCRAFT, 1);
+
+			Server()->RemItem(ClientID, FORMULAWEAPON, 25, -1);
+		} break;
+		case SHEALSUMMER:
+		{
+			if(Server()->GetItemCount(ClientID, ESUMMER) < 20)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Sun Rayx20", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, ESUMMER, 20, -1);
+			if(rand()%100 < 96)
+			{
+				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} crafted item not succeses {str:item}x{int:coun}"), "name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count ,NULL);
+				return;
+			}
+			if(!Server()->GetItemCount(ClientID, TITLESUMMER))
+				GiveItem(ClientID, TITLESUMMER, 1);
+
+		} break;
+		case JUMPIMPULS:
+		{
+			if(Server()->GetItemCount(ClientID, TOMATE) < 60 || Server()->GetItemCount(ClientID, POTATO) < 60 || Server()->GetItemCount(ClientID, CARROT) < 60)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "(Potate, Tomate, Carrot)x60", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, TOMATE, 30, -1);
+			Server()->RemItem(ClientID, POTATO, 30, -1);
+			Server()->RemItem(ClientID, CARROT, 30, -1);
+		} break;
+
+		case COOPERPIX:
+		{
+			if(Server()->GetItemCount(ClientID, WOOD) < 30 || Server()->GetItemCount(ClientID, COOPERORE) < 60)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Woodx30, Cooper Orex60", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, WOOD, 30, -1);
+			Server()->RemItem(ClientID, COOPERORE, 60, -1);
+		} break;
+		case IRONPIX:
+		{
+			if(Server()->GetItemCount(ClientID, WOOD) < 40 || Server()->GetItemCount(ClientID, IRONORE) < 60)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Woodx40, Iron Orex60", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, WOOD, 40, -1);
+			Server()->RemItem(ClientID, IRONORE, 60, -1);
+		} break;
+		case GOLDPIX:
+		{
+			if(Server()->GetItemCount(ClientID, WOOD) < 50 || Server()->GetItemCount(ClientID, GOLDORE) < 80)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Woodx50, Gold Orex80", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, WOOD, 50, -1);
+			Server()->RemItem(ClientID, GOLDORE, 80, -1);
+		} break;
+		case DIAMONDPIX:
+		{
+			if(Server()->GetItemCount(ClientID, WOOD) < 50 || Server()->GetItemCount(ClientID, DIAMONDORE) < 100)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Woodx50, Diamond Orex100", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, WOOD, 50, -1);
+			Server()->RemItem(ClientID, DIAMONDORE, 100, -1);
+		} break;
+		case FORMULAEARRINGS:
+		{
+			if(Server()->GetItemCount(ClientID, IRONORE) < 100 || Server()->GetItemCount(ClientID, COOPERORE) < 100)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "(Iron Ore, Copper Ore)x100", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, COOPERORE, 100, -1);
+			Server()->RemItem(ClientID, IRONORE, 100, -1);
+		} break;
+		case FORMULAFORRING:
+		{
+			if(Server()->GetItemCount(ClientID, IRONORE) < 125 || Server()->GetItemCount(ClientID, COOPERORE) < 125)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "(Iron Ore, Copper Ore)x125", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, COOPERORE, 125, -1);
+			Server()->RemItem(ClientID, IRONORE, 125, -1);
+		} break;
+		case FORMULAWEAPON:
+		{
+			if(Server()->GetItemCount(ClientID, IRONORE) < 150 || Server()->GetItemCount(ClientID, COOPERORE) < 150)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "(Iron Ore, Copper Ore)x150", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, COOPERORE, 150, -1);
+			Server()->RemItem(ClientID, IRONORE, 150, -1);
+		} break;
+		case LEATHERBODY:
+		{
+			if(Server()->GetItemCount(ClientID, LEATHER) < 50 || Server()->GetItemCount(ClientID, WOOD) < 150)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Leatherx50, Woodx150", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, LEATHER, 50, -1);
+			Server()->RemItem(ClientID, WOOD, 150, -1);
+		} break;
+		case LEATHERFEET:
+		{
+			if(Server()->GetItemCount(ClientID, LEATHER) < 40 || Server()->GetItemCount(ClientID, WOOD) < 120)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Leatherx40, Woodx120", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, LEATHER, 40, -1);
+			Server()->RemItem(ClientID, WOOD, 120, -1);
+		} break;
+		case COOPERBODY:
+		{
+			if(Server()->GetItemCount(ClientID, COOPERORE) < 500 || Server()->GetItemCount(ClientID, WOOD) < 150)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Cooper Orex500, Woodx150", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, COOPERORE, 500, -1);
+			Server()->RemItem(ClientID, WOOD, 150, -1);
+		} break;
+		case COOPERFEET:
+		{
+			if(Server()->GetItemCount(ClientID, COOPERORE) < 400 || Server()->GetItemCount(ClientID, WOOD) < 120)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Cooper Orex400, Woodx120", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, COOPERORE, 400, -1);
+			Server()->RemItem(ClientID, WOOD, 120, -1);
+		} break;
+		case IRONBODY:
+		{
+			if(Server()->GetItemCount(ClientID, IRONORE) < 500 || Server()->GetItemCount(ClientID, WOOD) < 150)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Iron Orex500, Woodx150", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, IRONORE, 500, -1);
+			Server()->RemItem(ClientID, WOOD, 150, -1);
+		} break;
+		case IRONFEET:
+		{
+			if(Server()->GetItemCount(ClientID, IRONORE) < 400 || Server()->GetItemCount(ClientID, WOOD) < 120)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Iron Orex400, Woodx120", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, IRONORE, 400, -1);
+			Server()->RemItem(ClientID, WOOD, 120, -1);
+		} break;
+		case GOLDBODY:
+		{
+			if(Server()->GetItemCount(ClientID, GOLDORE) < 500 || Server()->GetItemCount(ClientID, WOOD) < 150)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Gold Orex500, Woodx150", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, GOLDORE, 500, -1);
+			Server()->RemItem(ClientID, WOOD, 150, -1);
+		} break;
+		case GOLDFEET:
+		{
+			if(Server()->GetItemCount(ClientID, GOLDORE) < 400 || Server()->GetItemCount(ClientID, WOOD) < 120)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Gold Orex400, Woodx120", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, GOLDORE, 400, -1);
+			Server()->RemItem(ClientID, WOOD, 120, -1);
+		} break;
+		case DIAMONDBODY:
+		{
+			if(Server()->GetItemCount(ClientID, DIAMONDORE) < 500 || Server()->GetItemCount(ClientID, WOOD) < 150)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Diamond Orex500, Woodx150", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, DIAMONDORE, 500, -1);
+			Server()->RemItem(ClientID, WOOD, 150, -1);
+		} break;
+		case DIAMONDFEET:
+		{
+			if(Server()->GetItemCount(ClientID, DIAMONDORE) < 400 || Server()->GetItemCount(ClientID, WOOD) < 120)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Diamond Orex400, Woodx120", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, DIAMONDORE, 400, -1);
+			Server()->RemItem(ClientID, WOOD, 120, -1);
+		} break;
+		case DRAGONBODY:
+		{
+			if(Server()->GetItemCount(ClientID, DRAGONORE) < 500 || Server()->GetItemCount(ClientID, WOOD) < 150)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Dragon Orex500, Woodx150", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, DRAGONORE, 500, -1);
+			Server()->RemItem(ClientID, WOOD, 150, -1);
+		} break;
+		case DRAGONFEET:
+		{
+			if(Server()->GetItemCount(ClientID, DRAGONORE) < 400 || Server()->GetItemCount(ClientID, WOOD) < 120)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Dragon Orex400, Woodx120", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, DRAGONORE, 400, -1);
+			Server()->RemItem(ClientID, WOOD, 120, -1);
+		} break;
+		case STCLASIC:
+		{
+			if(Server()->GetItemCount(ClientID, COOPERORE) < 100 || Server()->GetItemCount(ClientID, IRONORE) < 10)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Cooper Orex100, Iron Orex10", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, COOPERORE, 100, -1);
+			Server()->RemItem(ClientID, IRONORE, 10, -1);
+		} break;
+		case MITHRIL_BODY:
+		{
+			if (Server()->GetItemCount(ClientID, MITHRILORE) < 500 || Server()->GetItemCount(ClientID, WOOD) < 200 || Server()->GetItemCount(ClientID, DRAGONBODY) < 1)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Mithril Orex500, Woodx200, Dragon Bodyx1", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, MITHRILORE, 500, -1);
+			Server()->RemItem(ClientID, WOOD, 150, -1);
+			Server()->RemItem(ClientID, DRAGONBODY, 1, -1);
+		} break;
+		case MITHRIL_FEET:
+		{
+			if (Server()->GetItemCount(ClientID, MITHRILORE) < 400 || Server()->GetItemCount(ClientID, WOOD) < 150 || Server()->GetItemCount(ClientID, DRAGONFEET) < 1)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Mithril Orex400, Woodx150, Dragon Feetx1", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, MITHRILORE, 400, -1);
+			Server()->RemItem(ClientID, WOOD, 120, -1);
+			Server()->RemItem(ClientID, DRAGONFEET, 1, -1);
+		} break;
+		case ORIHALCIUM_BODY:
+		{
+			if (Server()->GetItemCount(ClientID, ORIHALCIUMORE) < 500 || Server()->GetItemCount(ClientID, WOOD) < 200 || Server()->GetItemCount(ClientID, MITHRIL_BODY) < 1 || Server()->GetItemCount(ClientID, SLIMESOUL) < 10)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Orihalcium Orex500, Woodx200, Slime Soulx10, Mithril Bodyx1", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, ORIHALCIUMORE, 500, -1);
+			Server()->RemItem(ClientID, WOOD, 150, -1);
+			Server()->RemItem(ClientID, MITHRIL_BODY, 1, -1);
+			Server()->RemItem(ClientID, SLIMESOUL, 10, -1);
+		} break;
+		case ORIHALCIUM_FEET:
+		{
+			if (Server()->GetItemCount(ClientID, ORIHALCIUMORE) < 400 || Server()->GetItemCount(ClientID, WOOD) < 150 || Server()->GetItemCount(ClientID, MITHRIL_FEET) < 1 || Server()->GetItemCount(ClientID, SLIMESOUL) < 5)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Orihalcium Orex400, Woodx150, Slime Soulx5, Mithril Feetx1", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, ORIHALCIUMORE, 400, -1);
+			Server()->RemItem(ClientID, WOOD, 120, -1);
+			Server()->RemItem(ClientID, MITHRIL_FEET, 1, -1);
+			Server()->RemItem(ClientID, SLIMESOUL, 5, -1);
+		} break;
+		case TITANIUM_BODY:
+		{
+			if (Server()->GetItemCount(ClientID, TITANIUMORE) < 500 || Server()->GetItemCount(ClientID, WOOD) < 200 || Server()->GetItemCount(ClientID, ORIHALCIUM_BODY) < 1)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Titanium Orex500, Woodx200, Orihalcium Bodyx1", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, TITANIUMORE, 500, -1);
+			Server()->RemItem(ClientID, WOOD, 150, -1);
+			Server()->RemItem(ClientID, ORIHALCIUM_BODY, 1, -1);
+		} break;
+		case TITANIUM_FEET:
+		{
+			if (Server()->GetItemCount(ClientID, TITANIUMORE) < 400 || Server()->GetItemCount(ClientID, WOOD) < 150 || Server()->GetItemCount(ClientID, ORIHALCIUM_FEET) < 1)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Titanium Orex400, Woodx150, Orihalcium Feetx1", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, TITANIUMORE, 400, -1);
+			Server()->RemItem(ClientID, WOOD, 120, -1);
+			Server()->RemItem(ClientID, ORIHALCIUM_FEET, 1, -1);
+		} break;
+		case ASTRALIUM_BODY:
+		{
+			if (Server()->GetItemCount(ClientID, ASTRALIUMORE) < 500 || Server()->GetItemCount(ClientID, WOOD) < 200 || Server()->GetItemCount(ClientID, TITANIUM_BODY) < 1 || Server()->GetItemCount(ClientID, SLIMESOUL) < 30)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Astralium Orex500, Woodx200, Slime Soulx30, Titanium Bodyx1", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, ASTRALIUMORE, 500, -1);
+			Server()->RemItem(ClientID, WOOD, 150, -1);
+			Server()->RemItem(ClientID, TITANIUM_BODY, 1, -1);
+			Server()->RemItem(ClientID, SLIMESOUL, 30, -1);
+		} break;
+		case ASTRALIUM_FEET:
+		{
+			if (Server()->GetItemCount(ClientID, ASTRALIUMORE) < 400 || Server()->GetItemCount(ClientID, WOOD) < 150 || Server()->GetItemCount(ClientID, TITANIUM_FEET) < 1 || Server()->GetItemCount(ClientID, SLIMESOUL) < 20)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Astralium Orex400, Woodx150, Slime Soulx20 Titanium Feetx1", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, ASTRALIUMORE, 400, -1);
+			Server()->RemItem(ClientID, WOOD, 120, -1);
+			Server()->RemItem(ClientID, TITANIUM_FEET, 20, -1);
+			Server()->RemItem(ClientID, SLIMESOUL, 20, -1);
+		} break;
+		case PET_MITHRIL_GOLEM:
+		{
+			if (Server()->GetItemCount(ClientID, MITHRILORE) < 900 || Server()->GetItemCount(ClientID, COOPERORE) < 15000)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Mithril Ore x900, Copper Ore x15000", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, MITHRILORE, 400, -1);
+			Server()->RemItem(ClientID, COOPERORE, 10000, -1);
+		} break;
+		case PET_CLEVER:
+		{
+			if (Server()->GetItemCount(ClientID, GOLDORE) < 500 || Server()->GetItemCount(ClientID, DIAMONDORE) < 500 || Server()->GetItemCount(ClientID, COOPERORE) < 1000)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Gold Ore x500, Diamond Ore x500, Copper Ore x1000", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, GOLDORE, 100, -1);
+			Server()->RemItem(ClientID, DIAMONDORE, 100, -1);
+			Server()->RemItem(ClientID, COOPERORE, 500, -1);
+		} break;
+		case PEX_WINGS:
+		{
+			if (Server()->GetItemCount(ClientID, PIXI_DUST) < 800 || Server()->GetItemCount(ClientID, GOLDORE) < 400 || Server()->GetItemCount(ClientID, DIAMONDORE) < 300)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("For crafted need {str:need}"), "need", "Pixi Dust x800, Gold Ore x400, Diamond Ore x300", NULL);
+				return;
+			}
+			Server()->RemItem(ClientID, PIXI_DUST, 800, -1);
+			Server()->RemItem(ClientID, GOLDORE, 400, -1);
+			Server()->RemItem(ClientID, DIAMONDORE, 300, -1);
+		}
+	}
+	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} crafted item {str:item} x{int:coun}"), "name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count ,NULL);
+	SendMail(ClientID, "Hello, succesful craft item!", ItemID, Count);
+	Server()->GiveItem(ClientID, CRAFT_XP, 1);
+
+	// Achievment
+	if ((Server()->GetItemCount(ClientID, CRAFT_XP) >= 7) && (Server()->GetItemCount(ClientID, CRAFTMASTER_1) < 1)) {
+		Server()->GiveItem(ClientID, CRAFTMASTER_1, 1);
+		Server()->GiveItem(ClientID, COOPERORE, 100);
+
+		SendChatTarget_Localization(ClientID, 0, "Achievment unlocked!");
+		SendChatTarget(ClientID, "Your reward:");
+		SendChatTarget(ClientID, "Copper ore x100");
+	}
+	if ((Server()->GetItemCount(ClientID, CRAFT_XP) >= 15) && (Server()->GetItemCount(ClientID, CRAFTMASTER_2) < 1)) {
+		Server()->GiveItem(ClientID, CRAFTMASTER_2, 1);
+		Server()->GiveItem(ClientID, COOPERORE, 300);
+
+		SendChatTarget_Localization(ClientID, 0, "Achievment unlocked!");
+		SendChatTarget(ClientID, "Your reward:");
+		SendChatTarget(ClientID, "Copper ore x300");
+	}
+	if ((Server()->GetItemCount(ClientID, CRAFT_XP) >= 23) && (Server()->GetItemCount(ClientID, CRAFTMASTER_3) < 1)) {
+		Server()->GiveItem(ClientID, CRAFTMASTER_3, 1);
+		Server()->GiveItem(ClientID, IRONORE, 200);
+
+		SendChatTarget_Localization(ClientID, 0, "Achievment unlocked!");
+		SendChatTarget(ClientID, "Your reward:");
+		SendChatTarget(ClientID, "Iron ore x200");
+	}
+	if ((Server()->GetItemCount(ClientID, CRAFT_XP) >= 30) && (Server()->GetItemCount(ClientID, CRAFTMASTER_4) < 1)) {
+		Server()->GiveItem(ClientID, CRAFTMASTER_4, 1);
+		Server()->GiveItem(ClientID, IRONORE, 300);
+
+		SendChatTarget_Localization(ClientID, 0, "Achievment unlocked!");
+		SendChatTarget(ClientID, "Your reward:");
+		SendChatTarget(ClientID, "Iron ore x300");
+	}
+	if ((Server()->GetItemCount(ClientID, CRAFT_XP) >= 40) && (Server()->GetItemCount(ClientID, CRAFTMASTER_5) < 1)) {
+		Server()->GiveItem(ClientID, CRAFTMASTER_5, 1);
+		Server()->GiveItem(ClientID, IRONORE, 500);
+
+		SendChatTarget_Localization(ClientID, 0, "Achievment unlocked!");
+		SendChatTarget(ClientID, "Your reward:");
+		SendChatTarget(ClientID, "Iron ore x500");
+	}
+	if ((Server()->GetItemCount(ClientID, CRAFT_XP) >= 50) && (Server()->GetItemCount(ClientID, CRAFTMASTER_6) < 1)) {
+		Server()->GiveItem(ClientID, CRAFTMASTER_6, 1);
+		Server()->GiveItem(ClientID, GOLDORE, 400);
+
+		SendChatTarget_Localization(ClientID, 0, "Achievment unlocked!");
+		SendChatTarget(ClientID, "Your reward:");
+		SendChatTarget(ClientID, "Gold ore x400");
+	}
+	if ((Server()->GetItemCount(ClientID, CRAFT_XP) >= 60) && (Server()->GetItemCount(ClientID, CRAFTMASTER_7) < 1)) {
+		Server()->GiveItem(ClientID, CRAFTMASTER_7, 1);
+		Server()->GiveItem(ClientID, GOLDORE, 500);
+
+		SendChatTarget_Localization(ClientID, 0, "Achievment unlocked!");
+		SendChatTarget(ClientID, "Your reward:");
+		SendChatTarget(ClientID, "Gold ore x500");
+	}
+
+	if (m_apPlayers[ClientID]->m_AcceptedDailyQuestID)
+	{
+		if (m_CurrentDailyQuest1 == QUEST_CRAFT5ITEMS)
+			m_apPlayers[ClientID]->m_CompleteDailyStep1 += 1;
+		if (m_CurrentDailyQuest2 == QUEST_CRAFT5ITEMS)
+			m_apPlayers[ClientID]->m_CompleteDailyStep2 += 1;
+		if (m_CurrentDailyQuest3 == QUEST_CRAFT5ITEMS)
+			m_apPlayers[ClientID]->m_CompleteDailyStep3 += 1;
+	}
 }
 
 void CGameContext::BuySkill(int ClientID, int Price, int ItemID)
@@ -4714,43 +5231,52 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 				switch (ItemID)
 				{
 				case RANDOMCRAFTITEM:
-					box.Add(FOOTKWAH);
-					box.Add(HEADBOOMER);
-					box.Add(PRESSEDPIECE);
-
-					box.AddRare(FORMULAEARRINGS, 6);
-					box.AddRare(FORMULAFORRING, 6);
-					box.AddRare(FORMULAWEAPON, 6);
-					box.AddRare(RARESLIMEDIRT, 6);
-
+					if (rand() % 100 > 6) // 7%
+					{
+						box.Add(FOOTKWAH);
+						box.Add(HEADBOOMER);
+						box.Add(PRESSEDPIECE);
+					}
+					else {
+						box.Add(FORMULAEARRINGS);
+						box.Add(FORMULAFORRING);
+						box.Add(FORMULAWEAPON);
+						box.Add(RARESLIMEDIRT);
+					}
 					box.Open(ClientID, Count);
 					break;
 				case EVENTBOX:
-					box.Add(MONEYBAG);
-
-					box.AddRare(RAREEVENTHAMMER, 5);
-
+					if (rand() % 100 > 4) // 5%
+						box.Add(MONEYBAG);
+					else
+						box.Add(RAREEVENTHAMMER);
 					box.Open(ClientID, Count);
 					break;
 				case BOSSBOX:
-					box.Add(MONEYBAG, 50);
-					box.Add(FARMBOX, 5);
-					box.Add(RANDOMCRAFTITEM);
-
-					box.AddRare(SLIMENECKLACKE, 5);
-					box.AddRare(SLIMESPHERE, 5);
-
+					if (rand() % 100 > 6) // 7%
+					{
+						box.Add(MONEYBAG, 50);
+						box.Add(FARMBOX, 5);
+						box.Add(RANDOMCRAFTITEM);
+					}
+					else {
+						box.Add(SLIMENECKLACKE);
+						box.Add(SLIMESPHERE);
+					}
 					box.Open(ClientID, Count);
 					break;
 				case FARMBOX:
-					box.Add(FARMLEVEL, 5);
-					box.Add(MONEYBAG, 2);
-					box.Add(EVENTBOX, 5);
-
-					box.AddRare(JUMPIMPULS, 7);
-					box.AddRare(FREEAZER, 7);
-					box.AddRare(RARESLIMEDIRT, 7);
-
+					if (rand() % 100 > 7) // 8%
+					{
+						box.Add(FARMLEVEL, 5);
+						box.Add(MONEYBAG, 2);
+						box.Add(EVENTBOX, 5);
+					}
+					else {
+						box.Add(JUMPIMPULS);
+						box.Add(FREEAZER);
+						box.Add(RARESLIMEDIRT);
+					}
 					box.Open(ClientID, Count);
 					break;
 				}
