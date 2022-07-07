@@ -47,7 +47,8 @@ void CGameContext::Construct(int Resetting)
 
 	m_pAdmin = new CAdmin(this);
 	m_pAuction = new CAuction(this);
-	m_pDiscord = new CDiscord(this);
+//	if (g_Config.m_SvDiscordBridge)
+//		m_pDiscord = new CDiscord(this);
 
 	// боссецкий чистка
 	m_BossStart = false;
@@ -85,7 +86,7 @@ CGameContext::~CGameContext()
 
 	delete m_pAdmin;
 	delete m_pAuction;
-	delete m_pDiscord;
+//	delete m_pDiscord;
 }
 
 void CGameContext::ClearVotes(int ClientID)
@@ -767,7 +768,7 @@ void CGameContext::SendChat(int ChatterClientID, int Team, const char *pText)
 		Msg.m_pMessage = pText;
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 
-		m_pDiscord->OnChat(Server()->ClientName(ChatterClientID), pText);
+//		m_pDiscord->OnChat(Server()->ClientName(ChatterClientID), pText);
 	}
 	else
 	{
@@ -1205,7 +1206,7 @@ void CGameContext::OnClientEnter(int ClientID)
 	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} entered and joined the spectators"), "PlayerName", Server()->ClientName(ClientID), NULL);
 	SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("Welcome! Please login or create new account /cmdlist"), NULL);
 
-	m_pDiscord->OnLog(LOGTYPE_ENTER, ClientID);
+//	m_pDiscord->OnLog(LOGTYPE_ENTER, ClientID);
 }
 
 void CGameContext::OnClientConnected(int ClientID)
@@ -1244,7 +1245,7 @@ void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 {
 	//UpdateStats(ClientID);
 
-	m_pDiscord->OnLog(LOGTYPE_LEFT, ClientID);
+//	m_pDiscord->OnLog(LOGTYPE_LEFT, ClientID);
 
 	m_apPlayers[ClientID]->OnDisconnect(pReason);
 	delete m_apPlayers[ClientID];
@@ -2524,6 +2525,10 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 		{
 			CNetMsg_Cl_Emoticon *pMsg = (CNetMsg_Cl_Emoticon *)pRawMsg;
 			SendEmoticon(ClientID, pMsg->m_Emoticon);
+
+			if (Server()->GetItemCount(ClientID, MODULEEMOTE))
+				if (m_apPlayers[ClientID]->GetCharacter())
+					m_apPlayers[ClientID]->GetCharacter()->SetEmote(pMsg->m_Emoticon);
 
 			if(pPlayer->GetCharacter() && pMsg->m_Emoticon >= 2)
 				pPlayer->GetCharacter()->ParseEmoticionButton(ClientID, pMsg->m_Emoticon);
@@ -4414,9 +4419,7 @@ void CGameContext::UpdateBotInfo(int ClientID)
 	}
 	else if(BotType == BOT_BOSSSLIME)
 	{
-		//if(!BotSubType)	str_copy(NameSkin, "twinbop", sizeof(NameSkin));
-		//else if(BotSubType == 1) str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
-		//else if(BotSubType == 2) str_copy(NameSkin, "PaladiN", sizeof(NameSkin));
+		str_copy(NameSkin, "twinbop", sizeof(NameSkin));
 	}
 	else if(BotType == BOT_NPCW)
 	{

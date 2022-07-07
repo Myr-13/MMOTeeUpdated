@@ -22,7 +22,7 @@
 
 #include "components/admin.h"
 #include "components/auction.h"
-#include "components/discord.h"
+//#include "components/discord.h"
 
 #ifdef _MSC_VER
 typedef __int32 int32_t;
@@ -144,7 +144,7 @@ class CGameContext : public IGameServer
 	bool m_Resetting;
 
 public:
-	class CDiscord* m_pDiscord;
+//	class CDiscord* m_pDiscord;
 
 	IServer *Server() const { return m_pServer; }
 	IStorage2 *Storage() const { return m_pStorage; }

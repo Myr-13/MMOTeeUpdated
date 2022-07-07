@@ -534,10 +534,13 @@ void CCharacter::FireWeapon()
 					continue;
 
 				// set his velocity to fast upward (for now)
-				if(length(pTarget->m_Pos-ProjStartPos) > 0.0f)
-					GameServer()->CreateHammerHit(pTarget->m_Pos-normalize(pTarget->m_Pos-ProjStartPos)*m_ProximityRadius*0.5f);
-				else
-					GameServer()->CreateHammerHit(ProjStartPos);
+				if (!m_pPlayer->IsBot())
+				{
+					if (length(pTarget->m_Pos - ProjStartPos) > 0.0f)
+						GameServer()->CreateHammerHit(pTarget->m_Pos - normalize(pTarget->m_Pos - ProjStartPos) * m_ProximityRadius * 0.5f);
+					else
+						GameServer()->CreateHammerHit(ProjStartPos);
+				}
 
 				vec2 Dir;
 				if (length(pTarget->m_Pos - m_Pos) > 0.0f)
@@ -1633,7 +1636,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
 
 	// logger
-	GameServer()->m_pDiscord->OnLog(LOGTYPE_KILL, Killer, m_pPlayer->GetCID());
+	//GameServer()->m_pDiscord->OnLog(LOGTYPE_KILL, Killer, m_pPlayer->GetCID());
 
 	// вся хуйня когда мрут боссы и игроки
 	if(GameServer()->m_BossStartTick < 10 && GameServer()->m_BossStart)
@@ -1672,9 +1675,10 @@ void CCharacter::Die(int Killer, int Weapon)
 	m_Alive = false;
 	GameServer()->m_World.RemoveEntity(this);
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
-	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+	if (!m_pPlayer->IsBot())
+		GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
 
-	if(Killer >=0 && Killer < MAX_CLIENTS)
+	if(Killer >= 0 && Killer < MAX_CLIENTS)
 	{
 		CPlayer* pKillerPlayer = GameServer()->m_apPlayers[Killer];
 		pKillerPlayer->AccData.Kill++;
@@ -1871,15 +1875,15 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 	}
 	else Dmg = 1;
 
-	if(Server()->Tick() < m_DamageTakenTick+25)
-	{
-		GameServer()->CreateDamageInd(m_Pos, m_DamageTaken*0.25f, Dmg/10);
-	}
-	else
-	{
-		m_DamageTaken = 0;
-		GameServer()->CreateDamageInd(m_Pos, 0, Dmg/10);
-	}
+	//if(Server()->Tick() < m_DamageTakenTick+25)
+	//{
+	//	GameServer()->CreateDamageInd(m_Pos, m_DamageTaken*0.25f, Dmg/10);
+	//}
+	//else
+	//{
+	//	m_DamageTaken = 0;
+	//	GameServer()->CreateDamageInd(m_Pos, 0, Dmg/10);
+	//}
 
 	if(Dmg)
 	{
@@ -2856,4 +2860,29 @@ void CCharacter::DeleteAllPickup()
 		if(pPick->m_Owner == m_pPlayer->GetCID())
 			pPick->Reset();
 	}
+}
+
+void CCharacter::SetEmote(int Emote)
+{
+	switch (Emote)
+	{
+	case EMOTICON_OOP: m_EmoteType = EMOTE_PAIN; break;
+	case EMOTICON_EXCLAMATION: m_EmoteType = EMOTE_SURPRISE; break;
+	case EMOTICON_HEARTS: m_EmoteType = EMOTE_HAPPY; break;
+	case EMOTICON_DROP: m_EmoteType = EMOTE_BLINK; break;
+	case EMOTICON_DOTDOT: m_EmoteType = EMOTE_BLINK; break;
+	case EMOTICON_MUSIC: m_EmoteType = EMOTE_HAPPY; break;
+	case EMOTICON_SORRY: m_EmoteType = EMOTE_PAIN; break;
+	case EMOTICON_GHOST: m_EmoteType = EMOTE_SURPRISE; break;
+	case EMOTICON_SUSHI: m_EmoteType = EMOTE_PAIN; break;
+	case EMOTICON_SPLATTEE: m_EmoteType = EMOTE_ANGRY; break;
+	case EMOTICON_DEVILTEE: m_EmoteType = EMOTE_ANGRY; break;
+	case EMOTICON_ZOMG: m_EmoteType = EMOTE_ANGRY; break;
+	case EMOTICON_ZZZ: m_EmoteType = EMOTE_BLINK; break;
+	case EMOTICON_WTF: m_EmoteType = EMOTE_SURPRISE; break;
+	case EMOTICON_EYES: m_EmoteType = EMOTE_HAPPY; break;
+	case EMOTICON_QUESTION: m_EmoteType = EMOTE_SURPRISE; break;
+	}
+
+	m_EmoteStop = Server()->Tick() + (Server()->TickSpeed() * 1.75f);
 }

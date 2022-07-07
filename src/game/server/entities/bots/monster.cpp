@@ -170,7 +170,6 @@ void CMonster::TickBotAI()
             else if (Action == 2)
                 m_BotDir = 0;
 
-            GameServer()->SendEmoticon(m_pPlayer->GetCID(), 2+rand()%2);	
             m_BotTimeLastOption = Server()->Tick();
         }
 	}

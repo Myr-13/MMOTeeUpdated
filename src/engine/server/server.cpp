@@ -596,7 +596,7 @@ int CServer::SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System)
 			for(i = 0; i < MAX_PLAYERS; i++)
 				if(m_aClients[i].m_State == CClient::STATE_INGAME)
 				{
-					Packet.m_ClientID = i % 64;
+					Packet.m_ClientID = i;
 					m_NetServer.Send(&Packet);
 				}
 		}

@@ -77,6 +77,11 @@ void CAuction::OnMenuAction(int ClientID, const char* pMsg, const char* pReason)
 			return;
 		if (m_aClientItems[ClientID].m_Seconds <= 0)
 			return;
+		if (Server()->GetItemCount(ClientID, m_aClientItems[ClientID].m_ItemType) < m_aClientItems[ClientID].m_ItemCount)
+		{
+			GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, "You dont have enough item count");
+			return;
+		}
 
 		int Pay = m_aClientItems[ClientID].m_Cost * 0.0625f + m_aClientItems[ClientID].m_Seconds / 1000;
 		if (GameServer()->m_apPlayers[ClientID]->AccData.Gold < Pay)
@@ -160,7 +165,7 @@ void CAuction::BuildVoteMenu(int ClientID)
 			GameServer()->AddVote_Localization(ClientID, "null", "Cost: {int:count}", "count", &m_aAuctionItems[i].m_Cost);
 			char aBuf[64];
 			str_format(aBuf, sizeof(aBuf), "auc_buy_%d", i);
-			GameServer()->AddVote_Localization(ClientID, aBuf, "Buy");
+			GameServer()->AddVote_Localization(ClientID, aBuf, "> Buy");
 			GameServer()->AddVote("", "null", ClientID);
 		}
 
@@ -178,7 +183,7 @@ void CAuction::BuildVoteMenu(int ClientID)
 		GameServer()->AddVote_Localization(ClientID, "auc_ch_time", "Time: {int:time} sec", "time", &m_aClientItems[ClientID].m_Seconds);
 		GameServer()->AddVote("", "null", ClientID);
 		GameServer()->AddVote_Localization(ClientID, "null", "You will pay: {int:cost} gold", "cost", &Pay);
-		GameServer()->AddVote_Localization(ClientID, "auc_place", "Place to auction");
+		GameServer()->AddVote_Localization(ClientID, "auc_place", "> Place to auction");
 	}
 
 	if (m_aClientMenu[ClientID] == AUCTIONMENU_ITEMS)

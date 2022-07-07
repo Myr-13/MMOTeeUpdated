@@ -1,7 +1,7 @@
 #ifndef GAME_SERVER_COMPONETNS_DISCORD_H
 #define GAME_SERVER_COMPONETNS_DISCORD_H
 
-#include <game/server/gamecontext.h>
+/*#include <game/server/gamecontext.h>
 #include <dpp/dpp.h>
 
 enum
@@ -31,6 +31,6 @@ public:
 	void OnChat(const char *pFrom, const char *pText);
 	void OnMessage(const dpp::message_create_t& event);
 	void OnLog(int LogType, int ClientID1 = -1, int ClientID2 = -1);
-};
+};*/
 
 #endif

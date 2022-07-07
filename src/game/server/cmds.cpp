@@ -472,7 +472,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 		return;
 	}
-	else if (!strncmp(Msg->m_pMessage, "/rainbow", 8) && ClientAuth)
+	else if (!strncmp(Msg->m_pMessage, "/rainbow", 8) && (ClientAuth || GameServer()->Server()->GetItemCount(ClientID, PREMIUM_GOVNO)))
 	{
 		int id = 0;
 		if (sscanf(Msg->m_pMessage, "/rainbow %d", &id) == 1)

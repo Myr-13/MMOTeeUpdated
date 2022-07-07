@@ -107,13 +107,15 @@ void CGameWorld::RemoveEntity(CEntity *pEnt)
 //
 void CGameWorld::Snap(int SnappingClient)
 {
-	for(int i = 0; i < NUM_ENTTYPES; i++)
-		for(CEntity *pEnt = m_apFirstEntityTypes[i]; pEnt; )
+	for (int i = 0; i < NUM_ENTTYPES; i++)
+	{
+		for (CEntity* pEnt = m_apFirstEntityTypes[i]; pEnt; )
 		{
 			m_pNextTraverseEntity = pEnt->m_pNextTypeEntity;
 			pEnt->Snap(SnappingClient);
 			pEnt = m_pNextTraverseEntity;
 		}
+	}
 }
 
 void CGameWorld::Reset()

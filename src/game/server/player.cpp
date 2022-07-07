@@ -517,7 +517,7 @@ void CPlayer::Tick()
 	{
 		// Мана сучка ебал вас геи ебанные в рт вы шлюхи
 		if (m_InfMana)
-			m_Mana = GetNeedMana();
+			m_Mana = 100;
 
 		if (m_Mana < GetNeedMana())
 		{
@@ -927,7 +927,7 @@ void CPlayer::Snap(int SnappingClient)
 #endif
 	if(!Server()->ClientIngame(m_ClientID))
 		return;
-	if (m_pCharacter)
+	if (m_pCharacter && IsBot())
 		if (m_pCharacter->NetworkClipped(SnappingClient))
 			return;
 

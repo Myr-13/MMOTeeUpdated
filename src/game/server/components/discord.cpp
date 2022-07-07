@@ -1,4 +1,4 @@
-#include "discord.h"
+/*#include "discord.h"
 
 #include <fstream>
 
@@ -111,3 +111,4 @@ void CDiscord::OnMessage(const dpp::message_create_t& event)
 		m_Logger ^= 1;
 	}
 }
+*/

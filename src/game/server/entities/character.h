@@ -241,6 +241,7 @@ public:
 	void PressF3orF4(int ClientID, int Vote);
 	void CreatePickupDraw(int Num, int Type, int SubType, bool Changing);
 	void DeleteAllPickup();
+	void SetEmote(int Emote);
 	vec2 LockBotPos;
 /* INFECTION MODIFICATION END *****************************************/
 };
