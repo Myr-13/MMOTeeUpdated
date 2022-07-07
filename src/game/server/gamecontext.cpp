@@ -4200,14 +4200,19 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	int CurID = 0;
 	if(!g_Config.m_SvCityStart)
 	{
-		for (int o=0; o<12; o++,CurID++)
+		for (int o = 0; o < 12; o++, CurID++)
 			CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart);
-		for (int o=0; o<11; o++,CurID++)
+		for (int o = 0; o < 11; o++, CurID++)
 			CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart);
-		for (int o=0; o<10; o++,CurID++)
+		for (int o = 0; o < 10; o++, CurID++)
 			CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart);
+
+		for (int o = 0; o < 10; o++, CurID++)
+			CreateBot(CurID, BOT_L4MONSTER, g_Config.m_SvCityStart);
+		for (int o = 0; o < 10; o++, CurID++)
+			CreateBot(CurID, BOT_L5MONSTER, g_Config.m_SvCityStart);
 	}
-	else if(g_Config.m_SvCityStart == 1)
+	/*else if (g_Config.m_SvCityStart == 1)
 	{
 		for (int o=0; o<11; o++,CurID++)
 			CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart);
@@ -4224,7 +4229,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 			CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart);
 		for (int o=0; o<12; o++,CurID++)
 			CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart);
-	}
+	}*/
 	for (int o=0; o<1; o++,CurID++)
 		CreateBot(CurID, BOT_NPC, g_Config.m_SvCityStart);
 	//for (int o = 0; o < 3; o++, CurID++)
@@ -4393,23 +4398,15 @@ void CGameContext::UpdateBotInfo(int ClientID)
 	const int BotSubType = m_apPlayers[ClientID]->GetBotSubType();
 
 	if(BotType == BOT_L1MONSTER)
-	{
-		if(!BotSubType)	str_copy(NameSkin, "pinky", sizeof(NameSkin));
-		else if(BotSubType == 1) str_copy(NameSkin, "twintri", sizeof(NameSkin));
-		else if(BotSubType == 2) str_copy(NameSkin, "coala", sizeof(NameSkin));
-	}
+		str_copy(NameSkin, "pinky", sizeof(NameSkin));
 	else if(BotType == BOT_L2MONSTER)
-	{
-		if(!BotSubType)	str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
-		else if(BotSubType == 1) str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
-		else if(BotSubType == 2) str_copy(NameSkin, "redbopp", sizeof(NameSkin));
-	}
+		str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
 	else if(BotType == BOT_L3MONSTER)
-	{
-		if(!BotSubType) str_copy(NameSkin, "twintri", sizeof(NameSkin));
-		else if(BotSubType == 1) str_copy(NameSkin, "coala", sizeof(NameSkin));
-		else if(BotSubType == 2) str_copy(NameSkin, "dragon", sizeof(NameSkin));
-	}
+		str_copy(NameSkin, "twintri", sizeof(NameSkin));
+	else if (BotType == BOT_L4MONSTER)
+		str_copy(NameSkin, "cammo", sizeof(NameSkin));
+	else if (BotType == BOT_L5MONSTER)
+		str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
 	else if(BotType == BOT_NPC)
 	{
 		if(!BotSubType)	str_copy(NameSkin, "cammo", sizeof(NameSkin));
@@ -4417,13 +4414,9 @@ void CGameContext::UpdateBotInfo(int ClientID)
 	}
 	else if(BotType == BOT_BOSSSLIME)
 	{
-		if(!BotSubType)	str_copy(NameSkin, "twinbop", sizeof(NameSkin));
-		else if(BotSubType == 1) str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
-		else if(BotSubType == 2) str_copy(NameSkin, "PaladiN", sizeof(NameSkin));
-	}
-	else if(BotType == BOT_FARMER)
-	{
-		str_copy(NameSkin, "redbopp", sizeof(NameSkin));
+		//if(!BotSubType)	str_copy(NameSkin, "twinbop", sizeof(NameSkin));
+		//else if(BotSubType == 1) str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
+		//else if(BotSubType == 2) str_copy(NameSkin, "PaladiN", sizeof(NameSkin));
 	}
 	else if(BotType == BOT_NPCW)
 	{

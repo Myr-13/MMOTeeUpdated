@@ -53,6 +53,10 @@ bool IGameController::OnEntity(const char* pName, vec2 Pivot, vec2 P0, vec2 P1, 
 		m_SpawnPoints[5].add(Pos);
 	else if(str_comp(pName, "Bot3Type") == 0)
 		m_SpawnPoints[6].add(Pos);
+	else if (str_comp(pName, "Bot4Type") == 0)
+		m_SpawnPoints[19].add(Pos);
+	else if (str_comp(pName, "Bot5Type") == 0)
+		m_SpawnPoints[20].add(Pos);
 	else if(str_comp(pName, "WaitBoss") == 0)
 		m_SpawnPoints[7].add(Pos);
 	else if(str_comp(pName, "BossSpawn") == 0)
@@ -138,8 +142,8 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 {
 	const int aTeamColors[2] = {65387, 10223467};
 
-	if(g_Config.m_SvCityStart == 1){
-	if(pP->GetBotType() == BOT_L1MONSTER && pP->GetBotSubType() == 1)
+	/*if (g_Config.m_SvCityStart == 1) {
+	if (pP->GetBotType() == BOT_L1MONSTER && pP->GetBotSubType() == 1)
 	{
 		pP->m_TeeInfos.m_UseCustomColor = 1;
 		pP->m_TeeInfos.m_ColorBody = 65387;
@@ -180,6 +184,18 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 		pP->m_TeeInfos.m_ColorBody = 16752128;
 		pP->m_TeeInfos.m_ColorFeet = 15387000;		
 	} 
+	}*/
+	if (pP->GetBotType() == BOT_L4MONSTER)
+	{
+		pP->m_TeeInfos.m_UseCustomColor = 1;
+		pP->m_TeeInfos.m_ColorBody = 6387712;
+		pP->m_TeeInfos.m_ColorFeet = 6387712;
+	}
+	if (pP->GetBotType() == BOT_L5MONSTER)
+	{
+		pP->m_TeeInfos.m_UseCustomColor = 1;
+		pP->m_TeeInfos.m_ColorBody = 255;
+		pP->m_TeeInfos.m_ColorFeet = 255;
 	}
 		
 	// Тело броня

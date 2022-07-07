@@ -5,7 +5,7 @@
 CDiscord::CDiscord(CGameContext *pGameContext)
 {
 	m_pGameContext = pGameContext;
-	m_Logger = true;
+	m_Logger = false;
 
 	std::string data;
 	std::ifstream file("botconfig.txt");
@@ -72,6 +72,12 @@ void CDiscord::OnLog(int LogType, int ClientID1, int ClientID2)
 		);
 		break;
 	}
+	aBuf[511] = '\0';
+
+	m_Bot->message_create(dpp::message(
+		m_LogsChat,
+		aBuf
+	));
 }
 
 void CDiscord::OnMessage(const dpp::message_create_t& event)

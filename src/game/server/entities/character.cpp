@@ -1345,7 +1345,7 @@ void CCharacter::Tick()
 
 	m_Core.Tick(true, &CoreTickParams);
 
-	if(m_pPlayer->GetBotType() == BOT_NPCW || m_pPlayer->GetBotType() == BOT_FARMER)
+	if(m_pPlayer->GetBotType() == BOT_NPCW)
 	{
 		m_Core.m_Vel = vec2(0.0f, 1.0f);
 		m_Core.m_Pos = PrevPos;
@@ -1354,11 +1354,6 @@ void CCharacter::Tick()
 	//Hook protection
 	if(m_Core.m_HookedPlayer >= 0)
 	{
-		if (GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->m_AntiHook) {
-			m_Core.m_HookedPlayer = -1;
-			m_Core.m_HookState = HOOK_RETRACTED;
-			m_Core.m_HookPos = m_Pos;
-		}
 		if(GameServer()->m_apPlayers[m_Core.m_HookedPlayer] && GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->GetCharacter())
 		{
 			if(m_pPlayer && Server()->GetItemSettings(m_pPlayer->GetCID(), HOOKDAMAGE) && m_HookDmgTick + Server()->TickSpeed()*0.50f < Server()->Tick())
@@ -1372,7 +1367,9 @@ void CCharacter::Tick()
 
 			// Если хукаешь НПС
 			if((GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->GetBotType() == BOT_NPC
-					&& GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->IsBot()) || GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->m_ActiveChair)
+					&& GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->IsBot()) || 
+				GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->m_ActiveChair || 
+				GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->m_AntiHook)
 			{
 				m_Core.m_HookedPlayer = -1;
 				m_Core.m_HookState = HOOK_RETRACTED;
@@ -1734,7 +1731,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 		GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 106, 50, -1);
 
 		// Боты
-		if(m_pPlayer->GetBotType() == BOT_NPCW || m_pPlayer->GetBotType() == BOT_FARMER)
+		if(m_pPlayer->GetBotType() == BOT_NPCW)
 			return true;
 
 		// Антипвп в городе
@@ -1939,111 +1936,80 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 
 			if(m_pPlayer->GetBotType() == BOT_L1MONSTER)
 			{
-				if(!g_Config.m_SvCityStart)
-				{
-					CreateDropRandom(AHAPPY, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
-					CreateDropRandom(AEVIL, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
-					CreateDropRandom(APAIN, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
-					CreateDropRandom(ABLINK, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
-					CreateDropRandom(ASUPRRISE, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
-					CreateDropRandom(PIGPORNO, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 30 : 40, From, Force/(50+randforce));
-					CreateDropRandom(LEATHER, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 45 : 60, From, Force/(50+randforce));
-					CreateDropRandom(PRESSEDPIECE, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 45 : 60, From, Force/(50+randforce));
+				CreateDropRandom(AHAPPY, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
+				CreateDropRandom(AEVIL, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
+				CreateDropRandom(APAIN, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
+				CreateDropRandom(ABLINK, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
+				CreateDropRandom(ASUPRRISE, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
+				CreateDropRandom(PIGPORNO, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 30 : 40, From, Force/(50+randforce));
+				CreateDropRandom(LEATHER, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 45 : 60, From, Force/(50+randforce));
+				CreateDropRandom(PRESSEDPIECE, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 45 : 60, From, Force/(50+randforce));
 
-					CreateDropRandom(PET_PIGGY, 1, 5000, From, Force / (50 + randforce));
+				CreateDropRandom(PET_PIGGY, 1, 5000, From, Force / (50 + randforce));
 
-					Server()->GiveItem(From, PIG_XP, 1);
+				Server()->GiveItem(From, PIG_XP, 1);
 
-					if (m_pPlayer->m_AcceptedDailyQuestID)
-					{
-						if (GameServer()->m_CurrentDailyQuest1 == QUEST_KILLPIGS)
-							m_pPlayer->m_CompleteDailyStep1 += 1;
-						if (GameServer()->m_CurrentDailyQuest2 == QUEST_KILLPIGS)
-							m_pPlayer->m_CompleteDailyStep2 += 1;
-						if (GameServer()->m_CurrentDailyQuest3 == QUEST_KILLPIGS)
-							m_pPlayer->m_CompleteDailyStep3 += 1;
-					}
-				}
-				else if(g_Config.m_SvCityStart == 1)
+				if (m_pPlayer->m_AcceptedDailyQuestID)
 				{
-					CreateDropRandom(ZOMBIEBRAIN, 1, 40, From, Force/(50+randforce));
-					CreateDropRandom(ZOMBIEEYE, 1, 40, From, Force/(50+randforce));
-					CreateDropRandom(PRESSEDPIECE, 1, 80, From, Force/(50+randforce));
-				}
-				else if(g_Config.m_SvCityStart == 2)
-				{
-					//CreateDropRandom(ORIHALCUM, 1, 300, From, Force/(50+randforce));
-					CreateDropRandom(PRESSEDPIECE, 1, 80, From, Force/(50+randforce));
+					if (GameServer()->m_CurrentDailyQuest1 == QUEST_KILLPIGS)
+						m_pPlayer->m_CompleteDailyStep1 += 1;
+					if (GameServer()->m_CurrentDailyQuest2 == QUEST_KILLPIGS)
+						m_pPlayer->m_CompleteDailyStep2 += 1;
+					if (GameServer()->m_CurrentDailyQuest3 == QUEST_KILLPIGS)
+						m_pPlayer->m_CompleteDailyStep3 += 1;
 				}
 			}
 
 			if(pFrom && m_pPlayer->GetBotType() == BOT_L2MONSTER)
 			{
-				if(!g_Config.m_SvCityStart)
-				{
-					CreateDropRandom(KWAHGANDON, 1, (Server()->GetItemEnquip(From, 18) == PET_FROG) ? 37 : 44, From, Force/(50+randforce));
-					CreateDropRandom(FOOTKWAH, 1, (Server()->GetItemEnquip(From, 18) == PET_FROG) ? 37 : 44, From, Force/(40+randforce));
-					CreateDropRandom(PRESSEDPIECE, 1, (Server()->GetItemEnquip(From, 18) == PET_FROG) ? 65 : 80, From, Force/(50+randforce));
+				CreateDropRandom(KWAHGANDON, 1, (Server()->GetItemEnquip(From, 18) == PET_FROG) ? 37 : 44, From, Force/(50+randforce));
+				CreateDropRandom(FOOTKWAH, 1, (Server()->GetItemEnquip(From, 18) == PET_FROG) ? 37 : 44, From, Force/(40+randforce));
+				CreateDropRandom(PRESSEDPIECE, 1, (Server()->GetItemEnquip(From, 18) == PET_FROG) ? 65 : 80, From, Force/(50+randforce));
 
-					CreateDropRandom(PET_FROG, 1, 5000, From, Force / (50 + randforce));
+				CreateDropRandom(PET_FROG, 1, 5000, From, Force / (50 + randforce));
 
-					Server()->GiveItem(From, KWAH_XP, 1);
+				Server()->GiveItem(From, KWAH_XP, 1);
 
-					if (m_pPlayer->m_AcceptedDailyQuestID)
-					{
-						if (GameServer()->m_CurrentDailyQuest1 == QUEST_KILLKWAHS)
-							m_pPlayer->m_CompleteDailyStep1 += 1;
-						if (GameServer()->m_CurrentDailyQuest2 == QUEST_KILLKWAHS)
-							m_pPlayer->m_CompleteDailyStep2 += 1;
-						if (GameServer()->m_CurrentDailyQuest3 == QUEST_KILLKWAHS)
-							m_pPlayer->m_CompleteDailyStep3 += 1;
-					}
-				}
-				else if(g_Config.m_SvCityStart == 1)
+				if (m_pPlayer->m_AcceptedDailyQuestID)
 				{
-					CreateDropRandom(SKELETSBONE, 1, 45, From, Force/(50+randforce));
-					CreateDropRandom(SKELETSKULL, 1, 45, From, Force/(50+randforce));
-					CreateDropRandom(PRESSEDPIECE, 1, 80, From, Force/(50+randforce));
-				}
-				else if(g_Config.m_SvCityStart == 2)
-				{
-					//CreateDropRandom(PALLADIN, 1, 400, From, Force/(50+randforce));
-					CreateDropRandom(PRESSEDPIECE, 1, 80, From, Force/(50+randforce));
+					if (GameServer()->m_CurrentDailyQuest1 == QUEST_KILLKWAHS)
+						m_pPlayer->m_CompleteDailyStep1 += 1;
+					if (GameServer()->m_CurrentDailyQuest2 == QUEST_KILLKWAHS)
+						m_pPlayer->m_CompleteDailyStep2 += 1;
+					if (GameServer()->m_CurrentDailyQuest3 == QUEST_KILLKWAHS)
+						m_pPlayer->m_CompleteDailyStep3 += 1;
 				}
 			}
 			if(pFrom && m_pPlayer->GetBotType() == BOT_L3MONSTER)
 			{
-				if(!g_Config.m_SvCityStart)
-				{
-					CreateDropRandom(HEADBOOMER, 1, (Server()->GetItemEnquip(From, 18) == PET_BOMB) ? 33 : 42, From, Force/(50+randforce));
-					CreateDropRandom(PRESSEDPIECE, 1, (Server()->GetItemEnquip(From, 18) == PET_BOMB) ? 65 : 80, From, Force/(50+randforce));
+				CreateDropRandom(HEADBOOMER, 1, (Server()->GetItemEnquip(From, 18) == PET_BOMB) ? 33 : 42, From, Force/(50+randforce));
+				CreateDropRandom(PRESSEDPIECE, 1, (Server()->GetItemEnquip(From, 18) == PET_BOMB) ? 65 : 80, From, Force/(50+randforce));
 
-					CreateDropRandom(PET_BOMB, 1, 5000, From, Force / (50 + randforce));
+				CreateDropRandom(PET_BOMB, 1, 5000, From, Force / (50 + randforce));
 
-					Server()->GiveItem(From, BOOM_XP, 1);
+				Server()->GiveItem(From, BOOM_XP, 1);
 
-					if (m_pPlayer->m_AcceptedDailyQuestID)
-					{
-						if (GameServer()->m_CurrentDailyQuest1 == QUEST_KILLBOOMS)
-							m_pPlayer->m_CompleteDailyStep1 += 1;
-						if (GameServer()->m_CurrentDailyQuest2 == QUEST_KILLBOOMS)
-							m_pPlayer->m_CompleteDailyStep2 += 1;
-						if (GameServer()->m_CurrentDailyQuest3 == QUEST_KILLBOOMS)
-							m_pPlayer->m_CompleteDailyStep3 += 1;
-					}
-				}
-				else if(g_Config.m_SvCityStart == 1)
+				if (m_pPlayer->m_AcceptedDailyQuestID)
 				{
-					CreateDropRandom(NIMFHEART, 1, 40, From, Force/(50+randforce));
-					CreateDropRandom(NIMFEARS, 1, 40, From, Force/(50+randforce));
-					CreateDropRandom(NIMFBODY, 1, 40, From, Force/(50+randforce));
-					CreateDropRandom(PRESSEDPIECE, 1, 80, From, Force/(50+randforce));
+					if (GameServer()->m_CurrentDailyQuest1 == QUEST_KILLBOOMS)
+						m_pPlayer->m_CompleteDailyStep1 += 1;
+					if (GameServer()->m_CurrentDailyQuest2 == QUEST_KILLBOOMS)
+						m_pPlayer->m_CompleteDailyStep2 += 1;
+					if (GameServer()->m_CurrentDailyQuest3 == QUEST_KILLBOOMS)
+						m_pPlayer->m_CompleteDailyStep3 += 1;
 				}
-				else if(g_Config.m_SvCityStart == 2)
-				{
-					//CreateDropRandom(IMMORTALINGOT, 1, 500, From, Force/(50+randforce));
-					CreateDropRandom(PRESSEDPIECE, 1, 80, From, Force/(50+randforce));
-				}
+			}
+			if (pFrom && m_pPlayer->GetBotType() == BOT_L4MONSTER)
+			{
+				CreateDropRandom(ZOMBIEBRAIN, 1, 40, From, Force / (50 + randforce));
+				CreateDropRandom(ZOMBIEEYE, 1, 40, From, Force/(50+randforce));
+				CreateDropRandom(PRESSEDPIECE, 1, 80, From, Force/(50+randforce));
+			}
+			if (pFrom && m_pPlayer->GetBotType() == BOT_L5MONSTER)
+			{
+				CreateDropRandom(ZOMBIEBRAIN, 1, 40, From, Force / (50 + randforce));
+				CreateDropRandom(ZOMBIEEYE, 1, 40, From, Force / (50 + randforce));
+				CreateDropRandom(PRESSEDPIECE, 1, 80, From, Force / (50 + randforce));
 			}
 
 			if ((Server()->GetItemCount(From, PIG_XP) >= 100) && (Server()->GetItemCount(From, PIGKILLER_1) < 1)) {

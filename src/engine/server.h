@@ -29,10 +29,11 @@ enum
 	BOT_L1MONSTER=0,
 	BOT_L2MONSTER,
 	BOT_L3MONSTER,
+	BOT_L4MONSTER,
+	BOT_L5MONSTER,
 	BOT_NPC,
 	BOT_BOSSSLIME,
 	BOT_NPCW,
-	BOT_FARMER,
 };
 
 enum
@@ -74,8 +75,8 @@ enum
 	MAILMENU,
 	ARMORMENU,
 	RULEMENU,
+
 	MAXMENU,
-	
 };
 
 // daily quests type

@@ -316,6 +316,10 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 			Type = 5;
 		else if(pPlayer->GetBotType() == BOT_L3MONSTER)
 			Type = 6;
+		else if (pPlayer->GetBotType() == BOT_L4MONSTER)
+			Type = 19;
+		else if (pPlayer->GetBotType() == BOT_L5MONSTER)
+			Type = 20;
 		else if(pPlayer->GetBotType() == BOT_BOSSSLIME)
 			Type = 8;
 		else if(pPlayer->GetBotType() == BOT_NPC)
@@ -326,8 +330,6 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 			Type = 11;
 		else if(pPlayer->GetBotType() == BOT_NPCW && pPlayer->GetBotSubType() == 2)
 			Type = 12;
-		else if(pPlayer->GetBotType() == BOT_FARMER)
-			Type = 14;
 	}
 
 	// get spawn point

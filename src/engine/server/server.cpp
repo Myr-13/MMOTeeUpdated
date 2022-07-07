@@ -2084,64 +2084,38 @@ const char *CServer::GetClanName(int ClanID)
 void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
 {
 	if(BotType == BOT_L1MONSTER)
-	{
-		if(!BotSubType) str_copy(m_aClients[ClientID].m_aName , "Pig", MAX_NAME_LENGTH);
-		else if(BotSubType == 1) str_copy(m_aClients[ClientID].m_aName , "Zombie", MAX_NAME_LENGTH);
-		else if(BotSubType == 2) str_copy(m_aClients[ClientID].m_aName , "Golem", MAX_NAME_LENGTH);
-	}
+		str_copy(m_aClients[ClientID].m_aName, "Pig", MAX_NAME_LENGTH);
 	else if(BotType == BOT_L2MONSTER)
-	{
-		if(!BotSubType) str_copy(m_aClients[ClientID].m_aName , "Kwah", MAX_NAME_LENGTH);
-		else if(BotSubType == 1) str_copy(m_aClients[ClientID].m_aName , "Skelet", MAX_NAME_LENGTH);
-		else if(BotSubType == 2) str_copy(m_aClients[ClientID].m_aName , "Titan", MAX_NAME_LENGTH);
-	}
+		str_copy(m_aClients[ClientID].m_aName, "Kwah", MAX_NAME_LENGTH);
 	else if(BotType == BOT_L3MONSTER)
-	{
-		if(!BotSubType) str_copy(m_aClients[ClientID].m_aName , "Boom", MAX_NAME_LENGTH);
-		else if(BotSubType == 1) str_copy(m_aClients[ClientID].m_aName , "Nimfie", MAX_NAME_LENGTH);
-		else if(BotSubType == 2) str_copy(m_aClients[ClientID].m_aName , "Dragon", MAX_NAME_LENGTH);
-	}
+		str_copy(m_aClients[ClientID].m_aName, "Boom", MAX_NAME_LENGTH);
+	else if (BotType == BOT_L4MONSTER)
+		str_copy(m_aClients[ClientID].m_aName, "Zombie", MAX_NAME_LENGTH);
+	else if (BotType == BOT_L5MONSTER)
+		str_copy(m_aClients[ClientID].m_aName, "Skeleton", MAX_NAME_LENGTH);
 	else if(BotType == BOT_NPC)
-	{
-		if(!BotSubType) str_copy(m_aClients[ClientID].m_aName , "Guard", MAX_NAME_LENGTH);
-		else if(BotSubType == 1) str_copy(m_aClients[ClientID].m_aName , "Fighter", MAX_NAME_LENGTH);
-		else if(BotSubType == 2) str_copy(m_aClients[ClientID].m_aName , "Knight", MAX_NAME_LENGTH);
-	}
+		str_copy(m_aClients[ClientID].m_aName, "Guard", MAX_NAME_LENGTH);
 	else if(BotType == BOT_BOSSSLIME)
-	{
-		if(!BotSubType) str_copy(m_aClients[ClientID].m_aName , "Slime", MAX_NAME_LENGTH);
-		else if(BotSubType == 1) str_copy(m_aClients[ClientID].m_aName , "Vampir", MAX_NAME_LENGTH);
-		else if(BotSubType == 2) str_copy(m_aClients[ClientID].m_aName , "Dark-King", MAX_NAME_LENGTH);
-	}
-	else if(BotType == BOT_FARMER)
-	{
-		str_copy(m_aClients[ClientID].m_aName , "Nesquik", MAX_NAME_LENGTH);
-	}
+		str_copy(m_aClients[ClientID].m_aName, "Slime", MAX_NAME_LENGTH);
 	else if(BotType == BOT_NPCW)
 	{
-		const char* Name = "Nope";
+		char aName[MAX_NAME_LENGTH];
 		if(BotSubType == 0)
 		{
-			if(!g_Config.m_SvCityStart)	Name = "NPC:John";
-			else if(g_Config.m_SvCityStart == 1) Name = "NPC:Grem";
-			else if(g_Config.m_SvCityStart == 2) Name = "NPC:Isaac";
+			str_copy(aName, "NPC:John", MAX_NAME_LENGTH);
 		}
 		else if(BotSubType == 1)
 		{
-			if(!g_Config.m_SvCityStart) Name = "NPC:Lusi";
-			else if(g_Config.m_SvCityStart == 1) Name = "NPC:Afra";
-			else if(g_Config.m_SvCityStart == 2) Name = "NPC:Yuki";
+			str_copy(aName, "NPC:Lusi", MAX_NAME_LENGTH);
 		}
 		else
 		{
-			if(!g_Config.m_SvCityStart) Name = "NPC:Miki";
-			else if(g_Config.m_SvCityStart == 1) Name = "NPC:Saki";
-			else if(g_Config.m_SvCityStart == 2) Name = "NPC:Yo";
+			str_copy(aName, "NPC:Miki", MAX_NAME_LENGTH);
 		}
-		str_copy(m_aClients[ClientID].m_aName , Name, MAX_NAME_LENGTH);
+		str_copy(m_aClients[ClientID].m_aName, aName, MAX_NAME_LENGTH);
 	}
 	else
-		str_copy(m_aClients[ClientID].m_aName , "Keke", MAX_NAME_LENGTH);
+		str_copy(m_aClients[ClientID].m_aName, "Keke", MAX_NAME_LENGTH);
 }
 
 void CServer::InitClientBot(int ClientID)

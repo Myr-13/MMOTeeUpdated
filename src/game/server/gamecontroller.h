@@ -36,7 +36,7 @@ protected:
 public:
 	inline const array<vec2>& HeroFlagPositions() const { return m_HeroFlagPositions; }
 
-	array<vec2> m_SpawnPoints[19];
+	array<vec2> m_SpawnPoints[21];
 /* INFECTION MODIFICATION START ***************************************/
 
 protected:
