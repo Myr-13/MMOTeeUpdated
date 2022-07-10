@@ -60,7 +60,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_PrevTuningParams = *pGameServer->Tuning();
 	m_NextTuningParams = m_PrevTuningParams;
 
-	m_MoneyAdd = m_ExperienceAdd = m_InviteClanID = m_Mana = 0;
+	m_MoneyAddEndTick = m_ExperienceAddEndTick = m_InviteClanID = m_Mana = 0;
 	m_Search = m_BigBot = m_InArea = m_IsInGame = m_InBossed = false;
 
 	AccData.Level = AccUpgrade.SkillPoint = AccUpgrade.Upgrade = AccUpgrade.Speed = AccUpgrade.Health = AccUpgrade.Damage = -1;
@@ -540,27 +540,25 @@ void CPlayer::Tick()
 		}
 
 		// ОПЫТ КНИГИ ДОБАВКА НУЖНО ОПТИМИЗИРОВАТЬ
-		if(m_MoneyAdd)
+		if(m_MoneyAddEndTick > Server()->Tick())
 		{
-			m_MoneyAdd--;
-			if(Server()->Tick() % (1 * Server()->TickSpeed() * 120) == 0 && m_MoneyAdd > 1500)
+			if(Server()->Tick() % (Server()->TickSpeed() * 120) == 0)
 			{
-				int Time = m_MoneyAdd/Server()->TickSpeed()/60;
+				int Time = (m_MoneyAddEndTick - Server()->Tick()) / Server()->TickSpeed() / 60;
 				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ending {str:name} after {int:ends} min."), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), "ends", &Time, NULL);
 			}
-			if(m_MoneyAdd == 1)
-				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ending {str:name}"), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), NULL);
+			if(m_MoneyAddEndTick - Server()->Tick() == 1)
+				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ended {str:name}"), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), NULL);
 		}
-		if(m_ExperienceAdd)
+		if (m_ExperienceAddEndTick > Server()->Tick())
 		{
-			m_ExperienceAdd--;
-			if(Server()->Tick() % (1 * Server()->TickSpeed() * 120) == 0 && m_ExperienceAdd > 1500)
+			if (Server()->Tick() % (Server()->TickSpeed() * 120) == 0)
 			{
-				int Time = m_ExperienceAdd/Server()->TickSpeed()/60;
-				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("This item ending {str:name} after {int:ends} min."), "name", Server()->GetItemName(m_ClientID, BOOKEXPMIN), "ends", &Time, NULL);
+				int Time = (m_ExperienceAddEndTick - Server()->Tick()) / Server()->TickSpeed() / 60;
+				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ending {str:name} after {int:ends} min."), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), "ends", &Time, NULL);
 			}
-			if(m_ExperienceAdd == 1)
-				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("This item ending {str:name}"), "name", Server()->GetItemName(m_ClientID, BOOKEXPMIN), NULL);
+			if (m_ExperienceAddEndTick - Server()->Tick() == 1)
+				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ended {str:name}"), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), NULL);
 		}
 
 		// Уровни и все такое повышение
@@ -841,6 +839,7 @@ void CPlayer::MoneyAdd(int Size, bool ClanBonus, bool MoneyDouble)
 	int GetMoney = Size;
 	if(ClanBonus && Server()->GetClanID(m_ClientID))
 		GetMoney += Server()->GetClan(DADDMONEY, Server()->GetClanID(m_ClientID)) * 100;
+	GetMoney += Server()->GetItemCount(m_ClientID, ACCESSORY_ADD_MONEY) * 100;
 
 	if(MoneyDouble)
 	{
@@ -849,7 +848,7 @@ void CPlayer::MoneyAdd(int Size, bool ClanBonus, bool MoneyDouble)
 		else if(Server()->GetItemCount(m_ClientID, X2MONEYEXPVIP))
 			GetMoney += GetMoney * 2;
 
-		if(m_MoneyAdd)
+		if(m_MoneyAddEndTick > Server()->Tick())
 			GetMoney += GetMoney * 2;
 	}
 
@@ -887,7 +886,7 @@ void CPlayer::ExpAdd(int Size, bool Bonus)
 
 	int ml = 0;
 	if (Bonus) {
-		if (m_ExperienceAdd)
+		if (m_ExperienceAddEndTick > Server()->Tick())
 			ml += 2;
 		if (Server()->GetItemCount(m_ClientID, PREMIUM_GOVNO))
 			ml += 2;

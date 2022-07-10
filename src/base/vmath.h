@@ -69,6 +69,7 @@ inline vector2_base<T> rotate(const vector2_base<T> &a, float angle)
 {
 	float s = sinf(angle);
 	float c = cosf(angle);
+
 	return vector2_base<T>((T)(c*a.x - s*a.y), (T)(s*a.x + c*a.y));
 }
 
@@ -76,6 +77,7 @@ template<typename T>
 inline vector2_base<T> normalize(const vector2_base<T> &v)
 {
 	T l = (T)(1.0f/sqrtf(v.x*v.x + v.y*v.y));
+
 	return vector2_base<T>(v.x*l, v.y*l);
 }
 
@@ -212,9 +214,9 @@ public:
 
 	const vector4_base &operator +=(const vector4_base &v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	const vector4_base &operator -=(const vector4_base &v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
-	const vector4_base &operator *=(const T v) { x *= v; y *= v; z *= v; w *= v; return *this;	}
+	const vector4_base &operator *=(const T v) { x *= v; y *= v; z *= v; w *= v; return *this; }
 	const vector4_base &operator *=(const vector4_base &v) { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
-	const vector4_base &operator /=(const T v) { x /= v; y /= v; z /= v; w /= v; return *this;	}
+	const vector4_base &operator /=(const T v) { x /= v; y /= v; z /= v; w /= v; return *this; }
 	const vector4_base &operator /=(const vector4_base &v) { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
 
 	bool operator ==(const vector4_base &v) const { return x == v.x && y == v.y && z == v.z && w == v.w; } //TODO: do this with an eps instead

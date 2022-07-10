@@ -4,18 +4,20 @@
 #include <game/server/gamecontext.h>
 #include "biologist-laser.h"
 
-CBiologistLaser::CBiologistLaser(CGameWorld* pGameWorld, vec2 Pos, vec2 Direction, int Owner, int Dmg, bool Explode)
+CBiologistLaser::CBiologistLaser(CGameWorld* pGameWorld, vec2 Pos, vec2 Direction, int Owner, int Dmg, bool Explode, float Energy, bool Freeze, int FreezeTime)
 	: CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER)
 {
 	m_Dmg = Dmg;
 	m_Pos = Pos;
 	m_Owner = Owner;
-	m_Energy = 600.0f;
+	m_Energy = Energy;
 	m_Dir = Direction;
 	m_Bounces = 0;
 	m_Dmg = Dmg;
 	m_EvalTick = 0;
 	m_Explode = Explode;
+	m_Freeze = Freeze;
+	m_FreezeTime = FreezeTime;
 
 	GameWorld()->InsertEntity(this);
 	DoBounce();
@@ -38,6 +40,9 @@ bool CBiologistLaser::HitCharacter(vec2 From, vec2 To)
 			GameServer()->CreateExplosion(pHit->m_Pos, m_Owner, WEAPON_RIFLE, false, true);
 		else
 			pHit->TakeDamage(vec2(0.f, 0.f), m_Dmg, m_Owner, WEAPON_RIFLE, 0);
+
+		if (m_Freeze)
+			pHit->Freeze(m_FreezeTime);
 	}
 
 	m_From = From;
@@ -56,7 +61,8 @@ void CBiologistLaser::DoBounce()
 		return;
 	}
 
-	vec2 To = m_Pos + m_Dir * m_Energy;
+	vec2 To;
+	To = m_Pos + m_Dir * m_Energy;
 
 	if (GameServer()->Collision()->IntersectLine(m_Pos, To, 0x0, &To))
 	{

@@ -71,6 +71,8 @@ void CCharacterCore::Reset()
 	m_HookedPlayer = -1;
 	m_Jumped = 0;
 	m_TriggeredEvents = 0;
+	m_InvertGravity = false;
+	m_BonusXSpeed = 0;
 }
 
 void CCharacterCore::Tick(bool UseInput, CParams* pParams)
@@ -93,7 +95,7 @@ void CCharacterCore::Tick(bool UseInput, CParams* pParams)
 	else
 		m_Vel.y -= pTuningParams->m_Gravity;
 
-	float MaxSpeed = Grounded ? pTuningParams->m_GroundControlSpeed : pTuningParams->m_AirControlSpeed;
+	float MaxSpeed = Grounded ? pTuningParams->m_GroundControlSpeed + m_BonusXSpeed : pTuningParams->m_AirControlSpeed;
 	float Accel = Grounded ? pTuningParams->m_GroundControlAccel : pTuningParams->m_AirControlAccel;
 	float Friction = Grounded ? pTuningParams->m_GroundFriction : pTuningParams->m_AirFriction;
 
@@ -332,9 +334,9 @@ void CCharacterCore::Tick(bool UseInput, CParams* pParams)
 			// handle player <-> player collision
 			float Distance = distance(m_Pos, pCharCore->m_Pos);
 			vec2 Dir = normalize(m_Pos - pCharCore->m_Pos);
-			if(pTuningParams->m_PlayerCollision && Distance < PhysSize*1.25f && Distance > 0.0f)
+			if(pTuningParams->m_PlayerCollision && Distance < PhysSize * 1.25f && Distance > 0.0f)
 			{
-				float a = (PhysSize*1.45f - Distance);
+				float a = (PhysSize * 1.45f - Distance);
 				float Velocity = 0.5f;
 
 				// make sure that we don't add excess force by checking the
@@ -375,14 +377,14 @@ void CCharacterCore::Move(CParams* pParams)
 {
 	const CTuningParams* pTuningParams = pParams->m_pTuningParams;
 	
-	float RampValue = VelocityRamp(length(m_Vel)*50, pTuningParams->m_VelrampStart, pTuningParams->m_VelrampRange, pTuningParams->m_VelrampCurvature);
+	float RampValue = VelocityRamp(length(m_Vel) * 50, pTuningParams->m_VelrampStart, pTuningParams->m_VelrampRange, pTuningParams->m_VelrampCurvature);
 
-	m_Vel.x = m_Vel.x*RampValue;
+	m_Vel.x = m_Vel.x * RampValue;
 
 	vec2 NewPos = m_Pos;
 	m_pCollision->MoveBox(&NewPos, &m_Vel, vec2(28.0f, 28.0f), 0);
 
-	m_Vel.x = m_Vel.x*(1.0f/RampValue);
+	m_Vel.x = m_Vel.x * (1.0f / RampValue);
 
 	if(m_pWorld && pTuningParams->m_PlayerCollision)
 	{

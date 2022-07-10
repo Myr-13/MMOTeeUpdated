@@ -333,6 +333,16 @@ enum
 	PIXI_DUST,
 	PEX_WINGS,
 
+	STORM_LASER,
+	TARGET_AIM_GRENADE,
+
+	ACCESSORY_ADD_SPEED,
+	ACCESSORY_ADD_DMG,
+	ACCESSORY_ADD_STEAL_HP,
+	ACCESSORY_ADD_HP,
+	ACCESSORY_ADD_ARMOR,
+	ACCESSORY_ADD_MONEY,
+
 	MAX_ITEM,
 
 	// 1 - Weapon Upgradins, 2 - Rare Artifacts, 3 - Quest Item's, 4 - Useds Items, 5 - Crafted Item

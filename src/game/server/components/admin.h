@@ -48,6 +48,7 @@ public:
 	void OnMenuAction(int ClientID, const char *pMsg, const char* pReason);
 	void BuildVoteMenu(int ClientID);
 	void AddBack(int ClientID);
+	void RunAction(int ClientID, int ActionID, const char *aReason);
 
 	const char* GetActionName(int Action);
 	//const char* GetActionCmd(int Action);

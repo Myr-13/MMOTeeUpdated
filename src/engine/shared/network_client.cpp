@@ -61,7 +61,6 @@ int CNetClient::Recv(CNetChunk *pChunk)
 		if(m_RecvUnpacker.FetchChunk(pChunk))
 			return 1;
 
-		// TODO: empty the recvinfo
 		NETADDR Addr;
 		int Bytes = net_udp_recv(m_Socket, &Addr, m_RecvUnpacker.m_aBuffer, NET_MAX_PACKETSIZE);
 

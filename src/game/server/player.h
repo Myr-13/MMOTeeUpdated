@@ -64,8 +64,8 @@ public:
 	int m_HealthStart;
 	int m_Health;
 
-	int m_MoneyAdd;
-	int m_ExperienceAdd;
+	int m_MoneyAddEndTick;
+	int m_ExperienceAddEndTick;
 	//int m_OpenBox;
 	//int m_OpenBoxType;
 	//bool m_OpeningBox;
@@ -246,6 +246,8 @@ public:
 	int m_WallLimit;
 
 	bool m_InfMana;
+
+	int m_LaserFreezeTime = 1;
 
 private:
 	CCharacter *m_pCharacter;

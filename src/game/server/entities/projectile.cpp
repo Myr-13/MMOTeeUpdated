@@ -8,7 +8,7 @@
 #include "projectile.h"
 
 CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
-		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon, int TakeDamageMode)
+		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon, int TakeDamageMode, bool TargetAim)
 : CEntity(pGameWorld, CGameWorld::ENTTYPE_PROJECTILE)
 {
 	m_Type = Type;
@@ -22,6 +22,7 @@ CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, 
 	m_Weapon = Weapon;
 	m_StartTick = Server()->Tick();
 	m_Explosive = Explosive;
+	m_SnapPos = Pos;
 
 	GameWorld()->InsertEntity(this);
 	
@@ -29,6 +30,7 @@ CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, 
 	m_IsFlashGrenade = false;
 	m_IsPortal = false;
 	m_StartPos = Pos;
+	m_TargetAim = TargetAim;
 /* INFECTION MODIFICATION END *****************************************/
 }
 
@@ -45,8 +47,12 @@ vec2 CProjectile::GetPos(float Time)
 	switch(m_Type)
 	{
 		case WEAPON_GRENADE:
-			Curvature = GameServer()->Tuning()->m_GrenadeCurvature;
 			Speed = GameServer()->Tuning()->m_GrenadeSpeed;
+			if (!m_TargetAim)
+			{
+				Curvature = GameServer()->Tuning()->m_GrenadeCurvature;
+				Speed = GameServer()->Tuning()->m_GrenadeSpeed;
+			}
 			break;
 
 		case WEAPON_SHOTGUN:
@@ -63,16 +69,17 @@ vec2 CProjectile::GetPos(float Time)
 	return CalcPos(m_Pos, m_Direction, Curvature, Speed, Time);
 }
 
-
 void CProjectile::Tick()
 {
-	float Pt = (Server()->Tick()-m_StartTick-1)/(float)Server()->TickSpeed();
-	float Ct = (Server()->Tick()-m_StartTick)/(float)Server()->TickSpeed();
+	float Pt = (Server()->Tick() - m_StartTick - 1) / (float)Server()->TickSpeed();
+	float Ct = (Server()->Tick() - m_StartTick) / (float)Server()->TickSpeed();
 	vec2 PrevPos = GetPos(Pt);
 	vec2 CurPos = GetPos(Ct);
-	int Collide = GameServer()->Collision()->IntersectLine(PrevPos, CurPos, &CurPos, 0);
+	int Collide = GameServer()->Collision()->IntersectLine(PrevPos, CurPos, &CurPos, NULL);
 	CCharacter *OwnerChar = GameServer()->GetPlayerChar(m_Owner);
 	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, OwnerChar);
+
+	m_SnapPos = CurPos;
 
 	m_LifeSpan--;
 
@@ -136,6 +143,20 @@ void CProjectile::Tick()
 
 		return;
 	}
+
+	if (m_TargetAim)
+	{
+		TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 32.f * 12.f, CurPos, OwnerChar);
+		if (!TargetChr)
+			return;
+		if (GameServer()->Collision()->IntersectLine(CurPos, TargetChr->m_Pos, NULL, NULL))
+			return;
+
+		const float Cof = 0.15f;
+		float TargetAng = GetAngle(normalize(TargetChr->m_Pos - CurPos));
+		float DirAng = GetAngle(m_Direction);
+		m_Direction = GetDir(mix(DirAng, TargetAng, Cof));
+	}
 	
 /* INFECTION MODIFICATION END *****************************************/
 }
@@ -147,17 +168,17 @@ void CProjectile::TickPaused()
 
 void CProjectile::FillInfo(CNetObj_Projectile *pProj)
 {
-	pProj->m_X = (int)m_Pos.x;
-	pProj->m_Y = (int)m_Pos.y;
-	pProj->m_VelX = (int)(m_Direction.x*100.0f);
-	pProj->m_VelY = (int)(m_Direction.y*100.0f);
-	pProj->m_StartTick = m_StartTick;
+	pProj->m_X = (int)m_SnapPos.x;
+	pProj->m_Y = (int)m_SnapPos.y;
+	pProj->m_VelX = m_Direction.x * 100;
+	pProj->m_VelY = m_Direction.y * 100;
+	pProj->m_StartTick = Server()->Tick() - 1;
 	pProj->m_Type = m_Type;
 }
 
 void CProjectile::Snap(int SnappingClient)
 {
-	float Ct = (Server()->Tick()-m_StartTick)/(float)Server()->TickSpeed();
+	float Ct = (Server()->Tick() - m_StartTick) / (float)Server()->TickSpeed();
 
 	if(NetworkClipped(SnappingClient, GetPos(Ct)))
 		return;

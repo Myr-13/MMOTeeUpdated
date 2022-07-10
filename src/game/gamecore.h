@@ -54,7 +54,6 @@ public:
 	bool Get(const char *pName, float *pValue);
 };
 
-
 inline vec2 GetDirection(int Angle)
 {
 	float a = Angle/256.0f;
@@ -104,10 +103,10 @@ inline void IntsToStr(const int *pInts, int Num, char *pStr)
 {
 	while(Num)
 	{
-		pStr[0] = (((*pInts)>>24)&0xff)-128;
-		pStr[1] = (((*pInts)>>16)&0xff)-128;
-		pStr[2] = (((*pInts)>>8)&0xff)-128;
-		pStr[3] = ((*pInts)&0xff)-128;
+		pStr[0] = (((*pInts) >> 24) & 0xff) - 128;
+		pStr[1] = (((*pInts) >> 16) & 0xff) - 128;
+		pStr[2] = (((*pInts) >> 8) & 0xff) - 128;
+		pStr[3] = ((*pInts) & 0xff) - 128;
 		pStr += 4;
 		pInts++;
 		Num--;
@@ -117,17 +116,14 @@ inline void IntsToStr(const int *pInts, int Num, char *pStr)
 	pStr[-1] = 0;
 }
 
-
-
 inline vec2 CalcPos(vec2 Pos, vec2 Velocity, float Curvature, float Speed, float Time)
 {
 	vec2 n;
 	Time *= Speed;
-	n.x = Pos.x + Velocity.x*Time;
-	n.y = Pos.y + Velocity.y*Time + Curvature/10000*(Time*Time);
+	n.x = Pos.x + Velocity.x * Time;
+	n.y = Pos.y + Velocity.y * Time + Curvature / 10000 * (Time * Time);
 	return n;
 }
-
 
 template<typename T>
 inline T SaturatedAdd(T Min, T Max, T Current, T Modifier)
@@ -151,7 +147,6 @@ inline T SaturatedAdd(T Min, T Max, T Current, T Modifier)
 		return Current;
 	}
 }
-
 
 float VelocityRamp(float Value, float Start, float Range, float Curvature);
 
@@ -209,7 +204,8 @@ private:
 public:
 	vec2 m_Pos;
 	vec2 m_Vel;
-	bool m_InvertGravity = 0;
+	bool m_InvertGravity;
+	float m_BonusXSpeed;
 
 	vec2 m_HookPos;
 	vec2 m_HookDir;

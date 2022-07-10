@@ -142,49 +142,6 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 {
 	const int aTeamColors[2] = {65387, 10223467};
 
-	/*if (g_Config.m_SvCityStart == 1) {
-	if (pP->GetBotType() == BOT_L1MONSTER && pP->GetBotSubType() == 1)
-	{
-		pP->m_TeeInfos.m_UseCustomColor = 1;
-		pP->m_TeeInfos.m_ColorBody = 65387;
-		pP->m_TeeInfos.m_ColorFeet = 65387;		
-	} 
-	
-	if(pP->GetBotType() == BOT_L2MONSTER && pP->GetBotSubType() == 1 )
-	{
-		pP->m_TeeInfos.m_UseCustomColor = 1;
-		pP->m_TeeInfos.m_ColorBody = 100;
-		pP->m_TeeInfos.m_ColorFeet = 100;		
-	} 
-	
-	if(pP->GetBotType() == BOT_L3MONSTER && pP->GetBotSubType() == 1 )
-	{
-		pP->m_TeeInfos.m_UseCustomColor = 1;
-		pP->m_TeeInfos.m_ColorBody = 15387000;
-		pP->m_TeeInfos.m_ColorFeet = 15387000;		
-	} 
-	
-	}
-	if(g_Config.m_SvCityStart == 2){
-		if(pP->GetBotType() == BOT_L1MONSTER && pP->GetBotSubType() == 2)
-	{
-		pP->m_TeeInfos.m_UseCustomColor = 1;
-		pP->m_TeeInfos.m_ColorBody = 14483456;
-		pP->m_TeeInfos.m_ColorFeet = 14483456;		
-	} 
-		if(pP->GetBotType() == BOT_L2MONSTER && pP->GetBotSubType() == 2 )
-	{
-		pP->m_TeeInfos.m_UseCustomColor = 1;
-		pP->m_TeeInfos.m_ColorBody = 6179584;
-		pP->m_TeeInfos.m_ColorFeet = 14483456;		
-	} 
-	if(pP->GetBotType() == BOT_L3MONSTER && pP->GetBotSubType() == 2)
-	{
-		pP->m_TeeInfos.m_UseCustomColor = 1;
-		pP->m_TeeInfos.m_ColorBody = 16752128;
-		pP->m_TeeInfos.m_ColorFeet = 15387000;		
-	} 
-	}*/
 	if (pP->GetBotType() == BOT_L4MONSTER)
 	{
 		pP->m_TeeInfos.m_UseCustomColor = 1;

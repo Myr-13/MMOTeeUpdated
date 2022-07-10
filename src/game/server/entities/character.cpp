@@ -193,6 +193,9 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	}
 	m_pPlayer->m_HealthStart = m_Health;
 	m_pPlayer->m_Mana = 0;
+
+	m_Core.m_BonusXSpeed = Server()->GetItemCount(m_pPlayer->GetCID(), ACCESSORY_ADD_SPEED);
+
 	return true;
 }
 
@@ -634,16 +637,15 @@ void CCharacter::FireWeapon()
 		{
 			if(Server()->GetItemSettings(m_pPlayer->GetCID(), PIZDAMET))
 			{
-				//if(rand()%2 == 0)
-					m_pPlayer->m_Mana--;
-					if(!m_pPlayer->m_ManaTick)
-			{
-				m_pPlayer->m_Mana++;
-				m_pPlayer->m_ManaTick = 10;
-				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 2, 50, -1);
-			}
+				m_pPlayer->m_Mana--;
+				if(!m_pPlayer->m_ManaTick)
+				{
+					m_pPlayer->m_Mana++;
+					m_pPlayer->m_ManaTick = 10;
+					GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 2, 50, -1);
+				}
 
-				m_aWeapons[m_ActiveWeapon].m_Ammo=m_pPlayer->m_Mana/5;
+				m_aWeapons[m_ActiveWeapon].m_Ammo = m_pPlayer->m_Mana / 5;
 				new CPizdamet(GameWorld(), m_Pos, m_pPlayer->GetCID());
 			}
 			else
@@ -654,7 +656,6 @@ void CCharacter::FireWeapon()
 
 				if(m_pPlayer->GetBotType() == BOT_BOSSSLIME)
 					ShotSpread = 15;
-
 
 				float Spreading[20 * 2 + 1];
 				for (int i = 0; i < 20 * 2 + 1; i++)
@@ -673,12 +674,22 @@ void CCharacter::FireWeapon()
 					if(Server()->GetItemSettings(m_pPlayer->GetCID(), GRENADEBOUNCE))
 						new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, vec2(cosf(a), sinf(a))*Speed, true, WEAPON_GRENADE, 100);
 					else
-						new CProjectile(GameWorld(), WEAPON_GRENADE,
-						m_pPlayer->GetCID(),
-						ProjStartPos,
-						vec2(cosf(a), sinf(a))*Speed,
-						(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime),
-						g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
+						new CProjectile(
+							GameWorld(), // GameWorld
+							WEAPON_GRENADE, // Type
+							m_pPlayer->GetCID(), // Owner
+							ProjStartPos, // Pos
+							vec2(cosf(a), sinf(a))*Speed, // Direction
+							(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime) + 10000, // Life time
+							g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, // Damage
+							true, // Exploide
+							0, // Force
+							SOUND_GRENADE_EXPLODE, // Sound impact
+							WEAPON_GRENADE, // Weapon
+							// TODO: Remove this
+							TAKEDAMAGEMODE_NOINFECTION, // Dmg mode
+							Server()->GetItemSettings(m_pPlayer->GetCID(), TARGET_AIM_GRENADE) // Target aim
+						);
 				}
 				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 			}
@@ -689,7 +700,7 @@ void CCharacter::FireWeapon()
 
 		case WEAPON_RIFLE:
 		{
-			bool Explode = Server()->GetItemSettings(m_pPlayer->GetCID(), EXLASER) ? true : false;
+			bool Explode = Server()->GetItemSettings(m_pPlayer->GetCID(), EXLASER);
 
 			int ShotSpread = m_pPlayer->m_InArea ? 2 : 2 + m_pPlayer->AccUpgrade.Spray/3;
 			if(ShotSpread > 10)
@@ -708,8 +719,31 @@ void CCharacter::FireWeapon()
 				a += Spreading[i + 20-ShotSpread/2];
 				float v = 1 - (absolute(i) / (float)ShotSpread) / 20;
 				float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
+				vec2 Pos = m_Pos;
 
-				new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
+				if (Server()->GetItemSettings(m_pPlayer->GetCID(), STORM_LASER))
+				{
+					for (int i = 0; i < 7; i++)
+					{
+						float Ang = a + 1.f - random_float() * 2.f;
+						vec2 Dir = GetDir(Ang) * Speed;
+						new CBiologistLaser(GameWorld(), Pos, Dir, m_pPlayer->GetCID(), 5, Explode, 50.f, true, m_pPlayer->m_LaserFreezeTime);
+
+						if (rand() % 2)
+						{
+							float Ang2 = a + 1.f - random_float() * 2.f;
+							vec2 Dir2 = GetDir(Ang2) * Speed;
+							new CBiologistLaser(GameWorld(), Pos, Dir2, m_pPlayer->GetCID(), 5, Explode, 50.f, true, m_pPlayer->m_LaserFreezeTime);
+						}
+
+						Pos += Dir * 50.f;
+					}
+				}
+				else
+				{
+					vec2 Dir = GetDir(a) * Speed;
+					new CBiologistLaser(GameWorld(), Pos, Dir, m_pPlayer->GetCID(), 3, Explode);
+				}
 			}
 			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
@@ -1002,11 +1036,13 @@ void CCharacter::Tick()
 
 		// Крылья логика
 		if (Server()->GetItemEnquip(m_pPlayer->GetCID(), 19) != -1) {
-			m_Core.m_InvertGravity = m_Input.m_Jump;
+			if (m_Core.m_Vel.y < 16 && m_Core.m_Pos > 0)
+				m_Core.m_InvertGravity = m_Input.m_Jump;
 
 			if (!IsGrounded())
 				m_Core.m_Jumped |= 3;
 
+			// Насильно отпрвавляем инфу на клиент
 			if (m_Input.m_Jump)
 			{
 				CNetObj_Character Current;
@@ -1017,6 +1053,19 @@ void CCharacter::Tick()
 				m_SendCore = m_Core;
 				m_ReckoningCore = m_Core;
 			}
+		}
+
+		// Акксессуар скорости
+		// Насильно отправляем инфу на клиент
+		if (Server()->GetItemCount(m_pPlayer->GetCID(), ACCESSORY_ADD_SPEED) && m_Input.m_Direction)
+		{
+			CNetObj_Character Current;
+			mem_zero(&Current, sizeof(Current));
+			m_Core.Write(&Current);
+
+			m_ReckoningTick = Server()->Tick();
+			m_SendCore = m_Core;
+			m_ReckoningCore = m_Core;
 		}
 
 		if((m_pPlayer->m_AngryWroth > 120 || Server()->GetItemCount(m_pPlayer->GetCID(), X2MONEYEXPVIP)) && Server()->Tick() % (1 * Server()->TickSpeed()) == 0)
@@ -1092,16 +1141,16 @@ void CCharacter::Tick()
 					Money = 400;
 					break;
 				case ZONE_CHAIRCLAN1:
-					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0));
-					Money = 500 + (Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0)) * 50);
+					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0)) * 2;
+					Money = 500 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0)) * 50;
 					break;
 				case ZONE_CHAIRCLAN2:
-					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1));
-					Money = 500 + (Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1)) * 50);
+					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1)) * 2;
+					Money = 500 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1)) * 50;
 					break;
 				case ZONE_CHAIRCLAN3:
-					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2));
-					Money = 500 + (Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2)) * 50);
+					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2)) * 2;
+					Money = 500 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2)) * 50;
 					break;
 				default:
 					Exp = 10;
@@ -1837,16 +1886,18 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 		}
 
-		int getcount = pFrom->AccData.Class == PLAYERCLASS_ASSASINS ? 15-pFrom->AccUpgrade.HammerRange : 15;
-		if(rand()%getcount == 1)
+		int getcount = pFrom->AccData.Class == PLAYERCLASS_ASSASINS ? 15 - pFrom->AccUpgrade.HammerRange : 15;
+		if(rand() % getcount == 1)
 		{
 			int CritDamage = Dmg + pFrom->AccUpgrade.Damage * 2 + rand() % 50;
+			CritDamage += CritDamage / 100.f * Server()->GetItemCount(From, ACCESSORY_ADD_DMG);
 			if(pFrom->AccData.Class == PLAYERCLASS_ASSASINS)
-				CritDamage += (CritDamage/100)*pFrom->AccUpgrade.Pasive2 * 3;
+				CritDamage += (CritDamage / 100) * pFrom->AccUpgrade.Pasive2 * 3;
+			CritDamage += Server()->GetItemCount(From, RAREEVENTHAMMER) * 5;
 
 			Dmg = CritDamage;
 			if(pFrom->GetCharacter()->m_ActiveWeapon == WEAPON_SHOTGUN)
-				Dmg = (int)(CritDamage/2);
+				Dmg = (int)(CritDamage / 2);
 
 			if(!Server()->GetItemSettings(From, SCHAT))
 				GameServer()->SendChatTarget_Localization(From, CHATCATEGORY_BERSERK, _("Crit damage {int:crit}"), "crit", &Dmg, NULL);
@@ -1856,6 +1907,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			int DamageProc = Dmg + pFrom->AccUpgrade.Damage;
 			if(pFrom->AccData.Class == PLAYERCLASS_BERSERK)
 				DamageProc += (DamageProc / 100) * pFrom->AccUpgrade.Pasive2 * 3;
+			DamageProc += DamageProc / 100.f * Server()->GetItemCount(From, ACCESSORY_ADD_DMG);
 
 			// +50% урона если враг красный как залупа и он юзает хаммер
 			if(pFrom->GetCharacter()->m_BerserkRage && Weapon == WEAPON_HAMMER)
@@ -1875,16 +1927,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 	}
 	else Dmg = 1;
 
-	//if(Server()->Tick() < m_DamageTakenTick+25)
-	//{
-	//	GameServer()->CreateDamageInd(m_Pos, m_DamageTaken*0.25f, Dmg/10);
-	//}
-	//else
-	//{
-	//	m_DamageTaken = 0;
-	//	GameServer()->CreateDamageInd(m_Pos, 0, Dmg/10);
-	//}
-
+	// Give dmg
 	if(Dmg)
 	{
 		if(Server()->GetItemEnquip(m_pPlayer->GetCID(), 17))
@@ -1917,6 +1960,9 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 					Mask |= CmaskOne(i);
 			}
 			GameServer()->CreateSound(GameServer()->m_apPlayers[From]->m_ViewPos, SOUND_HIT, Mask);
+
+			int Steal = (100 - Server()->GetItemCount(From, ACCESSORY_ADD_STEAL_HP) > 30) ? 100 - Server()->GetItemCount(From, ACCESSORY_ADD_STEAL_HP) > 30 : 30;
+			pFrom->m_Health += Steal;
 		}
 	}
 
@@ -1936,18 +1982,26 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 				CreateDropRandom(ESUMMER, 1, 45, From, Force / (50 + randforce));
 
 			// Хуй кто Игроя получит :D
-			CreateDropRandom(PET_IGOR, 1, 130000, From, Force / (50 + randforce));
+			// Сука, у меня их 4
+			CreateDropRandom(PET_IGOR, 1, 150000, From, Force / (50 + randforce));
+
+			CreateDropRandom(ACCESSORY_ADD_SPEED, 1, 10000, From, Force / (50 + randforce));
+			CreateDropRandom(ACCESSORY_ADD_DMG, 1, 10000, From, Force / (50 + randforce));
+			CreateDropRandom(ACCESSORY_ADD_HP, 1, 10000, From, Force / (50 + randforce));
+			CreateDropRandom(ACCESSORY_ADD_ARMOR, 1, 10000, From, Force / (50 + randforce));
+			CreateDropRandom(ACCESSORY_ADD_MONEY, 1, 10000, From, Force / (50 + randforce));
+			CreateDropRandom(ACCESSORY_ADD_STEAL_HP, 1, 10000, From, Force / (50 + randforce));
 
 			if(m_pPlayer->GetBotType() == BOT_L1MONSTER)
 			{
-				CreateDropRandom(AHAPPY, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
-				CreateDropRandom(AEVIL, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
-				CreateDropRandom(APAIN, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
-				CreateDropRandom(ABLINK, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
-				CreateDropRandom(ASUPRRISE, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force/(50+randforce));
-				CreateDropRandom(PIGPORNO, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 30 : 40, From, Force/(50+randforce));
-				CreateDropRandom(LEATHER, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 45 : 60, From, Force/(50+randforce));
-				CreateDropRandom(PRESSEDPIECE, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 45 : 60, From, Force/(50+randforce));
+				CreateDropRandom(AHAPPY, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000,    From, Force / (50 + randforce));
+				CreateDropRandom(AEVIL, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000,     From, Force / (50 + randforce));
+				CreateDropRandom(APAIN, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000,     From, Force / (50 + randforce));
+				CreateDropRandom(ABLINK, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000,    From, Force / (50 + randforce));
+				CreateDropRandom(ASUPRRISE, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 1500 : 2000, From, Force / (50 + randforce));
+				CreateDropRandom(PIGPORNO, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 30 : 40,      From, Force / (50 + randforce));
+				CreateDropRandom(LEATHER, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 45 : 60,       From, Force / (50 + randforce));
+				CreateDropRandom(PRESSEDPIECE, 1, (Server()->GetItemEnquip(From, 18) == PET_PIGGY) ? 45 : 60,  From, Force / (50 + randforce));
 
 				CreateDropRandom(PET_PIGGY, 1, 5000, From, Force / (50 + randforce));
 
@@ -2409,20 +2463,22 @@ void CCharacter::ClassSpawnAttributes()
 	if(!Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT))
 		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("Attention! All settings in vote"), NULL);
 
+	int ClientID = m_pPlayer->GetCID();
+
 	if(m_pPlayer->m_InArea)
 	{
 		m_aWeapons[WEAPON_HAMMER].m_Got = false;
 
-		Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 100);
-		Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 1000);
-		Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 1);
+		Server()->SetMaxAmmo(ClientID, INFWEAPON_RIFLE, 100);
+		Server()->SetFireDelay(ClientID, INFWEAPON_RIFLE, 1000);
+		Server()->SetAmmoRegenTime(ClientID, INFWEAPON_RIFLE, 1);
 
 		if(GameServer()->m_AreaType == 2)
 		{
 			m_aWeapons[WEAPON_HAMMER].m_Got = true;
-			Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 10000);
-			Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 1000);
-			Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 0);
+			Server()->SetMaxAmmo(ClientID, INFWEAPON_HAMMER, 10000);
+			Server()->SetFireDelay(ClientID, INFWEAPON_HAMMER, 1000);
+			Server()->SetAmmoRegenTime(ClientID, INFWEAPON_HAMMER, 0);
 		}
 
 		m_aWeapons[WEAPON_RIFLE].m_Got = true;
@@ -2436,11 +2492,11 @@ void CCharacter::ClassSpawnAttributes()
 	{
 		case PLAYERCLASS_HEALER:
 			RemoveAllGun();
-			m_Health = 10+m_pPlayer->AccUpgrade.Health*50;
+			m_Health = 10 + m_pPlayer->AccUpgrade.Health * 50;
 			if(m_pPlayer->AccUpgrade.HammerRange)
 			{
-				int Proc = (m_Health / 100)*m_pPlayer->AccUpgrade.HammerRange*4;
-				m_Health = 10+m_pPlayer->AccUpgrade.Health*50+Proc;
+				int Proc = (m_Health / 100) * m_pPlayer->AccUpgrade.HammerRange * 4;
+				m_Health = 10 + m_pPlayer->AccUpgrade.Health * 50 + Proc;
 			}
 			if(!m_pPlayer->IsKownClass(PLAYERCLASS_HEALER))
 			{
@@ -2449,7 +2505,7 @@ void CCharacter::ClassSpawnAttributes()
 			break;
 		case PLAYERCLASS_BERSERK:
 			RemoveAllGun();
-			m_Health = 10+m_pPlayer->AccUpgrade.Health*40;
+			m_Health = 10 + m_pPlayer->AccUpgrade.Health * 40;
 			if(!m_pPlayer->IsKownClass(PLAYERCLASS_BERSERK))
 			{
 				m_pPlayer->m_knownClass[PLAYERCLASS_BERSERK] = true;
@@ -2457,7 +2513,7 @@ void CCharacter::ClassSpawnAttributes()
 			break;
 		case PLAYERCLASS_ASSASINS:
 			RemoveAllGun();
-			m_Health = 5+m_pPlayer->AccUpgrade.Health*40;
+			m_Health = 5 + m_pPlayer->AccUpgrade.Health * 40;
 			if(!m_pPlayer->IsKownClass(PLAYERCLASS_ASSASINS))
 			{
 				m_pPlayer->m_knownClass[PLAYERCLASS_ASSASINS] = true;
@@ -2468,38 +2524,35 @@ void CCharacter::ClassSpawnAttributes()
 			break;
 	}
 
-	if(Server()->GetItemEnquip(m_pPlayer->GetCID(), 15))
+	if(Server()->GetItemEnquip(ClientID, 15))
 	{
-		m_Health += Server()->GetBonusEnchant(m_pPlayer->GetCID(), Server()->GetItemEnquip(m_pPlayer->GetCID(), 15), 15);
-		m_Armor += Server()->GetBonusEnchant(m_pPlayer->GetCID(), Server()->GetItemEnquip(m_pPlayer->GetCID(), 15), 15);
+		m_Health += Server()->GetBonusEnchant(ClientID, Server()->GetItemEnquip(ClientID, 15), 15);
+		m_Armor += Server()->GetBonusEnchant(ClientID, Server()->GetItemEnquip(ClientID, 15), 15);
 	}
 
-	if(Server()->GetItemEnquip(m_pPlayer->GetCID(), 16))
+	if(Server()->GetItemEnquip(ClientID, 16))
 	{
-		m_Health += Server()->GetBonusEnchant(m_pPlayer->GetCID(), Server()->GetItemEnquip(m_pPlayer->GetCID(), 16), 16);
-		m_Armor += Server()->GetBonusEnchant(m_pPlayer->GetCID(), Server()->GetItemEnquip(m_pPlayer->GetCID(), 16), 16);
+		m_Health += Server()->GetBonusEnchant(ClientID, Server()->GetItemEnquip(ClientID, 16), 16);
+		m_Armor += Server()->GetBonusEnchant(ClientID, Server()->GetItemEnquip(ClientID, 16), 16);
 	}
 
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), BOSSDIE))
+	m_Health += Server()->GetItemCount(ClientID, ACCESSORY_ADD_HP) * 150;
+	m_Armor += Server()->GetItemCount(ClientID, ACCESSORY_ADD_ARMOR) * 150;
+
+	if(Server()->GetItemCount(ClientID, BOSSDIE))
 		m_Health += 500;
 
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), TITLEQUESTS))
+	if(Server()->GetItemCount(ClientID, TITLEQUESTS))
 	{
 		m_Health += 1000;
 		m_Armor += 200;
 	}
 
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), TITLEENCHANT))
+	if(Server()->GetItemCount(ClientID, TITLEENCHANT))
 	{
 		m_Health += 1000;
 		m_Armor += 500;
 	}
-	//if(Server()->GetItemSettings(m_pPlayer->GetCID(), ORIHALCUMFEET) && Server()->GetItemSettings(m_pPlayer->GetCID(), ORIHALCUMBODY))
-	//	m_pPlayer->AccUpgrade.Damage+=30;
-	//if(Server()->GetItemSettings(m_pPlayer->GetCID(), PALLADIUMBOOTS) && Server()->GetItemSettings(m_pPlayer->GetCID(), PALLADIUMCHEST))
-	//	m_pPlayer->AccUpgrade.Damage+=60;
-	//if(Server()->GetItemSettings(m_pPlayer->GetCID(), IMMORTALCHEST) && Server()->GetItemSettings(m_pPlayer->GetCID(), IMMORTALBOOTS))
-	//	m_pPlayer->AccUpgrade.Damage+=150;
 
 	// антипвп мелких уровней
 	m_pPlayer->m_AntiPvpSmall = false;
@@ -2507,54 +2560,54 @@ void CCharacter::ClassSpawnAttributes()
 	{
 		m_pPlayer->m_AntiPvpSmall = true;
 
-		if(Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT) != 2)
-			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("Anti PVP / Small level active."), NULL);
+		if(Server()->GetItemSettings(ClientID, SCHAT) != 2)
+			GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("Anti PVP / Small level active."), NULL);
 	}
 
 	// книги инфа
-	if(m_pPlayer->m_MoneyAdd)
-		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("You have an active {str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKMONEYMIN), NULL);
-	if(m_pPlayer->m_ExperienceAdd)
-		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("You have an active {str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKEXPMIN), NULL);
+	if(m_pPlayer->m_MoneyAddEndTick > Server()->Tick())
+		GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("You have an active {str:name}."), "name", Server()->GetItemName(ClientID, BOOKMONEYMIN), NULL);
+	if(m_pPlayer->m_ExperienceAddEndTick > Server()->Tick())
+		GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("You have an active {str:name}."), "name", Server()->GetItemName(ClientID, BOOKEXPMIN), NULL);
 
 	if(m_pPlayer->IsBot())
-		m_Health = 10+m_pPlayer->AccUpgrade.Health*10;
+		m_Health = 10 + m_pPlayer->AccUpgrade.Health * 10;
 
 	// прибавка 5% к хп
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), RINGBOOMER))
-		m_Health += (m_Health/100)*5;
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), SLIMESPHERE))
+	if(Server()->GetItemCount(ClientID, RINGBOOMER))
+		m_Health += (m_Health / 100) * 5;
+	if(Server()->GetItemCount(ClientID, SLIMESPHERE))
 	{
-		m_Health += (m_Health/100)*10;
-		m_Armor += (m_Armor/100)*5;
+		m_Health += (m_Health / 100) * 10;
+		m_Armor += (m_Armor / 100) * 5;
 	}
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), SLIMENECKLACKE))
-		m_Health += (m_Health/100)*10;
+	if(Server()->GetItemCount(ClientID, SLIMENECKLACKE))
+		m_Health += (m_Health / 100) * 10;
 
 	// настройки прокачек оружия
-	int geta = (int)(5+m_pPlayer->AccUpgrade.Ammo);
-	int getsp = 1000+m_pPlayer->AccUpgrade.Speed*20;
-	int getspg = 1000+m_pPlayer->AccUpgrade.Speed*8;
+	int geta = (int)(5 + m_pPlayer->AccUpgrade.Ammo);
+	int getsp = 1000 + m_pPlayer->AccUpgrade.Speed * 20;
+	int getspg = 1000 + m_pPlayer->AccUpgrade.Speed * 8;
 	int getar = 0;
 	if(m_pPlayer->AccUpgrade.AmmoRegen > 0)
-		getar= (int)(650-m_pPlayer->AccUpgrade.AmmoRegen*2);
+		getar= (int)(650 - m_pPlayer->AccUpgrade.AmmoRegen * 2);
 
 	// Оружие пак крафт +3 аммо
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), WEAPONPRESSED))
-		geta += Server()->GetItemCount(m_pPlayer->GetCID(), WEAPONPRESSED)*3;
+	if(Server()->GetItemCount(ClientID, WEAPONPRESSED))
+		geta += Server()->GetItemCount(ClientID, WEAPONPRESSED)*3;
 
 	if(m_pPlayer->GetCharacter())
 	{
 		// Выдоча боссу оружия
 		if(m_pPlayer->GetBotType() == BOT_BOSSSLIME)
 		{
-			Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 99999);
-			Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 10);
-			Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 4000);
+			Server()->SetMaxAmmo(ClientID, INFWEAPON_SHOTGUN, 99999);
+			Server()->SetAmmoRegenTime(ClientID, INFWEAPON_SHOTGUN, 10);
+			Server()->SetFireDelay(ClientID, INFWEAPON_SHOTGUN, 4000);
 
-			Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_GRENADE, 99999);
-			Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GRENADE, 10);
-			Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_GRENADE, 4000);
+			Server()->SetMaxAmmo(ClientID, INFWEAPON_GRENADE, 99999);
+			Server()->SetAmmoRegenTime(ClientID, INFWEAPON_GRENADE, 10);
+			Server()->SetFireDelay(ClientID, INFWEAPON_GRENADE, 4000);
 
 			GiveWeapon(WEAPON_GRENADE, -1);
 			GiveWeapon(WEAPON_SHOTGUN, -1);
@@ -2562,58 +2615,58 @@ void CCharacter::ClassSpawnAttributes()
 		}
 
 		// Рисовка артифактов
-		if(m_pPlayer->m_BigBot || Server()->GetItemCount(m_pPlayer->GetCID(), SNAPAMMOREGEN))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 9, WEAPON_HAMMER, true);
+		if(m_pPlayer->m_BigBot || Server()->GetItemCount(ClientID, SNAPAMMOREGEN))
+			new CSnapFullProject(GameWorld(), m_Pos, ClientID, 9, WEAPON_HAMMER, true);
 
-		if(Server()->GetItemCount(m_pPlayer->GetCID(), SPECSNAPDRAW))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 6, WEAPON_SHOTGUN, true);
+		if(Server()->GetItemCount(ClientID, SPECSNAPDRAW))
+			new CSnapFullProject(GameWorld(), m_Pos, ClientID, 6, WEAPON_SHOTGUN, true);
 
-		if(Server()->GetItemSettings(m_pPlayer->GetCID(), RAREEVENTHAMMER))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 3, 4, true);
-		else if(Server()->GetItemCount(m_pPlayer->GetCID(), SNAPDAMAGE))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 3, WEAPON_GRENADE, true);
+		if(Server()->GetItemSettings(ClientID, RAREEVENTHAMMER))
+			new CSnapFullProject(GameWorld(), m_Pos, ClientID, 3, 4, true);
+		else if(Server()->GetItemCount(ClientID, SNAPDAMAGE))
+			new CSnapFullProject(GameWorld(), m_Pos, ClientID, 3, WEAPON_GRENADE, true);
 
-		if(Server()->GetItemCount(m_pPlayer->GetCID(), SNAPHANDLE))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 6, 6, true);
+		if(Server()->GetItemCount(ClientID, SNAPHANDLE))
+			new CSnapFullProject(GameWorld(), m_Pos, ClientID, 6, 6, true);
 	}
 
-	Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 10000);
-	if(Server()->GetItemSettings(m_pPlayer->GetCID(), LAMPHAMMER)) Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 1200);
-	else Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_HAMMER, getsp);
+	Server()->SetMaxAmmo(ClientID, INFWEAPON_HAMMER, 10000);
+	if(Server()->GetItemSettings(ClientID, LAMPHAMMER)) Server()->SetFireDelay(ClientID, INFWEAPON_HAMMER, 1200);
+	else Server()->SetFireDelay(ClientID, INFWEAPON_HAMMER, getsp);
 
-	Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 0);
+	Server()->SetAmmoRegenTime(ClientID, INFWEAPON_HAMMER, 0);
 
-	Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_GUN, geta);
-	Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_GUN, getsp);
-	Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GUN, 500);
+	Server()->SetMaxAmmo(ClientID, INFWEAPON_GUN, geta);
+	Server()->SetFireDelay(ClientID, INFWEAPON_GUN, getsp);
+	Server()->SetAmmoRegenTime(ClientID, INFWEAPON_GUN, 500);
 
-	Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, geta);
-	Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, getsp);
-	Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, getar);
+	Server()->SetMaxAmmo(ClientID, INFWEAPON_SHOTGUN, geta);
+	Server()->SetFireDelay(ClientID, INFWEAPON_SHOTGUN, getsp);
+	Server()->SetAmmoRegenTime(ClientID, INFWEAPON_SHOTGUN, getar);
 
-	Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_GRENADE, geta);
+	Server()->SetMaxAmmo(ClientID, INFWEAPON_GRENADE, geta);
 
-	if(Server()->GetItemSettings(m_pPlayer->GetCID(), PIZDAMET)) Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_GRENADE, 7000);
-	else Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_GRENADE, getspg);
+	if(Server()->GetItemSettings(ClientID, PIZDAMET)) Server()->SetFireDelay(ClientID, INFWEAPON_GRENADE, 7000);
+	else Server()->SetFireDelay(ClientID, INFWEAPON_GRENADE, getspg);
 
-	Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GRENADE, getar);
+	Server()->SetAmmoRegenTime(ClientID, INFWEAPON_GRENADE, getar);
 
-	Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_RIFLE, geta);
-	Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_RIFLE, getsp);
-	Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_RIFLE, getar);
+	Server()->SetMaxAmmo(ClientID, INFWEAPON_RIFLE, geta);
+	Server()->SetFireDelay(ClientID, INFWEAPON_RIFLE, getsp);
+	Server()->SetAmmoRegenTime(ClientID, INFWEAPON_RIFLE, getar);
 
-	Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_NONE, -1);
-	Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_NONE, 0);
-	Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_NONE, 0);
+	Server()->SetMaxAmmo(ClientID, INFWEAPON_NONE, -1);
+	Server()->SetFireDelay(ClientID, INFWEAPON_NONE, 0);
+	Server()->SetAmmoRegenTime(ClientID, INFWEAPON_NONE, 0);
 
 	// Выдача оружия
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), IGUN) || Server()->GetItemCount(m_pPlayer->GetCID(), WEAPONPRESSED))
+	if(Server()->GetItemCount(ClientID, IGUN) || Server()->GetItemCount(ClientID, WEAPONPRESSED))
 		GiveWeapon(WEAPON_GUN, geta);
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), ISHOTGUN) || Server()->GetItemCount(m_pPlayer->GetCID(), WEAPONPRESSED))
+	if(Server()->GetItemCount(ClientID, ISHOTGUN) || Server()->GetItemCount(ClientID, WEAPONPRESSED))
 		GiveWeapon(WEAPON_SHOTGUN, geta);
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), IGRENADE) || Server()->GetItemCount(m_pPlayer->GetCID(), WEAPONPRESSED))
+	if(Server()->GetItemCount(ClientID, IGRENADE) || Server()->GetItemCount(ClientID, WEAPONPRESSED))
 		GiveWeapon(WEAPON_GRENADE, geta);
-	if(Server()->GetItemCount(m_pPlayer->GetCID(), ILASER) || Server()->GetItemCount(m_pPlayer->GetCID(), WEAPONPRESSED))
+	if(Server()->GetItemCount(ClientID, ILASER) || Server()->GetItemCount(ClientID, WEAPONPRESSED))
 		GiveWeapon(WEAPON_RIFLE, geta);
 
 	// Выдача классового оружия
@@ -2621,17 +2674,17 @@ void CCharacter::ClassSpawnAttributes()
 	case PLAYERCLASS_BERSERK:
 		m_aWeapons[WEAPON_AXE].m_Got = true;
 		m_aWeapons[WEAPON_AXE].m_Ammo = 10000;
-		Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_AXE, 15);
+		Server()->SetFireDelay(ClientID, INFWEAPON_AXE, 15);
 		break;
 	case PLAYERCLASS_ASSASINS:
 		m_aWeapons[WEAPON_KNIFE].m_Got = true;
 		m_aWeapons[WEAPON_KNIFE].m_Ammo = 10000;
-		Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_KNIFE, 15);
+		Server()->SetFireDelay(ClientID, INFWEAPON_KNIFE, 15);
 		break;
 	case PLAYERCLASS_HEALER:
 		m_aWeapons[WEAPON_WAND].m_Got = true;
 		m_aWeapons[WEAPON_WAND].m_Ammo = 10000;
-		Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_WAND, 15);
+		Server()->SetFireDelay(ClientID, INFWEAPON_WAND, 15);
 		break;
 	}
 

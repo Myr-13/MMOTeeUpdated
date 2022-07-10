@@ -2938,11 +2938,13 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			CreateNewShop(ClientID, GHOSTGUN, 3, 60, 3000);
 			CreateNewShop(ClientID, GHOSTSHOTGUN, 3, 70, 15000);
 			CreateNewShop(ClientID, GHOSTGRENADE, 3, 70, 15000);
-			CreateNewShop(ClientID, PIZDAMET, 3, 90, 15000);
 
 			CreateNewShop(ClientID, GUNBOUNCE, 3, 90, 20000);
 			CreateNewShop(ClientID, GRENADEBOUNCE, 3, 90, 20000);
 
+			CreateNewShop(ClientID, PIZDAMET, 3, 90, 15000);
+			CreateNewShop(ClientID, STORM_LASER, 3, 100, 30000);
+			CreateNewShop(ClientID, TARGET_AIM_GRENADE, 3, 120, 40000);
 			CreateNewShop(ClientID, LAMPHAMMER, 3, 160, 50000);
 
 			// #################### СКИЛЫ
@@ -3165,9 +3167,11 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		CreateNewShop(ClientID, GRENADEBOUNCE, 1, 0, 0);
 		CreateNewShop(ClientID, GHOSTGRENADE, 1, 0, 0);
 		CreateNewShop(ClientID, PIZDAMET, 1, 0, 0);
+		CreateNewShop(ClientID, TARGET_AIM_GRENADE, 1, 0, 0);
 		AddVote("", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "Rifle"));
 		CreateNewShop(ClientID, EXLASER, 1, 0, 0);
+		CreateNewShop(ClientID, STORM_LASER, 1, 0, 0);
 
 		AddVote("························", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "Settings"));
@@ -4203,20 +4207,18 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	}
 
 	int CurID = 0;
-	if(!g_Config.m_SvCityStart)
-	{
-		for (int o = 0; o < 12; o++, CurID++)
-			CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart);
-		for (int o = 0; o < 11; o++, CurID++)
-			CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart);
-		for (int o = 0; o < 10; o++, CurID++)
-			CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart);
-
-		for (int o = 0; o < 10; o++, CurID++)
-			CreateBot(CurID, BOT_L4MONSTER, g_Config.m_SvCityStart);
-		for (int o = 0; o < 10; o++, CurID++)
-			CreateBot(CurID, BOT_L5MONSTER, g_Config.m_SvCityStart);
-	}
+	for (int o = 0; o < 10; o++, CurID++)
+		CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart); // Pig
+	for (int o = 0; o < 9; o++, CurID++)
+		CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart); // Kwah
+	for (int o = 0; o < 8; o++, CurID++)
+		CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart); // Boom
+	for (int o = 0; o < 1; o++, CurID++)
+		CreateBot(CurID, BOT_NPC, g_Config.m_SvCityStart); // Guard
+	for (int o = 0; o < 6; o++, CurID++)
+		CreateBot(CurID, BOT_L4MONSTER, g_Config.m_SvCityStart); // Zombie
+	for (int o = 0; o < 6; o++, CurID++)
+		CreateBot(CurID, BOT_L5MONSTER, g_Config.m_SvCityStart); // Skeleton
 	/*else if (g_Config.m_SvCityStart == 1)
 	{
 		for (int o=0; o<11; o++,CurID++)
@@ -4234,14 +4236,12 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 			CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart);
 		for (int o=0; o<12; o++,CurID++)
 			CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart);
+	}
+	for (int o = 0; o < 3; o++, CurID++)
+	{
+		CreateBot(CurID, BOT_NPCW, o);
+		dbg_msg("a", "%d : %d", MAX_PLAYERS + CurID, o);
 	}*/
-	for (int o=0; o<1; o++,CurID++)
-		CreateBot(CurID, BOT_NPC, g_Config.m_SvCityStart);
-	//for (int o = 0; o < 3; o++, CurID++)
-	//{
-	//	CreateBot(CurID, BOT_NPCW, o);
-	//	dbg_msg("a", "%d : %d", MAX_PLAYERS + CurID, o);
-	//}
 
 #ifdef CONF_DEBUG
 	if(g_Config.m_DbgDummies)
@@ -4418,9 +4418,7 @@ void CGameContext::UpdateBotInfo(int ClientID)
 		else if(BotSubType == 1) str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
 	}
 	else if(BotType == BOT_BOSSSLIME)
-	{
 		str_copy(NameSkin, "twinbop", sizeof(NameSkin));
-	}
 	else if(BotType == BOT_NPCW)
 	{
 		if(BotSubType == 0) str_copy(NameSkin, "saddo", sizeof(NameSkin));
@@ -4651,34 +4649,40 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 			}
 			else if(ItemID == RESETINGSKILL)
 			{
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:items}x{int:num}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, NULL);
+				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:items} x{int:num}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, NULL);
 				m_apPlayers[ClientID]->ResetSkill(ClientID);
 			}
 			else if(ItemID == RESETINGUPGRADE)
 			{
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:items}x{int:num}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, NULL);
+				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:items} x{int:num}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, NULL);
 				m_apPlayers[ClientID]->ResetUpgrade(ClientID);
 			}
 			else if(ItemID == BOOKEXPMIN)
 			{
-				if(i == Count-1)
-					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("You used items {str:items}x{int:num}"), "items", Server()->GetItemName(ClientID, ItemID), "num", &Count, NULL);
+				if(i == Count - 1)
+					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("You used items {str:items} x{int:num}"), "items", Server()->GetItemName(ClientID, ItemID), "num", &Count, NULL);
 
-				m_apPlayers[ClientID]->m_ExperienceAdd += 600*Server()->TickSpeed();
+				if (m_apPlayers[ClientID]->m_ExperienceAddEndTick > Server()->Tick())
+					m_apPlayers[ClientID]->m_ExperienceAddEndTick += 600 * Server()->TickSpeed();
+				else
+					m_apPlayers[ClientID]->m_ExperienceAddEndTick = Server()->Tick() + 600 * Server()->TickSpeed();
 			}
 			else if(ItemID == BOOKMONEYMIN)
 			{
-				if(i == Count-1)
-					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("You used items {str:items}x{int:num}"), "items", Server()->GetItemName(ClientID, ItemID), "num", &Count, NULL);
+				if(i == Count - 1)
+					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("You used items {str:items} x{int:num}"), "items", Server()->GetItemName(ClientID, ItemID), "num", &Count, NULL);
 
-				m_apPlayers[ClientID]->m_MoneyAdd += 600*Server()->TickSpeed();
+				if (m_apPlayers[ClientID]->m_MoneyAddEndTick > Server()->Tick())
+					m_apPlayers[ClientID]->m_MoneyAddEndTick += 600 * Server()->TickSpeed();
+				else
+					m_apPlayers[ClientID]->m_MoneyAddEndTick = Server()->Tick() + 600 * Server()->TickSpeed();
 			}
 			else if(ItemID == SKILLUPBOX)
 			{
 				m_apPlayers[ClientID]->AccUpgrade.Upgrade += 20;
 				m_apPlayers[ClientID]->AccUpgrade.SkillPoint += 10;
 				if(i == Count-1)
-					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("You used items {str:items}x{int:num}"), "items", Server()->GetItemName(ClientID, ItemID), "num", &Count, NULL);
+					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("You used items {str:items} x{int:num}"), "items", Server()->GetItemName(ClientID, ItemID), "num", &Count, NULL);
 
 				UpdateUpgrades(ClientID);
 			}
