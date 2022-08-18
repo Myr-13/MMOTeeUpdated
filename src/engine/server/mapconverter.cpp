@@ -42,7 +42,7 @@ bool CMapConverter::Load()
 			{
 				CMapItemLayerTilemap *pTileLayer = reinterpret_cast<CMapItemLayerTilemap *>(pLayer);
 				
-				if(pTileLayer->m_Flags&TILESLAYERFLAG_PHYSICS)
+				if(pTileLayer->m_Flags & TILESLAYERFLAG_PHYSICS)
 				{
 					pPhysicsLayer = pTileLayer;
 					break;
@@ -66,22 +66,22 @@ bool CMapConverter::Load()
 	if(m_pTiles)
 		delete[] m_pTiles;
 		
-	m_pTiles = new CTile[m_Width*m_Height];
+	m_pTiles = new CTile[m_Width * m_Height];
 	
-	for(int j=0; j<m_Height; j++)
+	for(int j = 0; j < m_Height; j++)
 	{
-		for(int i=0; i<m_Width; i++)
+		for(int i = 0; i < m_Width; i++)
 		{
-			m_pTiles[j*m_Width+i].m_Flags = 0;
-			m_pTiles[j*m_Width+i].m_Reserved = 0;
+			m_pTiles[j * m_Width + i].m_Flags = 0;
+			m_pTiles[j * m_Width + i].m_Reserved = 0;
 			
 			int Skip = m_pPhysicsLayerTiles[j*m_Width+i].m_Skip;
-			m_pTiles[j*m_Width+i].m_Skip = Skip;
+			m_pTiles[j * m_Width + i].m_Skip = Skip;
 			i += Skip;
 		}
 	}
 	
-	//Get the animation cycle
+	// Get the animation cycle
 	CEnvPoint* pEnvPoints = NULL;
 	{
 		int Start, Num;
@@ -119,10 +119,10 @@ bool CMapConverter::Load()
 
 void CMapConverter::InitQuad(CQuad* pQuad)
 {
-    for (int i=0; i<5; i++) {
-        pQuad->m_aPoints[i].x = 0;
-        pQuad->m_aPoints[i].y = 0;
-    }
+	for (int i = 0; i < 5; i++) {
+		pQuad->m_aPoints[i].x = 0;
+		pQuad->m_aPoints[i].y = 0;
+	}
 	pQuad->m_aColors[0].r = pQuad->m_aColors[1].r = 255;
 	pQuad->m_aColors[0].g = pQuad->m_aColors[1].g = 255;
 	pQuad->m_aColors[0].b = pQuad->m_aColors[1].b = 255;
@@ -147,11 +147,11 @@ void CMapConverter::InitQuad(CQuad* pQuad)
 
 void CMapConverter::InitQuad(CQuad* pQuad, vec2 Pos, vec2 Size)
 {
-	int X0 = f2fx(Pos.x-Size.x/2.0f);
-	int X1 = f2fx(Pos.x+Size.x/2.0f);
+	int X0 = f2fx(Pos.x - Size.x / 2.0f);
+	int X1 = f2fx(Pos.x + Size.x / 2.0f);
 	int XC = f2fx(Pos.x);
-	int Y0 = f2fx(Pos.y-Size.y/2.0f);
-	int Y1 = f2fx(Pos.y+Size.y/2.0f);
+	int Y0 = f2fx(Pos.y - Size.y / 2.0f);
+	int Y1 = f2fx(Pos.y + Size.y / 2.0f);
 	int YC = f2fx(Pos.y);
 	
 	InitQuad(pQuad);
@@ -169,10 +169,10 @@ void CMapConverter::CreateCircle(array<CQuad>* pQuads, vec2 CenterPos, float Siz
 	InitQuad(&Quad);
 	Quad.m_aPoints[0].x = f2fx(CenterPos.x);
 	Quad.m_aPoints[0].y = f2fx(CenterPos.y);
-	Quad.m_aColors[0].r = Quad.m_aColors[1].r = Quad.m_aColors[2].r = Quad.m_aColors[3].r = Color.r*255.0f;
-	Quad.m_aColors[0].g = Quad.m_aColors[1].g = Quad.m_aColors[2].g = Quad.m_aColors[3].g = Color.g*255.0f;
-	Quad.m_aColors[0].b = Quad.m_aColors[1].b = Quad.m_aColors[2].b = Quad.m_aColors[3].b = Color.b*255.0f;
-	Quad.m_aColors[0].a = Quad.m_aColors[1].a = Quad.m_aColors[2].a = Quad.m_aColors[3].a = Color.a*255.0f;
+	Quad.m_aColors[0].r = Quad.m_aColors[1].r = Quad.m_aColors[2].r = Quad.m_aColors[3].r = Color.r * 255.0f;
+	Quad.m_aColors[0].g = Quad.m_aColors[1].g = Quad.m_aColors[2].g = Quad.m_aColors[3].g = Color.g * 255.0f;
+	Quad.m_aColors[0].b = Quad.m_aColors[1].b = Quad.m_aColors[2].b = Quad.m_aColors[3].b = Color.b * 255.0f;
+	Quad.m_aColors[0].a = Quad.m_aColors[1].a = Quad.m_aColors[2].a = Quad.m_aColors[3].a = Color.a * 255.0f;
 	
 	Quad.m_ColorEnv = Env;
 	Quad.m_ColorEnvOffset = EnvTO;
@@ -437,27 +437,27 @@ void CMapConverter::CopyGameLayer()
 	
 	//Cleanup the game layer
 	//This will make maps no more usable by a server, but the original ones are in the repository
-	for(int j=0; j<m_Height; j++)
+	for(int j = 0; j < m_Height; j++)
 	{
-		for(int i=0; i<m_Width; i++)
+		for(int i = 0; i < m_Width; i++)
 		{
-			switch(m_pPhysicsLayerTiles[j*m_Width+i].m_Index)
+			switch(m_pPhysicsLayerTiles[j * m_Width + i].m_Index)
 			{
 				case TILE_PHYSICS_SOLID:
-					m_pTiles[j*m_Width+i].m_Index = TILE_PHYSICS_SOLID;
+					m_pTiles[j * m_Width + i].m_Index = TILE_PHYSICS_SOLID;
 					break;
 				case TILE_PHYSICS_NOHOOK:
-					m_pTiles[j*m_Width+i].m_Index = TILE_PHYSICS_NOHOOK;
+					m_pTiles[j * m_Width + i].m_Index = TILE_PHYSICS_NOHOOK;
 					break;
 				default:
-					m_pTiles[j*m_Width+i].m_Index = TILE_PHYSICS_AIR;
+					m_pTiles[j * m_Width + i].m_Index = TILE_PHYSICS_AIR;
 			}
-			i += m_pPhysicsLayerTiles[j*m_Width+i].m_Skip;
+			i += m_pPhysicsLayerTiles[j * m_Width + i].m_Skip;
 		}
 	}
 	
-	Item.m_Data = m_DataFile.AddData(m_Width*m_Height*sizeof(CTile), m_pTiles);
-	StrToInts(Item.m_aName, sizeof(Item.m_aName)/sizeof(int), "Game");
+	Item.m_Data = m_DataFile.AddData(m_Width * m_Height * sizeof(CTile), m_pTiles);
+	StrToInts(Item.m_aName, sizeof(Item.m_aName) / sizeof(int), "Game");
 	m_DataFile.AddItem(MAPITEMTYPE_LAYER, m_NumLayers++, sizeof(Item), &Item);
 }
 

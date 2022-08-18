@@ -13,12 +13,19 @@
 
 class CPlayer
 {
-	MACRO_ALLOC_POOL_ID()
+	//MACRO_ALLOC_POOL_ID()
+	MACRO_ALLOC_HEAP()
 
 public:
 	// Основное
 	CPlayer(CGameContext *pGameServer, int ClientID, int Team);
 	~CPlayer();
+
+	bool IsBot() const { return m_Bot; }
+	int GetBotType() const { return m_BotType; }
+	int GetBotSubType() const { return m_BotSubType; }
+	void SetBotType(int BotType) { m_BotType = BotType; }
+	void SetBotSubType(int BotSubType) { m_BotSubType = BotSubType; }
 
 	void Init(int CID);
 	int GetCID() const { return m_ClientID; };
@@ -54,23 +61,12 @@ public:
 	bool GetShop();
 	bool GetWork();
 
-	bool IsBot() const { return m_Bot; }
-	int GetBotType() const { return m_BotType; }
-	int GetBotSubType() const { return m_BotSubType; }
-	void SetBotType(int BotType) { m_BotType = BotType; }
-	void SetBotSubType(int BotSubType) { m_BotSubType = BotSubType; }
-
 	// Пользовальские переменные
 	int m_HealthStart;
 	int m_Health;
 
 	int m_MoneyAddEndTick;
 	int m_ExperienceAddEndTick;
-	//int m_OpenBox;
-	//int m_OpenBoxType;
-	//bool m_OpeningBox;
-	//std::string m_GetFromBox;
-	bool m_BigBot;
 	int m_InviteClanID;
 	bool m_ActiveChair;
 	bool m_AntiPvpSmall;
@@ -154,6 +150,9 @@ public:
 		case 3: return m_CompleteDailyStep1;
 		}
 	}
+
+	// мульти-миры
+	int m_WorldID;
 
 	// TODO: clean this up
 	struct
@@ -248,6 +247,8 @@ public:
 	bool m_InfMana;
 
 	int m_LaserFreezeTime = 1;
+
+	bool m_BigBot;
 
 private:
 	CCharacter *m_pCharacter;

@@ -43,9 +43,9 @@ void CCollision::Init(class CLayers *pLayers)
 	CTile* pPhysicsTiles = static_cast<CTile *>(m_pLayers->Map()->GetData(m_pLayers->PhysicsLayer()->m_Data));
 	if(m_pPhysicsTiles)
 		delete[] m_pPhysicsTiles;
-	m_pPhysicsTiles = new int[m_PhysicsWidth*m_PhysicsHeight];
+	m_pPhysicsTiles = new int[m_PhysicsWidth * m_PhysicsHeight];
 
-	for(int i = 0; i < m_PhysicsWidth*m_PhysicsHeight; i++)
+	for(int i = 0; i < m_PhysicsWidth * m_PhysicsHeight; i++)
 	{
 		switch(pPhysicsTiles[i].m_Index)
 		{
@@ -53,7 +53,7 @@ void CCollision::Init(class CLayers *pLayers)
 			m_pPhysicsTiles[i] = COLFLAG_SOLID;
 			break;
 		case TILE_PHYSICS_NOHOOK:
-			m_pPhysicsTiles[i] = COLFLAG_SOLID|COLFLAG_NOHOOK;
+			m_pPhysicsTiles[i] = COLFLAG_SOLID | COLFLAG_NOHOOK;
 			break;
 		default:
 			m_pPhysicsTiles[i] = 0x0;
@@ -64,20 +64,20 @@ void CCollision::Init(class CLayers *pLayers)
 
 int CCollision::GetTile(int x, int y)
 {
-	int Nx = clamp(x/32, 0, m_PhysicsWidth-1);
-	int Ny = clamp(y/32, 0, m_PhysicsHeight-1);
+	int Nx = clamp(x / 32, 0, m_PhysicsWidth - 1);
+	int Ny = clamp(y / 32, 0, m_PhysicsHeight - 1);
 
-	return m_pPhysicsTiles[Ny*m_PhysicsWidth+Nx];
+	return m_pPhysicsTiles[Ny * m_PhysicsWidth + Nx];
 }
 
 bool CCollision::IsTileSolid(int x, int y)
 {
-	return GetTile(x, y)&COLFLAG_SOLID;
+	return GetTile(x, y) & COLFLAG_SOLID;
 }
 
 bool CCollision::IsTileNoHook(int x, int y)
 {
-	return GetTile(x, y)&COLFLAG_NOHOOK;
+	return GetTile(x, y) & COLFLAG_NOHOOK;
 }
 
 // TODO: rewrite this smarter!
@@ -89,7 +89,7 @@ int CCollision::IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *p
 
 	for(int i = 0; i < End; i++)
 	{
-		float a = i/Distance;
+		float a = i / Distance;
 		vec2 Pos = mix(Pos0, Pos1, a);
 		if(CheckPoint(Pos.x, Pos.y))
 		{

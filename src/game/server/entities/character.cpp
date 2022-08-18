@@ -1419,7 +1419,7 @@ void CCharacter::Tick()
 
 			// Если хукаешь НПС
 			if((GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->GetBotType() == BOT_NPC
-					&& GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->IsBot()) || 
+					&& GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->IsBot()) ||
 				GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->m_ActiveChair || 
 				GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->m_AntiHook)
 			{
@@ -1448,9 +1448,9 @@ void CCharacter::Tick()
 
 				if(length(CursorPos) > 50.0f)
 				{
-					float Angle = 2.0f*pi+atan2(CursorPos.x, -CursorPos.y);
-					float AngleStep = 2.0f*pi/static_cast<float>(CMapConverter::NUM_MENUCLASS);
-					m_pPlayer->m_MapMenuItem = ((int)((Angle+AngleStep/2.0f)/AngleStep))%CMapConverter::NUM_MENUCLASS;
+					float Angle = 2.0f * pi + atan2(CursorPos.x, -CursorPos.y);
+					float AngleStep = 2.0f * pi / static_cast<float>(CMapConverter::NUM_MENUCLASS);
+					m_pPlayer->m_MapMenuItem = ((int)((Angle + AngleStep / 2.0f) / AngleStep)) % CMapConverter::NUM_MENUCLASS;
 
 					switch(m_pPlayer->m_MapMenuItem)
 					{
@@ -1671,7 +1671,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
 	// send the kill message
-	if ((m_pPlayer->GetCID() > 0 && m_pPlayer->GetCID() < MAX_PLAYERS) && (Killer > 0 && Killer < MAX_PLAYERS))
+	if (Killer > -1)
 	{
 		CNetMsg_Sv_KillMsg Msg;
 		Msg.m_Killer = Killer;
@@ -2368,9 +2368,10 @@ void CCharacter::Snap(int SnappingClient)
 	}
 	pCharacter->m_Emote = m_EmoteType;
 
-	pCharacter->m_AmmoCount = 0;
-	pCharacter->m_Health = 0;
-	pCharacter->m_Armor = 0;
+	if(m_aWeapons[m_ActiveWeapon].m_Ammo > 0)
+			pCharacter->m_AmmoCount = m_aWeapons[m_ActiveWeapon].m_Ammo;
+	pCharacter->m_Health = m_Health;
+	pCharacter->m_Armor = m_Armor;
 	pCharacter->m_Weapon = GameServer()->GetSnapWeapon(m_ActiveWeapon);
 
 	// ОРУЖИЕ
@@ -2385,14 +2386,14 @@ void CCharacter::Snap(int SnappingClient)
 	pCharacter->m_AttackTick = m_AttackTick;
 	pCharacter->m_Direction = m_Input.m_Direction;
 
-	if(m_pPlayer->GetCID() == SnappingClient || SnappingClient == -1 ||
+	/*if(m_pPlayer->GetCID() == SnappingClient || SnappingClient == -1 ||
 		(!g_Config.m_SvStrictSpectateMode && m_pPlayer->GetCID() == GameServer()->m_apPlayers[SnappingClient]->m_SpectatorID))
 	{
 		pCharacter->m_Health = m_Health;
 		pCharacter->m_Armor = m_Armor;
 		if(m_aWeapons[m_ActiveWeapon].m_Ammo > 0)
 			pCharacter->m_AmmoCount = m_aWeapons[m_ActiveWeapon].m_Ammo;
-	}
+	}*/
 
 	if(pCharacter->m_Emote == EmoteNormal)
 	{

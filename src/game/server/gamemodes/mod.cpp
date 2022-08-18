@@ -316,9 +316,9 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 			Type = 5;
 		else if(pPlayer->GetBotType() == BOT_L3MONSTER)
 			Type = 6;
-		else if (pPlayer->GetBotType() == BOT_L4MONSTER)
+		else if(pPlayer->GetBotType() == BOT_L4MONSTER)
 			Type = 19;
-		else if (pPlayer->GetBotType() == BOT_L5MONSTER)
+		else if(pPlayer->GetBotType() == BOT_L5MONSTER)
 			Type = 20;
 		else if(pPlayer->GetBotType() == BOT_BOSSSLIME)
 			Type = 8;
@@ -346,7 +346,8 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 		}
 	}
 	
-	return false;
+	*pOutPos = vec2(0, 0);
+	return true;
 }
 
 bool CGameControllerMOD::PickupAllowed(int Index)

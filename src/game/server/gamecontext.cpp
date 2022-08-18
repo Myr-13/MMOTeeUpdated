@@ -109,7 +109,7 @@ void CGameContext::Clear()
 
 	m_Tuning = Tuning;
 
-	for(int i=0; i<MAX_CLIENTS; i++)
+	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		m_BroadcastStates[i].m_NoChangeTick = 0;
 		m_BroadcastStates[i].m_LifeSpanTick = 0;
@@ -611,7 +611,7 @@ void CGameContext::SendBroadcast_LStat(int To, int Priority, int LifeSpan, int T
 	if(!m_apPlayers[To])
 		return;
 
-	if(!m_apPlayers[To]->GetCharacter() || m_apPlayers[To]->IsBot())
+	if(!m_apPlayers[To]->GetCharacter())
 		return;
 
 	int Optmem = m_apPlayers[To]->AccData.Level*m_apPlayers[To]->GetNeedForUp();
@@ -675,7 +675,7 @@ void CGameContext::SendBroadcast_LStat(int To, int Priority, int LifeSpan, int T
 
 void CGameContext::SendBroadcast_LChair(int To, int SizeExp, int SizeMoney)
 {
-	if(!m_apPlayers[To] || !m_apPlayers[To]->GetCharacter() || m_apPlayers[To]->IsBot())
+	if(!m_apPlayers[To] || !m_apPlayers[To]->GetCharacter())
 		return;
 
 	int Optmem = m_apPlayers[To]->AccData.Level*m_apPlayers[To]->GetNeedForUp();
@@ -699,7 +699,7 @@ void CGameContext::SendBroadcast_LBossed(int To, int Priority, int LifeSpan)
 	if(!m_apPlayers[To] || !m_apPlayers[BOSSID])
 		return;
 
-	if(!m_apPlayers[To]->GetCharacter() || m_apPlayers[To]->IsBot())
+	if(!m_apPlayers[To]->GetCharacter())
 		return;
 
 	if(m_apPlayers[BOSSID]->GetCharacter())
@@ -744,7 +744,7 @@ void CGameContext::SendBroadcast_Localization_P(int To, int Priority, int LifeSp
 
 void CGameContext::SendBroadcast_LDaily(int To)
 {
-	if (!m_apPlayers[To] || !m_apPlayers[To]->GetCharacter() || m_apPlayers[To]->IsBot() || !m_apPlayers[To]->m_AcceptedDailyQuestID)
+	if (!m_apPlayers[To] || !m_apPlayers[To]->GetCharacter() || !m_apPlayers[To]->m_AcceptedDailyQuestID)
 		return;
 
 	int Quest = GetDailyQuest(m_apPlayers[To]->m_AcceptedDailyQuestID);
@@ -992,7 +992,7 @@ void CGameContext::AreaTick()
 	}
 	// старт арены
 	if(Server()->Tick() % (1 * Server()->TickSpeed() * 600) == 0)
-		StartArea(120, rand()%2+1);
+		StartArea(120, rand() % 2 + 1);
 }
 
 void CGameContext::OnTick()
@@ -1007,7 +1007,7 @@ void CGameContext::OnTick()
 	int NumActivePlayers = 0;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		if(m_apPlayers[i])
+		if(m_apPlayers[i] && m_apPlayers[i]->m_WorldID == m_GameServerID)
 		{
 			if(m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
 				NumActivePlayers++;
@@ -1209,22 +1209,22 @@ void CGameContext::OnClientEnter(int ClientID)
 //	m_pDiscord->OnLog(LOGTYPE_ENTER, ClientID);
 }
 
-void CGameContext::OnClientConnected(int ClientID)
+void CGameContext::OnClientConnected(int ClientID) //
 {
 	const int StartTeam = g_Config.m_SvTournamentMode ? TEAM_SPECTATORS : m_pController->GetAutoTeam(ClientID);
 
 	if(!m_apPlayers[ClientID])
-		m_apPlayers[ClientID] = new(ClientID) CPlayer(this, ClientID, StartTeam);
+		m_apPlayers[ClientID] = new CPlayer(this, ClientID, StartTeam);
 	else
 	{
 		delete m_apPlayers[ClientID];
-		m_apPlayers[ClientID] = new(ClientID) CPlayer(this, ClientID, StartTeam);
+		m_apPlayers[ClientID] = new CPlayer(this, ClientID, StartTeam);
 	}
 
 #ifdef CONF_DEBUG
 	if(g_Config.m_DbgDummies)
 	{
-		if(ClientID >= MAX_CLIENTS-g_Config.m_DbgDummies)
+		if(ClientID >= MAX_CLIENTS - g_Config.m_DbgDummies)
 			return;
 	}
 #endif
@@ -1275,7 +1275,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 		return;
 	}
 
-	if(Server()->ClientIngame(ClientID))
+	if(IsClientValid(ClientID))
 	{
 		if(MsgID == NETMSGTYPE_CL_SAY)
 		{
@@ -1378,8 +1378,6 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 				char aDesc[VOTE_DESC_LENGTH] = {0};
 				char aCmd[VOTE_CMD_LENGTH] = {0};
-
-
 
 				if(str_comp_nocase(pMsg->m_Type, "option") == 0)
 				{
@@ -2830,9 +2828,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 	if(!m_apPlayers[ClientID])
 		return;
 
-	if(m_apPlayers[ClientID]->IsBot())
-		return;
-
 	ClearVotes(ClientID);
 
 	if(m_PlayerVotes[ClientID].size())
@@ -4157,17 +4152,19 @@ void CGameContext::OnConsoleInit()
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 }
 
-void CGameContext::OnInit(/*class IKernel *pKernel*/)
+void CGameContext::OnInit(int ID)
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	m_World.SetGameServer(this);
 	m_Events.SetGameServer(this);
 
+	m_GameServerID = ID;
+
 	for(int i = 0; i < NUM_NETOBJTYPES; i++)
 		Server()->SnapSetStaticsize(i, m_NetObjHandler.GetObjSize(i));
 
-	m_Layers.Init(Kernel());
+	m_Layers.Init(Kernel(), m_GameServerID);
 	m_Collision.Init(&m_Layers);
 
 	//Get zones
@@ -4191,7 +4188,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 			{
 				CMapItemLayerQuads *pQLayer = (CMapItemLayerQuads *)pLayer;
 				IntsToStr(pQLayer->m_aName, sizeof(aLayerName)/sizeof(int), aLayerName);
-				const CQuad *pQuads = (const CQuad *) Kernel()->RequestInterface<IMap>()->GetDataSwapped(pQLayer->m_Data);
+				const CQuad *pQuads = (const CQuad *) Kernel()->RequestInterfaceNum<IMap>(ID)->GetDataSwapped(pQLayer->m_Data);
 
 				for(int q = 0; q < pQLayer->m_NumQuads; q++)
 				{
@@ -4206,43 +4203,6 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 		}
 	}
 
-	int CurID = 0;
-	for (int o = 0; o < 10; o++, CurID++)
-		CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart); // Pig
-	for (int o = 0; o < 9; o++, CurID++)
-		CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart); // Kwah
-	for (int o = 0; o < 8; o++, CurID++)
-		CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart); // Boom
-	for (int o = 0; o < 1; o++, CurID++)
-		CreateBot(CurID, BOT_NPC, g_Config.m_SvCityStart); // Guard
-	for (int o = 0; o < 6; o++, CurID++)
-		CreateBot(CurID, BOT_L4MONSTER, g_Config.m_SvCityStart); // Zombie
-	for (int o = 0; o < 6; o++, CurID++)
-		CreateBot(CurID, BOT_L5MONSTER, g_Config.m_SvCityStart); // Skeleton
-	/*else if (g_Config.m_SvCityStart == 1)
-	{
-		for (int o=0; o<11; o++,CurID++)
-			CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart);
-		for (int o=0; o<11; o++,CurID++)
-			CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart);
-		for (int o=0; o<12; o++,CurID++)
-			CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart);
-	}
-	else if(g_Config.m_SvCityStart == 2)
-	{
-		for (int o=0; o<11; o++,CurID++)
-			CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart);
-		for (int o=0; o<11; o++,CurID++)
-			CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart);
-		for (int o=0; o<12; o++,CurID++)
-			CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart);
-	}
-	for (int o = 0; o < 3; o++, CurID++)
-	{
-		CreateBot(CurID, BOT_NPCW, o);
-		dbg_msg("a", "%d : %d", MAX_PLAYERS + CurID, o);
-	}*/
-
 #ifdef CONF_DEBUG
 	if(g_Config.m_DbgDummies)
 	{
@@ -4252,11 +4212,6 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 		}
 	}
 #endif
-
-	Server()->InitInvID();
-	Server()->InitClan();
-	Server()->GetTopClanHouse();
-	Server()->InitMaterialID();
 }
 
 void CGameContext::OnShutdown()
@@ -4382,12 +4337,34 @@ void CGameContext::OnPostSnap()
 
 bool CGameContext::IsClientReady(int ClientID)
 {
-	return m_apPlayers[ClientID] && m_apPlayers[ClientID]->m_IsReady ? true : false;
+	return m_apPlayers[ClientID] && m_apPlayers[ClientID]->m_IsReady;
 }
 
 bool CGameContext::IsClientPlayer(int ClientID)
 {
-	return m_apPlayers[ClientID] && m_apPlayers[ClientID]->GetTeam() == TEAM_SPECTATORS ? false : true;
+	return m_apPlayers[ClientID] && !(m_apPlayers[ClientID]->GetTeam() == TEAM_SPECTATORS);
+}
+
+bool CGameContext::IsClientValid(int ClientID)
+{
+	return Server()->ClientIngame(ClientID);
+}
+
+void CGameContext::OnClientChangeWorld(int ClientID, int WorldID)
+{
+	if (m_apPlayers[ClientID])
+	{
+		m_apPlayers[ClientID]->KillCharacter();
+		delete m_apPlayers[ClientID];
+		m_apPlayers[ClientID] = nullptr;
+	}
+
+	OnClientConnected(ClientID);
+	m_apPlayers[ClientID]->m_WorldID = WorldID;
+	m_apPlayers[ClientID]->m_IsInGame = true;
+	m_apPlayers[ClientID]->Respawn();
+	m_apPlayers[ClientID]->SetTeam(TEAM_SPECTATORS, false);
+	ResetVotes(ClientID, NOAUTH);
 }
 
 const char *CGameContext::GameType() { return m_pController && m_pController->m_pGameType ? m_pController->m_pGameType : ""; }
@@ -4438,7 +4415,7 @@ void CGameContext::CreateBot(int ClientID, int BotType, int BotSubType)
 	if (m_apPlayers[BotClientID])
 		return;
 
-	m_apPlayers[BotClientID] = new(BotClientID) CPlayer(this, BotClientID, TEAM_RED);
+	m_apPlayers[BotClientID] = new CPlayer(this, BotClientID, TEAM_RED);
 	m_apPlayers[BotClientID]->SetBotType(BotType);
 	m_apPlayers[BotClientID]->SetBotSubType(BotSubType);
 
@@ -4832,7 +4809,7 @@ void CGameContext::StartBoss(int ClientID, int WaitTime, int BossType)
 
 	if (!m_apPlayers[BOSSID])
 	{
-		m_apPlayers[BOSSID] = new(BOSSID) CPlayer(this, BOSSID, TEAM_RED);
+		m_apPlayers[BOSSID] = new CPlayer(this, BOSSID, TEAM_RED);
 		m_apPlayers[BOSSID]->SetBotType(BossType);
 		m_apPlayers[BOSSID]->SetBotSubType(g_Config.m_SvCityStart);
 

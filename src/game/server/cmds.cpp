@@ -493,9 +493,13 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 		return;
 	}
-	if (!strncmp(Msg->m_pMessage, "/reset", 6) && ClientAuth)
+	if (!strncmp(Msg->m_pMessage, "/world", 6))
 	{
-		GameServer()->Server()->ResetAllDailyQuests();
+		int id = 0;
+		if (sscanf(Msg->m_pMessage, "/world %d", &id) == 1)
+		{
+			GameServer()->Server()->MoveClientToWorld(ClientID, id);
+		}
 		return;
 	}
 

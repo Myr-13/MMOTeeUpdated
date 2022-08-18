@@ -28,15 +28,15 @@ CREATE TABLE `tw_clans` (
   `LeaderName` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT 'NOPE',
   `LeaderID` int NOT NULL,
   `Level` int NOT NULL DEFAULT '1',
-  `Exp` int NOT NULL,
+  `Exp` int NOT NULL DEFAULT '0',
   `MaxNum` int NOT NULL DEFAULT '2',
-  `Money` int NOT NULL,
+  `Money` int NOT NULL DEFAULT '0',
   `Relevance` int NOT NULL DEFAULT '0',
   `MoneyAdd` int NOT NULL DEFAULT '0',
   `ExpAdd` int NOT NULL DEFAULT '0',
   `SpawnHouse` tinyint NOT NULL DEFAULT '0',
   `ChairHouse` int NOT NULL DEFAULT '0',
-  `CreateDate` date NOT NULL,
+  `CreateDate` date NOT NULL DEFAULT '1000-01-01',
   PRIMARY KEY (`ClanID`),
   KEY `ClanID` (`ClanID`),
   KEY `Clanname` (`Clanname`),
@@ -354,15 +354,13 @@ INSERT INTO `tw_uitemlist` VALUES
 (189,5,'Pixi Dust','- Craft Item'),
 (190,19,'Pex Wings','- Wings'),
 (191,1,'Storm Laser','- Weapon / Upgrading'),
-(192,1,'Target Grenade','- Weapon / Upgrading')
-(193,2,'Add Speed Accssory','- Accessory')
-(194,2,'Add Damage Accssory','- Accessory')
-(195,2,'Add Steal HP Accssory','- Accessory')
-(196,2,'Add HP Accssory','- Accessory')
-(197,2,'Add Armor Accssory','- Accessory')
+(192,1,'Target Grenade','- Weapon / Upgrading'),
+(193,2,'Add Speed Accssory','- Accessory'),
+(194,2,'Add Damage Accssory','- Accessory'),
+(195,2,'Add Steal HP Accssory','- Accessory'),
+(196,2,'Add HP Accssory','- Accessory'),
+(197,2,'Add Armor Accssory','- Accessory'),
 (198,2,'Add Money Accssory','- Accessory');
---(116,16,'Iron feet','- Health Armor +150'),(117,15,'Gold body','- Health Armor +250'),(118,16,'Gold feet','- Health Armor +150'),(119,15,'Diamond body','- Health Armor +300'),(120,16,'Diamond feet','- Health Armor +250'),(121,15,'Dragon body','- Health Armor +500'),(122,16,'Dragon feet','- Health Armor +400'),(123,10,'Title Enchanter','- Health Armor +1000'),(124,4,'BOSS SLIME BOX','- Drops from boss Slime'),(125,2,'SLIME SPHERE','- Gives 10% hp and 5 % armor'),(126,2,'SLIME NECKLACKE','- Gives 10% hp'),(127,5,'Pressed piece','- Need for craft ammo+5'),(128,4,'BOSS VAMPIRE BOX','- Drops from boss Vampire'),(129,2,'Vampire Fang','- Gives lifesteal'),(130,4,'DARK KING BOX','-Drops from boss Dark King'),(131,10,'PIG XP','-Count Pig kills'),(132,10,'KWAH XP','-Count Kwah kills'),(133,10,'BOOM XP','-Count Boomer kills'),(134,10,'PIGKILLER_1','-Achieve'),(135,10,'PIGKILLER_2','-Achieve'),(136,10,'PIGKILLER_3','-Achieve'),(137,10,'PIGKILLER_4','-Achieve'),(138,10,'PIGKILLER_5','-Achieve'),(139,10,'KWAHKILLER_1','-Achieve'),(140,10,'KWAHKILLER_2','-Achieve'),(141,10,'KWAHKILLER_3','-Achieve'),(142,10,'KWAHKILLER_4','-Achieve'),(143,10,'KWAHKILLER_5','-Achieve'),(144,10,'BOOMKILLER_1','-Achieve'),(145,10,'BOOMKILLER_2','-Achieve'),(146,10,'BOOMKILLER_3','-Achieve'),(147,10,'BOOMKILLER_4','-Achieve'),(148,10,'BOOMKILLER_5','-Achieve'),(149,10,'CRAFTMASTER_1','-Achieve'),(150,10,'CRAFTMASTER_2','-Achieve'),(151,10,'CRAFTMASTER_3','-Achieve'),(152,10,'CRAFTMASTER_4','-Achieve'),(153,10,'CRAFTMASTER_5','-Achieve'),(154,10,'CRAFTMASTER_6','-Achieve'),(155,10,'CRAFTMASTER_7','-Achieve'),(156,15,'Mithril Chestplate','- Health Armor +700'),(157,16,'Mithril Boots','- Health Armor +600'),(158,5,'Mithril Ore','- Craft Item'),(159,15,'Orihalcum Chestplate','- Health Armor +1000'),(160,16,'Orihalcum Boots','- Health Armor +900'),(161,5,'Orihalcum Ore','- Craft Item'),(162,15,'Titanium Chestplate','- Health Armor +1300'),(163,16,'Titanium Boots','- Health Armor +1200'),(164,5,'Titanium Ore','- Craft Item'),(165,15,'Astralium Chestplate','- Health Armor +1600'),(166,16,'Astralium Boots','- Health Armor +1500'),(167,5,'Astralium Ore','- Craft Item'),(168,5,'Slime Soul','- Craft Item'),(169,10,'CRAFT EXP','- Achieve'),(170,0,'Fishing Exp','- Fishing exp'),(171,4,'Common Fish','- You got 10 exp'),(172,4,'UnCommon Fish','- You got 15 exp'),(173,4,'Rare Fish','- You got 20 exp'),(174,4,'Epic Fish','- You got 30 exp'),(175,4,'Legendary Fish','- You got 45 exp'),(176,18,'Ice Fish Pet','Pet...'),(177,18,'Piggy Pet','Pet...'),(178,18,'Frog Pet','Pet...'),(179,18,'Bomb Pet','Pet...'),(180,18,'Dolphin Pet','Pet...'),(181,18,'Igor Pet','Pet...'),(182,18,'Tiger Pet','Pet...'),(183,18,'Monkey Pet','Pet...'),(184,18,'Mithril Golem Pet','Pet...'),(185,18,'Cleaver Pet','Pet...'),(186,4,'Ice Fish','- You got 35 exp'),(187,4,'Premium Packet','- Thx for premium :D'),(188,12,'Premium Title','- Thx for premium :D');
-/*!40000 ALTER TABLE `tw_uitemlist` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

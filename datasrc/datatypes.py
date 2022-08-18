@@ -210,9 +210,9 @@ class NetObject:
 		self.variables = variables
 	def emit_declaration(self):
 		if self.base:
-			lines = ["struct %s : public %s"%(self.struct_name,self.base_struct_name), "{"]
+			lines = ["struct %s : public %s" % (self.struct_name, self.base_struct_name), "{"]
 		else:
-			lines = ["struct %s"%self.struct_name, "{"]
+			lines = ["struct %s" % self.struct_name, "{"]
 		for v in self.variables:
 			lines += ["\t"+line for line in v.emit_declaration()]
 		lines += ["};"]

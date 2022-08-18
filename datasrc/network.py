@@ -145,9 +145,9 @@ Objects = [
 
 	NetObject("Character:CharacterCore", [
 		NetIntRange("m_PlayerFlags", 0, 256),
-		NetIntRange("m_Health", 0, 10),
-		NetIntRange("m_Armor", 0, 10),
-		NetIntRange("m_AmmoCount", 0, 10),
+		NetIntAny("m_Health"),
+		NetIntAny("m_Armor"),
+		NetIntAny("m_AmmoCount"),
 		NetIntRange("m_Weapon", 0, 'NUM_WEAPONS-1'),
 		NetIntRange("m_Emote", 0, len(Emotes)),
 		NetIntRange("m_AttackTick", 0, 'max_int'),
@@ -184,6 +184,11 @@ Objects = [
 
 	NetObject("SpectatorInfo", [
 		NetIntRange("m_SpectatorID", 'SPEC_FREEVIEW', 'MAX_CLIENTS-1'),
+		NetIntAny("m_X"),
+		NetIntAny("m_Y"),
+	]),
+
+	NetObject("MoneyBag", [
 		NetIntAny("m_X"),
 		NetIntAny("m_Y"),
 	]),

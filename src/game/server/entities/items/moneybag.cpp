@@ -15,18 +15,22 @@ CMoneyBag::CMoneyBag(CGameWorld *pGameWorld, int Type, vec2 Pos, int SubType)
 
 	Reset();
 	GameWorld()->InsertEntity(this);
-	for(int i=0; i<NUM_IDS; i++)
+	for(int i = 0; i < NUM_IDS; i++)
 	{
 		m_IDs[i] = Server()->SnapNewID();
 	}
+
+	m_Kek = Server()->SnapNewID();
 }
 
 CMoneyBag::~CMoneyBag()
 {
-	for(int i=0; i<NUM_IDS; i++)
+	for(int i = 0; i < NUM_IDS; i++)
 	{
 		Server()->SnapFreeID(m_IDs[i]);
 	}
+
+	Server()->SnapFreeID(m_Kek);
 }
 
 void CMoneyBag::Reset()
@@ -68,7 +72,6 @@ void CMoneyBag::Tick()
 					}
 					break;
 			};
-
 		}
 	}
 }
@@ -90,17 +93,27 @@ void CMoneyBag::TickPaused()
 
 void CMoneyBag::Snap(int SnappingClient)
 {
-	if(m_SpawnTick != -1 || NetworkClipped(SnappingClient))
+	if (m_SpawnTick != -1)
 		return;
 
-	float AngleStart = (2.0f * pi * Server()->Tick()/static_cast<float>(Server()->TickSpeed()))/10.0f;
+	CNetObj_MoneyBag* pMoney = static_cast<CNetObj_MoneyBag*>(Server()->SnapNewItem(NETOBJTYPE_MONEYBAG, m_Kek, sizeof(CNetObj_MoneyBag)));
+	if (pMoney)
+	{
+		pMoney->m_X = (int)m_Pos.x;
+		pMoney->m_Y = (int)m_Pos.y;
+	}
+
+	if(NetworkClipped(SnappingClient))
+		return;
+
+	float AngleStart = (2.0f * pi * Server()->Tick() / static_cast<float>(Server()->TickSpeed())) / 10.0f;
 	float AngleStep = (2.0f * pi / CMoneyBag::NUM_SIDE);
 	float R = 20.0f;
 
-	AngleStart = AngleStart*2.0f;
-	for(int i=0; i<CMoneyBag::NUM_SIDE; ++i)
+	AngleStart = AngleStart * 2.0f;
+	for(int i = 0; i < CMoneyBag::NUM_SIDE; ++i)
 	{
-		vec2 PosStart = m_Pos + vec2(R * cos((AngleStart + AngleStep*i)+m_Type*60), R * sin((AngleStart + AngleStep*i)+m_Type*60));
+		vec2 PosStart = m_Pos + vec2(R * cos((AngleStart + AngleStep * i) + m_Type * 60), R * sin((AngleStart + AngleStep * i) + m_Type * 60));
 		CNetObj_Projectile *pObj = static_cast<CNetObj_Projectile *>(Server()->SnapNewItem(NETOBJTYPE_PROJECTILE, m_IDs[i], sizeof(CNetObj_Projectile)));
 		if(pObj)
 		{
@@ -122,5 +135,5 @@ void CMoneyBag::Snap(int SnappingClient)
 		pObj->m_VelY = 0;
 		pObj->m_StartTick = Server()->Tick()-4;
 		pObj->m_Type = WEAPON_RIFLE;
-	}		
+	}
 }

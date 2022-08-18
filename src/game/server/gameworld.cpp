@@ -164,7 +164,7 @@ void CGameWorld::UpdatePlayerMaps()
 	std::pair<float,int> dist[MAX_CLIENTS];
 	for (int i = 0; i < MAX_CLIENTS; i++)
 	{
-		if (!Server()->ClientIngame(i)) continue;
+		if (!GameServer()->IsClientValid(i)) continue;
 		int* map = Server()->GetIdMap(i);
 
 		// compute distances
@@ -172,7 +172,7 @@ void CGameWorld::UpdatePlayerMaps()
 		{
 			dist[j].second = j;
 			dist[j].first = 1e10;
-			if (!Server()->ClientIngame(j))
+			if (!GameServer()->m_apPlayers[j])
 				continue;
 			CCharacter* ch = GameServer()->m_apPlayers[j]->GetCharacter();
 			if (!ch)

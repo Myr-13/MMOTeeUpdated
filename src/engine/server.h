@@ -673,6 +673,9 @@ public:
 	virtual void UpdateStats(int ClientID, int Type = 0) = 0;
 	virtual void Ban(int i, int Seconds, const char* pReason) = 0;
 
+	// ----- Мульти-миры
+	virtual void MoveClientToWorld(int ClientID, int WorldID) = 0;
+
 public:
 	virtual int GetClan(int Type, int ClanID) = 0;
 	virtual const char *LeaderName(int ClanID) = 0;
@@ -692,7 +695,7 @@ class IGameServer : public IInterface
 	MACRO_INTERFACE("gameserver", 0)
 protected:
 public:
-	virtual void OnInit() = 0;
+	virtual void OnInit(int ID) = 0;
 	virtual void OnConsoleInit() = 0;
 	virtual void OnShutdown() = 0;
 
@@ -711,6 +714,10 @@ public:
 
 	virtual bool IsClientReady(int ClientID) = 0;
 	virtual bool IsClientPlayer(int ClientID) = 0;
+	virtual bool IsClientValid(int ClientID) = 0;
+
+	// Multi worlds
+	virtual void OnClientChangeWorld(int ClientID, int WorldID) = 0;
 
 	virtual const char *GameType() = 0;
 	virtual const char *Version() = 0;

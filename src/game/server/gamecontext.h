@@ -34,7 +34,7 @@ typedef unsigned __int64 uint64_t;
 #endif
 
 #define BROADCAST_DURATION_REALTIME (0)
-#define BROADCAST_DURATION_GAMEANNOUNCE (Server()->TickSpeed()*2)
+#define BROADCAST_DURATION_GAMEANNOUNCE (Server()->TickSpeed() * 2)
 
 enum
 {
@@ -142,6 +142,8 @@ class CGameContext : public IGameServer
 	void Construct(int Resetting);
 
 	bool m_Resetting;
+
+	int m_GameServerID;
 
 public:
 //	class CDiscord* m_pDiscord;
@@ -317,7 +319,7 @@ public:
 	void CheckPureTuning();
 	void SendTuningParams(int ClientID);
 
-	virtual void OnInit();
+	virtual void OnInit(int ID);
 	virtual void OnConsoleInit();
 	virtual void OnShutdown();
 
@@ -336,6 +338,9 @@ public:
 
 	virtual bool IsClientReady(int ClientID);
 	virtual bool IsClientPlayer(int ClientID);
+	virtual bool IsClientValid(int ClientID);
+
+	virtual void OnClientChangeWorld(int ClientID, int WorldID);
 
 	virtual const char *GameType();
 	virtual const char *Version();

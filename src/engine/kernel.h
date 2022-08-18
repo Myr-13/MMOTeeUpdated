@@ -38,8 +38,10 @@ class IKernel
 {
 	// hide the implementation
 	virtual bool RegisterInterfaceImpl(const char *InterfaceName, IInterface *pInterface) = 0;
+	virtual bool RegisterInterfaceImplNum(const char* InterfaceName, IInterface* pInterface, int Num) = 0;
 	virtual bool ReregisterInterfaceImpl(const char *InterfaceName, IInterface *pInterface) = 0;
 	virtual IInterface *RequestInterfaceImpl(const char *InterfaceName) = 0;
+	virtual IInterface* RequestInterfaceImplNum(const char* InterfaceName, int Num) = 0;
 public:
 	static IKernel *Create();
 	virtual ~IKernel() {}
@@ -55,6 +57,11 @@ public:
 	{
 		return ReregisterInterfaceImpl(TINTERFACE::InterfaceName(), pInterface);
 	}
+	template<class TINTERFACE>
+	bool RegisterInterfaceNum(TINTERFACE* pInterface, int Num)
+	{
+		return RegisterInterfaceImplNum(TINTERFACE::InterfaceName(), pInterface, Num);
+	}
 
 	// Usage example:
 	//		IMyInterface *pMyHandle = Kernel()->RequestInterface<IMyInterface>()
@@ -62,6 +69,14 @@ public:
 	TINTERFACE *RequestInterface()
 	{
 		return reinterpret_cast<TINTERFACE *>(RequestInterfaceImpl(TINTERFACE::InterfaceName()));
+	}
+
+	// Usage example:
+	//		IMyInterface *pMyHandle = Kernel()->RequestInterface<IMyInterface>(0)
+	template<class TINTERFACE>
+	TINTERFACE* RequestInterfaceNum(int Num)
+	{
+		return reinterpret_cast<TINTERFACE*>(RequestInterfaceImplNum(TINTERFACE::InterfaceName(), Num));
 	}
 };
 

@@ -5,16 +5,18 @@
 #include <engine/shared/config.h>
 #include "player.h"
 #include <engine/shared/network.h>
+#include <engine/server.h>
+#include <game/server/gamecontext.h>
+#include <engine/server/multi_world.h>
+
 #include <game/server/entities/bots/monster.h>
 #include <game/server/entities/bots/npcs.h>
 #include <game/server/entities/bots/npcsw.h>
 #include <game/server/entities/bots/kwah.h>
 #include <game/server/entities/bots/boomer.h>
 #include <game/server/entities/bots/bossslime.h>
-#include <engine/server.h>
-#include <game/server/gamecontext.h>
 
-MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
+//MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS * NUM_WORLDS + MAX_CLIENTS)
 
 IServer *CPlayer::Server() const { return m_pGameServer->Server(); }
 
@@ -27,7 +29,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 
 	m_pCharacter = 0;
 	m_ClientID = ClientID;
-	m_Team = GameServer()->m_pController->ClampTeam(Team);
+	m_Team = Team;
 	m_SpectatorID = SPEC_FREEVIEW;
 	m_LastActionTick = Server()->Tick();
 
@@ -36,7 +38,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 
 	m_Authed = AUTHED_NO;
 	int *pIdMap = Server()->GetIdMap(m_ClientID);
-	for (int i = 1;i < VANILLA_MAX_CLIENTS;i++)
+	for (int i = 1; i < VANILLA_MAX_CLIENTS; i++)
 	{
 		pIdMap[i] = -1;
 	}
@@ -97,213 +99,6 @@ bool CPlayer::GetWork()
 
 	return false;
 }
-
-/*void CPlayer::RandomBoxTick()
-{
-	m_OpeningBox = 0;
-	m_GetFromBox = "";
-
-	for (int i = m_OpenBox; i != 0; i--) {
-		m_OpeningBox = 1;
-
-		if (m_OpenBox && m_OpenBoxType == RANDOMCRAFTITEM)
-		{
-			int get = 1;
-			int getitem = 0;
-
-			int RandGet = rand() % 100;
-			if (RandGet >= 0 && RandGet <= 95)
-			{
-				int RandItem = rand() % 6;
-				switch (RandItem)
-				{
-				default: getitem = FOOTKWAH; break;
-				case 1: getitem = HEADBOOMER; break;
-				case 2: getitem = HEADBOOMER; break;
-				case 3: getitem = PRESSEDPIECE; break;
-				case 5: getitem = SLIMESOUL; break;
-				}
-			}
-			else
-			{
-				int RandItem = rand() % 4;
-				switch (RandItem)
-				{
-				default: getitem = FORMULAEARRINGS; break;
-				case 1: getitem = FORMULAFORRING; break;
-				case 2: getitem = FORMULAWEAPON; break;
-				case 3: getitem = RARESLIMEDIRT; break;
-				}
-			}
-
-			int Get = 1;
-			Server()->GiveItem(m_ClientID, getitem, Get);
-			//GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:used} x{int:num} and get {str:get} x{int:num2}"),
-			//	"name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, RANDOMCRAFTITEM, false), "num", &Get, "get", Server()->GetItemName(m_ClientID, getitem, false), "num2", &Get, NULL);
-
-			m_GetFromBox += Server()->GetItemName(m_ClientID, getitem, false);
-			m_GetFromBox += ", ";
-		}
-
-		if (m_OpenBox && m_OpenBoxType == EVENTBOX)
-		{
-			int getitem = 0;
-
-			int RandGet = rand() % 160;
-			if (RandGet >= 0 && RandGet <= 154) getitem = MONEYBAG;
-			else getitem = RAREEVENTHAMMER;
-
-			int Get = 1;
-			Server()->GiveItem(m_ClientID, getitem, Get);
-			//GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:used} x{int:num} and get {str:get} x{int:num2}"),
-			//	"name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, EVENTBOX, false), "num", &Get, "get", Server()->GetItemName(m_ClientID, getitem, false), "num2", &Get, NULL);
-
-			m_GetFromBox += Server()->GetItemName(m_ClientID, getitem, false);
-			m_GetFromBox += ", ";
-		}
-		if (m_OpenBox && m_OpenBoxType == BOSSBOX)
-		{
-			int getitem = 0;
-			int Get = 1;
-			int RandGet = rand() % 160;
-			if (RandGet >= 0 && RandGet <= 156)
-			{
-				int RandItem = rand() % 3;
-				switch (RandItem)
-				{
-				default: getitem = MONEYBAG, Get = 50; break;
-				case 1: getitem = FARMBOX, Get = 5; break;
-				case 2: getitem = RANDOMCRAFTITEM, Get = 1; break;
-				}
-			}
-			else
-			{
-				int RandItem = rand() % 2;
-				switch (RandItem)
-				{
-				default: getitem = SLIMENECKLACKE; break;
-				case 1: getitem = SLIMESPHERE; break;
-				}
-			}
-
-			Server()->GiveItem(m_ClientID, getitem, Get);
-			//GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:used} x1 and get {str:get} x{int:num2}"),
-			//	"name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, BOSSBOX, false), "get", Server()->GetItemName(m_ClientID, getitem, false), "num2", &Get, NULL);
-
-			m_GetFromBox += Server()->GetItemName(m_ClientID, getitem, false);
-			m_GetFromBox += ", ";
-		}
-
-		if (m_OpenBox && m_OpenBoxType == BOSSBOX2)
-		{
-			int getitem = 0;
-
-			int Get = 1;
-			int RandGet = rand() % 160;
-			if (RandGet >= 0 && RandGet <= 150)
-			{
-				int RandItem = rand() % 3;
-				switch (RandItem)
-				{
-				default: getitem = MONEYBAG, Get = 50; break;
-				case 1: getitem = FARMBOX, Get = 5; break;
-				case 2: getitem = RANDOMCRAFTITEM, Get = 1; break;
-				}
-			}
-			else
-			{
-				int RandItem = rand() % 2;
-				switch (RandItem)
-				{
-				default: getitem = VAMPIREFANG; break;
-				case 1: getitem = PRESSEDPIECE, Get = 10; break;
-				}
-			}
-
-			Server()->GiveItem(m_ClientID, getitem, Get);
-			//GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} used {str:used} x1 and get {str:get} x{int:num2}"),
-			//	"name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, BOSSBOX2, false), "get", Server()->GetItemName(m_ClientID, getitem, false), "num2", &Get, NULL);
-
-			m_GetFromBox += Server()->GetItemName(m_ClientID, getitem, false);
-			m_GetFromBox += ", ";
-		}
-		if (m_OpenBox && m_OpenBoxType == BOSSBOX3)
-		{
-			int getitem = 0;
-
-			int Get = 1;
-			int RandGet = rand() % 160;
-			if (RandGet >= 0 && RandGet <= 150)
-			{
-				int RandItem = rand() % 3;
-				switch (RandItem)
-				{
-				default: getitem = MONEYBAG, Get = 75; break;
-				case 1: getitem = FARMBOX, Get = 5; break;
-				case 2: getitem = RANDOMCRAFTITEM, Get = 1; break;
-				}
-			}
-			else
-			{
-				//int RandItem = rand() % 2;
-				//switch (RandItem)
-				//{
-				//default: getitem = KINGSOUL, Get = 2; break;
-				//case 1: getitem = PRESSEDPIECE, Get = 15; break;
-				//}
-			}
-
-			Server()->GiveItem(m_ClientID, getitem, Get);
-
-			m_GetFromBox += Server()->GetItemName(m_ClientID, getitem, false);
-			m_GetFromBox += ", ";
-		}
-
-
-		if (m_OpenBox && m_OpenBoxType == FARMBOX)
-		{
-			int getitem = 0;
-
-			int Get = 1;
-			int RandGet = rand() % 100;
-			if (RandGet >= 0 && RandGet <= 92)
-			{
-				int RandItem = rand() % 3;
-				switch (RandItem)
-				{
-				default: getitem = FARMLEVEL, Get = 5; break;
-				case 1: getitem = MONEYBAG, Get = 2; break;
-				case 2: getitem = EVENTBOX, Get = 5; break;
-				}
-			}
-			else
-			{
-				int RandItem = rand() % 4;
-				switch (RandItem)
-				{
-				default: getitem = JUMPIMPULS; break;
-				case 1: getitem = FREEAZER; break;
-				case 3: getitem = RARESLIMEDIRT; break;
-				}
-			}
-
-			Server()->GiveItem(m_ClientID, getitem, Get);
-
-			m_GetFromBox += Server()->GetItemName(m_ClientID, getitem, false);
-			m_GetFromBox += ", ";
-		}
-	}
-
-	if (m_OpeningBox) {
-		if (m_pCharacter)
-			GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
-
-		GameServer()->SendChatTarget_Localization(GetCID(), CHATCATEGORY_DEFAULT, _("{str:name} used {str:used} x{int:count} and get {str:get}"),
-			"name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, m_OpenBoxType, false), "count", &m_OpenBox, "get", m_GetFromBox.c_str(), NULL);
-	}
-
-	m_OpenBox = 0;
-}*/
 
 void CPlayer::BasicAuthedTick()
 {
@@ -372,129 +167,6 @@ void CPlayer::BasicAuthedTick()
 		GameServer()->UpdateUpgrades(m_ClientID);
 		GameServer()->UpdateStats(m_ClientID);
 	}
-
-	if (m_AcceptedDailyQuestID)
-	{
-		int Quest = GameServer()->GetDailyQuest(m_AcceptedDailyQuestID);
-
-		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
-		{
-			Server()->GiveItem(m_ClientID, MONEYBAG, 2000);
-
-			switch (m_AcceptedDailyQuestID)
-			{
-			case 1: AccData.DailyQuest1 = 1;
-			case 2: AccData.DailyQuest2 = 1;
-			case 3: AccData.DailyQuest3 = 1;
-			}
-
-			m_AcceptedDailyQuestID = 0;
-		}
-		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
-		{
-			Server()->GiveItem(m_ClientID, MONEYBAG, 3000);
-
-			switch (m_AcceptedDailyQuestID)
-			{
-			case 1: AccData.DailyQuest1 = 1;
-			case 2: AccData.DailyQuest2 = 1;
-			case 3: AccData.DailyQuest3 = 1;
-			}
-
-			m_AcceptedDailyQuestID = 0;
-		}
-		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
-		{
-			Server()->GiveItem(m_ClientID, MONEYBAG, 4000);
-
-			switch (m_AcceptedDailyQuestID)
-			{
-			case 1: AccData.DailyQuest1 = 1;
-			case 2: AccData.DailyQuest2 = 1;
-			case 3: AccData.DailyQuest3 = 1;
-			}
-
-			m_AcceptedDailyQuestID = 0;
-		}
-		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
-		{
-			Server()->GiveItem(m_ClientID, MONEYBAG, 1000);
-
-			switch (m_AcceptedDailyQuestID)
-			{
-			case 1: AccData.DailyQuest1 = 1;
-			case 2: AccData.DailyQuest2 = 1;
-			case 3: AccData.DailyQuest3 = 1;
-			}
-
-			m_AcceptedDailyQuestID = 0;
-		}
-		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
-		{
-			Server()->GiveItem(m_ClientID, MONEYBAG, 2000);
-
-			switch (m_AcceptedDailyQuestID)
-			{
-			case 1: AccData.DailyQuest1 = 1;
-			case 2: AccData.DailyQuest2 = 1;
-			case 3: AccData.DailyQuest3 = 1;
-			}
-
-			m_AcceptedDailyQuestID = 0;
-		}
-		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
-		{
-			Server()->GiveItem(m_ClientID, MONEYBAG, 3000);
-
-			switch (m_AcceptedDailyQuestID)
-			{
-			case 1: AccData.DailyQuest1 = 1;
-			case 2: AccData.DailyQuest2 = 1;
-			case 3: AccData.DailyQuest3 = 1;
-			}
-
-			m_AcceptedDailyQuestID = 0;
-		}
-		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
-		{
-			Server()->GiveItem(m_ClientID, MONEYBAG, 1000);
-
-			switch (m_AcceptedDailyQuestID)
-			{
-			case 1: AccData.DailyQuest1 = 1;
-			case 2: AccData.DailyQuest2 = 1;
-			case 3: AccData.DailyQuest3 = 1;
-			}
-
-			m_AcceptedDailyQuestID = 0;
-		}
-		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
-		{
-			Server()->GiveItem(m_ClientID, MONEYBAG, 1000);
-
-			switch (m_AcceptedDailyQuestID)
-			{
-			case 1: AccData.DailyQuest1 = 1;
-			case 2: AccData.DailyQuest2 = 1;
-			case 3: AccData.DailyQuest3 = 1;
-			}
-
-			m_AcceptedDailyQuestID = 0;
-		}
-		if (GetCurrentDailyQuestStep() >= GameServer()->GetNeededForDailyQuest(Quest))
-		{
-			Server()->GiveItem(m_ClientID, EVENTBOX, 15);
-
-			switch (m_AcceptedDailyQuestID)
-			{
-			case 1: AccData.DailyQuest1 = 1;
-			case 2: AccData.DailyQuest2 = 1;
-			case 3: AccData.DailyQuest3 = 1;
-			}
-
-			m_AcceptedDailyQuestID = 0;
-		}
-	}
 }
 
 void CPlayer::Tick()
@@ -502,7 +174,7 @@ void CPlayer::Tick()
 #ifdef CONF_DEBUG
 	if(!g_Config.m_DbgDummies || m_ClientID < MAX_CLIENTS-g_Config.m_DbgDummies)
 #endif
-	if(!Server()->ClientIngame(m_ClientID))
+	if(!GameServer()->IsClientValid(m_ClientID))
 		return;
 
 	if(Server()->IsClientLogged(m_ClientID) && AccData.Level == -1)
@@ -511,187 +183,180 @@ void CPlayer::Tick()
 		if(!Server()->GetSeccurity(m_ClientID))
 			GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Your account is at risk, set security"), NULL);
 	}
+	
+	// Мана сучка ебал вас геи ебанные в рт вы шлюхи
+	if (m_InfMana)
+		m_Mana = 100;
 
-
-	if(!IsBot())
+	if (m_Mana < GetNeedMana())
 	{
-		// Мана сучка ебал вас геи ебанные в рт вы шлюхи
-		if (m_InfMana)
-			m_Mana = 100;
-
-		if (m_Mana < GetNeedMana())
+		if (!m_ManaTick)
 		{
-			if (!m_ManaTick)
-			{
-				m_Mana++;
-				m_ManaTick = 10;
-				GameServer()->SendBroadcast_LStat(m_ClientID, 2, 50, -1);
-			}
-			else m_ManaTick--;
+			m_Mana++;
+			m_ManaTick = 10;
+			GameServer()->SendBroadcast_LStat(m_ClientID, 2, 50, -1);
 		}
-
-		// Снимаем ангру
-		if(m_AngryWroth && Server()->Tick() % (1 * Server()->TickSpeed() * 20) == 0)
-		{
-			if(m_AngryWroth < 20)
-				m_AngryWroth = 0;
-			else
-				m_AngryWroth -= 20;
-		}
-
-		// ОПЫТ КНИГИ ДОБАВКА НУЖНО ОПТИМИЗИРОВАТЬ
-		if(m_MoneyAddEndTick > Server()->Tick())
-		{
-			if(Server()->Tick() % (Server()->TickSpeed() * 120) == 0)
-			{
-				int Time = (m_MoneyAddEndTick - Server()->Tick()) / Server()->TickSpeed() / 60;
-				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ending {str:name} after {int:ends} min."), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), "ends", &Time, NULL);
-			}
-			if(m_MoneyAddEndTick - Server()->Tick() == 1)
-				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ended {str:name}"), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), NULL);
-		}
-		if (m_ExperienceAddEndTick > Server()->Tick())
-		{
-			if (Server()->Tick() % (Server()->TickSpeed() * 120) == 0)
-			{
-				int Time = (m_ExperienceAddEndTick - Server()->Tick()) / Server()->TickSpeed() / 60;
-				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ending {str:name} after {int:ends} min."), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), "ends", &Time, NULL);
-			}
-			if (m_ExperienceAddEndTick - Server()->Tick() == 1)
-				GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ended {str:name}"), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), NULL);
-		}
-
-		// Уровни и все такое повышение
-		if(Server()->IsClientLogged(m_ClientID) && GetTeam() != TEAM_SPECTATORS)
-		{
-			if(g_Config.m_SvEventSchool)
-			{
-				if(Server()->Tick() % (1 * Server()->TickSpeed() * 600) == 0)
-				{
-					int Type;
-					switch(rand()%5)
-					{
-						case 1: Type = COOPERPIX; break;
-						case 2: Type = WOOD; break;
-						case 3: Type = BOOKEXPMIN; break;
-						default: Type = EVENTCUSTOMSOUL;
-					}
-
-					GameServer()->SendMail(m_ClientID, "Event Back to School you got item!", Type, 1);
-					GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("[Back to School] {str:name} got {str:item}."), "name", Server()->ClientName(m_ClientID), "item", Server()->GetItemName(m_ClientID, Type), NULL);
-
-					if(Server()->GetItemCount(m_ClientID, EVENTCUSTOMSOUL) >= 25)
-					{
-						Server()->RemItem(m_ClientID, EVENTCUSTOMSOUL, 25, -1);
-						GameServer()->SendMail(m_ClientID, "Soul automatic changes Custom Skin!", CUSTOMSKIN, 1);
-						GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("[Back to School] {str:name} Collect 25 Soul & get Custom Skin."), "name", Server()->ClientName(m_ClientID), NULL);
-					}
-				}
-			}
-			BasicAuthedTick();
-			//RandomBoxTick();
-		}
-
-		// Агресия и тюрьма
-		if(!m_Search && AccData.Rel >= 1000)
-		{
-			//m_Search = true;
-			//GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("Player {str:name}, in the wanted list"), "name", Server()->ClientName(m_ClientID), NULL);
-		}
-		if(m_JailTick && AccData.Jail)
-		{
-			int Time = m_JailTick/Server()->TickSpeed();
-			GameServer()->SendBroadcast_Localization(m_ClientID, 100, 100, _("You in jail, wait {sec:siska}."), "siska", &Time, NULL);
-
-			m_JailTick--;
-			if(!m_JailTick)
-			{
-				m_JailTick = 0;
-				AccData.Jail = false;
-
-				if(m_pCharacter)
-					m_pCharacter->Die(m_ClientID, WEAPON_WORLD);
-
-				GameServer()->UpdateStats(m_ClientID);
-				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("The player {str:name}, leaves the prison"), "name", Server()->ClientName(m_ClientID), NULL);
-			}
-		}
-		if(GetTeam() != TEAM_SPECTATORS && AccData.Rel > 0 && Server()->Tick() % (1 * Server()->TickSpeed() * 60) == 0)
-		{
-			AccData.Rel -= 100;
-			if(AccData.Rel < 0)
-				AccData.Rel = 0;
-
-			if(AccData.Rel == 0 && m_Search)
-			{
-				m_Search = false;
-				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("Player {str:name}, crosed out in wanted list"), "name", Server()->ClientName(m_ClientID), NULL);
-			}
-			GameServer()->SendBroadcast_Localization(m_ClientID, BROADCAST_PRIORITY_GAMEANNOUNCE, BROADCAST_DURATION_GAMEANNOUNCE, _("Relations angry -100. Your {int:rel}"), "rel", &AccData.Rel, NULL);
-			GameServer()->UpdateStats(m_ClientID);
-		}
-
-		// вывод текста АРЕНА
-		if(m_InArea)
-		{
-			if(GameServer()->m_AreaStartTick)
-			{
-				int Time = GameServer()->m_AreaStartTick/Server()->TickSpeed();
-				GameServer()->SendBroadcast_Localization(m_ClientID, 101, 100, _("Wait start area {int:siska} sec."), "siska", &Time, NULL);
-
-				if(GameServer()->m_AreaStartTick == 100)
-					GameServer()->SendBroadcast_Localization(m_ClientID, 105, 100, _("Fight!!."), NULL);
-			}
-			else if(GameServer()->m_AreaEndGame)
-			{
-				int Time = GameServer()->m_AreaEndGame/Server()->TickSpeed();
-				int couns = GameServer()->GetAreaCount();
-				GameServer()->SendBroadcast_Localization(m_ClientID, 102, 100, _("End area {int:siska} sec. Life {int:num} player's"), "siska", &Time, "num", &couns, NULL);
-			}
-		}
-
-		// вывод текста по поводу ожидания времени босса
-		if(m_InBossed)
-		{
-			if(GameServer()->m_WinWaitBoss)
-			{
-				int Time = GameServer()->m_WinWaitBoss/Server()->TickSpeed();
-				GameServer()->SendBroadcast_Localization(m_ClientID, 101, 100, _("Wait players for pick item's {int:siska} sec."), "siska", &Time, NULL);
-			}
-			else if(GameServer()->m_BossStartTick > 10*Server()->TickSpeed())
-			{
-				int Time = GameServer()->m_BossStartTick/Server()->TickSpeed();
-				GameServer()->SendBroadcast_Localization(m_ClientID, 101, 100, _("Wait players for raid {sec:siska}. Boss: {str:name}"), "siska", &Time, "name", GameServer()->GetBossName(GameServer()->m_BossType), NULL);
-			}
-			else if(Server()->Tick() % (1 * Server()->TickSpeed()) == 0 && GameServer()->m_BossStartTick > 100)
-				GameServer()->SendGuide(m_ClientID, GameServer()->m_BossType);
-			else if(GameServer()->m_BossStart)
-				GameServer()->SendBroadcast_LBossed(m_ClientID, 250, 100);
-		}
-
-		// таймер синхронизации
-		if(m_LoginSync)
-		{
-			m_LoginSync--;
-			if(!m_LoginSync)
-			{
-				if(Server()->IsClientLogged(m_ClientID))
-				{
-					if(Server()->GetClanID(m_ClientID) > 0)
-						Server()->UpdClanCount(Server()->GetClanID(m_ClientID));
-
-					GameServer()->ResetVotes(m_ClientID, AUTH);
-				}
-			}
-		}
-		if(!Server()->IsClientLogged(m_ClientID))
-			m_Team = -1;
-
-		if(m_MapMenu > 0)
-			m_MapMenuTick++;
-
-		GameServer()->SendBroadcast_LDaily(m_ClientID);
+		else m_ManaTick--;
 	}
+
+	// Снимаем ангру
+	if(m_AngryWroth && Server()->Tick() % (1 * Server()->TickSpeed() * 20) == 0)
+	{
+		if(m_AngryWroth < 20)
+			m_AngryWroth = 0;
+		else
+			m_AngryWroth -= 20;
+	}
+
+	// ОПЫТ КНИГИ ДОБАВКА НУЖНО ОПТИМИЗИРОВАТЬ
+	if(m_MoneyAddEndTick > Server()->Tick())
+	{
+		if(Server()->Tick() % (Server()->TickSpeed() * 120) == 0)
+		{
+			int Time = (m_MoneyAddEndTick - Server()->Tick()) / Server()->TickSpeed() / 60;
+			GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ending {str:name} after {int:ends} min."), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), "ends", &Time, NULL);
+		}
+		if(m_MoneyAddEndTick - Server()->Tick() == 1)
+			GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ended {str:name}"), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), NULL);
+	}
+	if (m_ExperienceAddEndTick > Server()->Tick())
+	{
+		if (Server()->Tick() % (Server()->TickSpeed() * 120) == 0)
+		{
+			int Time = (m_ExperienceAddEndTick - Server()->Tick()) / Server()->TickSpeed() / 60;
+			GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ending {str:name} after {int:ends} min."), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), "ends", &Time, NULL);
+		}
+		if (m_ExperienceAddEndTick - Server()->Tick() == 1)
+			GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("Item's ended {str:name}"), "name", Server()->GetItemName(m_ClientID, BOOKMONEYMIN), NULL);
+	}
+
+	// Уровни и все такое повышение
+	if(Server()->IsClientLogged(m_ClientID) && GetTeam() != TEAM_SPECTATORS)
+	{
+		if(g_Config.m_SvEventSchool)
+		{
+			if(Server()->Tick() % (1 * Server()->TickSpeed() * 600) == 0)
+			{
+				int Type;
+				switch(rand()%5)
+				{
+					case 1: Type = COOPERPIX; break;
+					case 2: Type = WOOD; break;
+					case 3: Type = BOOKEXPMIN; break;
+					default: Type = EVENTCUSTOMSOUL;
+				}
+
+				GameServer()->SendMail(m_ClientID, "Event Back to School you got item!", Type, 1);
+				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("[Back to School] {str:name} got {str:item}."), "name", Server()->ClientName(m_ClientID), "item", Server()->GetItemName(m_ClientID, Type), NULL);
+
+				if(Server()->GetItemCount(m_ClientID, EVENTCUSTOMSOUL) >= 25)
+				{
+					Server()->RemItem(m_ClientID, EVENTCUSTOMSOUL, 25, -1);
+					GameServer()->SendMail(m_ClientID, "Soul automatic changes Custom Skin!", CUSTOMSKIN, 1);
+					GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("[Back to School] {str:name} Collect 25 Soul & get Custom Skin."), "name", Server()->ClientName(m_ClientID), NULL);
+				}
+			}
+		}
+		BasicAuthedTick();
+	}
+
+	// Агресия и тюрьма
+	if(!m_Search && AccData.Rel >= 1000)
+	{
+		//m_Search = true;
+		//GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("Player {str:name}, in the wanted list"), "name", Server()->ClientName(m_ClientID), NULL);
+	}
+	if(m_JailTick && AccData.Jail)
+	{
+		int Time = m_JailTick/Server()->TickSpeed();
+		GameServer()->SendBroadcast_Localization(m_ClientID, 100, 100, _("You in jail, wait {sec:siska}."), "siska", &Time, NULL);
+
+		m_JailTick--;
+		if(!m_JailTick)
+		{
+			m_JailTick = 0;
+			AccData.Jail = false;
+
+			if(m_pCharacter)
+				m_pCharacter->Die(m_ClientID, WEAPON_WORLD);
+
+			GameServer()->UpdateStats(m_ClientID);
+			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("The player {str:name}, leaves the prison"), "name", Server()->ClientName(m_ClientID), NULL);
+		}
+	}
+	if(GetTeam() != TEAM_SPECTATORS && AccData.Rel > 0 && Server()->Tick() % (1 * Server()->TickSpeed() * 60) == 0)
+	{
+		AccData.Rel -= 100;
+		if(AccData.Rel < 0)
+			AccData.Rel = 0;
+
+		if(AccData.Rel == 0 && m_Search)
+		{
+			m_Search = false;
+			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("Player {str:name}, crosed out in wanted list"), "name", Server()->ClientName(m_ClientID), NULL);
+		}
+		GameServer()->SendBroadcast_Localization(m_ClientID, BROADCAST_PRIORITY_GAMEANNOUNCE, BROADCAST_DURATION_GAMEANNOUNCE, _("Relations angry -100. Your {int:rel}"), "rel", &AccData.Rel, NULL);
+		GameServer()->UpdateStats(m_ClientID);
+	}
+
+	// вывод текста АРЕНА
+	if(m_InArea)
+	{
+		if(GameServer()->m_AreaStartTick)
+		{
+			int Time = GameServer()->m_AreaStartTick/Server()->TickSpeed();
+			GameServer()->SendBroadcast_Localization(m_ClientID, 101, 100, _("Wait start area {int:siska} sec."), "siska", &Time, NULL);
+
+			if(GameServer()->m_AreaStartTick == 100)
+				GameServer()->SendBroadcast_Localization(m_ClientID, 105, 100, _("Fight!!."), NULL);
+		}
+		else if(GameServer()->m_AreaEndGame)
+		{
+			int Time = GameServer()->m_AreaEndGame/Server()->TickSpeed();
+			int couns = GameServer()->GetAreaCount();
+			GameServer()->SendBroadcast_Localization(m_ClientID, 102, 100, _("End area {int:siska} sec. Life {int:num} player's"), "siska", &Time, "num", &couns, NULL);
+		}
+	}
+
+	// вывод текста по поводу ожидания времени босса
+	if(m_InBossed)
+	{
+		if(GameServer()->m_WinWaitBoss)
+		{
+			int Time = GameServer()->m_WinWaitBoss/Server()->TickSpeed();
+			GameServer()->SendBroadcast_Localization(m_ClientID, 101, 100, _("Wait players for pick item's {int:siska} sec."), "siska", &Time, NULL);
+		}
+		else if(GameServer()->m_BossStartTick > 10*Server()->TickSpeed())
+		{
+			int Time = GameServer()->m_BossStartTick/Server()->TickSpeed();
+			GameServer()->SendBroadcast_Localization(m_ClientID, 101, 100, _("Wait players for raid {sec:siska}. Boss: {str:name}"), "siska", &Time, "name", GameServer()->GetBossName(GameServer()->m_BossType), NULL);
+		}
+		else if(Server()->Tick() % (1 * Server()->TickSpeed()) == 0 && GameServer()->m_BossStartTick > 100)
+			GameServer()->SendGuide(m_ClientID, GameServer()->m_BossType);
+		else if(GameServer()->m_BossStart)
+			GameServer()->SendBroadcast_LBossed(m_ClientID, 250, 100);
+	}
+
+	// таймер синхронизации
+	if(m_LoginSync)
+	{
+		m_LoginSync--;
+		if(!m_LoginSync)
+		{
+			if(Server()->IsClientLogged(m_ClientID))
+			{
+				if(Server()->GetClanID(m_ClientID) > 0)
+					Server()->UpdClanCount(Server()->GetClanID(m_ClientID));
+
+				GameServer()->ResetVotes(m_ClientID, AUTH);
+			}
+		}
+	}
+	if(!Server()->IsClientLogged(m_ClientID))
+		m_Team = TEAM_SPECTATORS;
+
+	if(m_MapMenu > 0)
+		m_MapMenuTick++;
 
 	// Rainbow
 	if (m_Rainbow)
@@ -757,44 +422,30 @@ void CPlayer::Tick()
 
 int CPlayer::GetNeedForUp()
 {
-	int exp=250;
+	int exp = 250;
 
-	if(AccData.Level > 100) exp=700;
-	if(AccData.Level > 200) exp=1000;
-	if(AccData.Level > 300) exp=1500;
-	if(AccData.Level > 400) exp=2500;
-	if(AccData.Level > 500) exp=4000;
-	if(AccData.Level > 600) exp=6000;
-	if(AccData.Level > 700) exp=8000;
-	if(AccData.Level > 1000) exp=12000;
-	if(AccData.Level > 1100) exp=13000;
-	if(AccData.Level > 1200) exp=14000;
+	if(AccData.Level > 100) exp = 700;
+	if(AccData.Level > 200) exp = 1000;
+	if(AccData.Level > 300) exp = 1500;
+	if(AccData.Level > 400) exp = 2500;
+	if(AccData.Level > 500) exp = 4000;
+	if(AccData.Level > 600) exp = 6000;
+	if(AccData.Level > 700) exp = 8000;
+	if(AccData.Level > 1000) exp = 12000;
+	if(AccData.Level > 1100) exp = 13000;
+	if(AccData.Level > 1200) exp = 14000;
 	
 	return exp;
-
-	/*
-	if(AccData.Level >= 100) return 1000;
-	else if(AccData.Level >= 200) return 5000;
-	else if(AccData.Level >= 300) return 10000;
-	else if(AccData.Level >= 400) return 50000;
-	else if(AccData.Level >= 500) return 100000;
-	else if(AccData.Level >= 600) return 150000;
-	else if(AccData.Level >= 700) return 200000;
-	else if(AccData.Level >= 1000) return 250000;
-	else if(AccData.Level >= 1100) return 300000;
-	else if(AccData.Level >= 1200) return 350000;
-	else return 100;
-	*/
 }
 int CPlayer::GetNeedForUpClan()
 {
 	int Get = Server()->GetClan(DLEVEL, Server()->GetClanID(m_ClientID));
-	return 1000000+Get*1000000;
+	return 1000000 + Get * 1000000;
 }
 int CPlayer::GetNeedForUpgClan(int Type)
 {
 	int Get = Server()->GetClan(Type, Server()->GetClanID(m_ClientID));
-	return 100+Get*500;
+	return 100 + Get * 500;
 }
 
 void CPlayer::PostTick()
@@ -833,9 +484,6 @@ void CPlayer::HandleTuningParams()
 
 void CPlayer::MoneyAdd(int Size, bool ClanBonus, bool MoneyDouble)
 {
-	if(IsBot())
-		return;
-
 	int GetMoney = Size;
 	if(ClanBonus && Server()->GetClanID(m_ClientID))
 		GetMoney += Server()->GetClan(DADDMONEY, Server()->GetClanID(m_ClientID)) * 100;
@@ -871,9 +519,6 @@ void CPlayer::MoneyAdd(int Size, bool ClanBonus, bool MoneyDouble)
 
 void CPlayer::ExpAdd(int Size, bool Bonus)
 {
-	if(IsBot())
-		return;
-
 	int GetExp = Size*5, Get = 0;
 	int gete = GetExp;
 	if(Bonus && Server()->GetClanID(m_ClientID))
@@ -922,42 +567,49 @@ void CPlayer::ExpAdd(int Size, bool Bonus)
 void CPlayer::Snap(int SnappingClient)
 {
 #ifdef CONF_DEBUG
-	if(!g_Config.m_DbgDummies || m_ClientID < MAX_CLIENTS-g_Config.m_DbgDummies)
+	if(!g_Config.m_DbgDummies || m_ClientID < MAX_CLIENTS - g_Config.m_DbgDummies)
 #endif
-	if(!Server()->ClientIngame(m_ClientID))
+	if(!GameServer()->IsClientValid(m_ClientID))
 		return;
-	if (m_pCharacter && IsBot())
-		if (m_pCharacter->NetworkClipped(SnappingClient))
-			return;
 
 	int id = m_ClientID;
 	if (SnappingClient > -1 && !Server()->Translate(id, SnappingClient)) return;
-	if (id > 63)
-		id = id % 64;
+	if (m_pCharacter && IsBot())
+		if (m_pCharacter->NetworkClipped(SnappingClient))
+			if (id > 63)
+				id = id % 64;
 
 	CNetObj_ClientInfo *pClientInfo = static_cast<CNetObj_ClientInfo *>(Server()->SnapNewItem(NETOBJTYPE_CLIENTINFO, id, sizeof(CNetObj_ClientInfo)));
 	if(!pClientInfo)
 		return;
+
+	if (Server()->IsClientLogged(m_ClientID) && GetTeam() != TEAM_SPECTATORS)
+	{
+		char pSendName[32];
+		str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID));
+		StrToInts(&pClientInfo->m_Name0, 4, pSendName);
+
+		if (m_pCharacter)
+		{
+			float getlv = ((m_Health * 100.0) / m_HealthStart) - 1;
+			switch (GetBotType())
+			{
+			default: str_format(pSendName, sizeof(pSendName), "%d:%s[%d%%]", AccData.Level, Server()->ClientName(m_ClientID), (int)getlv); break;
+			case BOT_NPC:
+			case BOT_BOSSSLIME: str_format(pSendName, sizeof(pSendName), "%s[%d%%]", Server()->ClientName(m_ClientID), (int)getlv);	break;
+			case BOT_NPCW: str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID)); break;
+			}
+			StrToInts(&pClientInfo->m_Name0, 4, pSendName);
+		}
+	}
+	else
+		StrToInts(&pClientInfo->m_Name0, 4, Server()->ClientName(m_ClientID));
 
 	if(Server()->IsClientLogged(m_ClientID) && GetTeam() != TEAM_SPECTATORS)
 	{
 		char pSendName[32];
 		str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID));
 		StrToInts(&pClientInfo->m_Name0, 4, pSendName);
-
-		if(IsBot() && m_pCharacter)
-		{
-
-			float getlv = ((m_Health*100.0)/m_HealthStart)-1;
-			switch(GetBotType())
-			{
-				default: str_format(pSendName, sizeof(pSendName), "%d:%s[%d%%]", AccData.Level, Server()->ClientName(m_ClientID), (int)getlv); break;
-				case BOT_NPC:
-				case BOT_BOSSSLIME: str_format(pSendName, sizeof(pSendName), "%s[%d%%]", Server()->ClientName(m_ClientID), (int)getlv);	break;
-				case BOT_NPCW: str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID)); break;
-			}
-			StrToInts(&pClientInfo->m_Name0, 4, pSendName);
-		}
 	}
 	else
 		StrToInts(&pClientInfo->m_Name0, 4, Server()->ClientName(m_ClientID));
@@ -988,11 +640,8 @@ void CPlayer::Snap(int SnappingClient)
 	pPlayerInfo->m_Local = 0;
 	pPlayerInfo->m_ClientID = id;
 
-	if(GetBotType() == BOT_BOSSSLIME || !IsBot()) pPlayerInfo->m_Score = AccData.Level;
-	else pPlayerInfo->m_Score = 0;
-
-	if(!IsBot()) pPlayerInfo->m_Team = m_Team;
-	else pPlayerInfo->m_Team = 10;
+	pPlayerInfo->m_Score = AccData.Level;
+	pPlayerInfo->m_Team = m_Team;
 
 	if(m_ClientID == SnappingClient)
 		pPlayerInfo->m_Local = 1;
@@ -1033,14 +682,14 @@ void CPlayer::OnDisconnect(const char *pReason)
 	GameServer()->ClearVotes(m_ClientID);
 	KillCharacter();
 
-	if(Server()->ClientIngame(m_ClientID))
+	if(GameServer()->IsClientValid(m_ClientID))
 		GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} has left the game {str:Reason}"), "PlayerName", Server()->ClientName(m_ClientID), NULL);
 }
 
 void CPlayer::OnPredictedInput(CNetObj_PlayerInput *NewInput)
 {
 	// skip the input if chat is active
-	if((m_PlayerFlags&PLAYERFLAG_CHATTING) && (NewInput->m_PlayerFlags&PLAYERFLAG_CHATTING))
+	if((m_PlayerFlags & PLAYERFLAG_CHATTING) && (NewInput->m_PlayerFlags & PLAYERFLAG_CHATTING))
 		return;
 
 	if(m_pCharacter)
@@ -1145,135 +794,75 @@ void CPlayer::TryRespawn()
 
 	if (IsBot())
 	{
-		// жирный бот рандом
-		if(rand() % 20 == 10) m_BigBot = true;
-		else m_BigBot = false;
+		m_BigBot = false;
+		if (rand() % 20 == 10) m_BigBot = true;
 
 		GameServer()->UpdateBotInfo(m_ClientID);
-		if(m_BotType == BOT_L1MONSTER)
-		{
-			m_pCharacter = new(m_ClientID) CMonster(&GameServer()->m_World);
-			/*if (g_Config.m_SvCityStart == 2)
-			{
-				AccData.Level = m_BigBot ? 1299+rand()%3 : 1199;
-				AccUpgrade.Health = 100+(AccData.Level*5);
-				AccUpgrade.Damage = AccData.Level+300;
-			}
 
-			else if(g_Config.m_SvCityStart == 1)
-			{
-				AccData.Level = m_BigBot ? 280+rand()%3 : 250;
-				AccUpgrade.Health = 300+(AccData.Level*7);
-				AccUpgrade.Damage = AccData.Level+300;
-			}*/
-			AccData.Level = m_BigBot ? 15+rand()%3 : 10;
-			AccUpgrade.Health = 1;
-			if(m_BigBot)
+		int Level = 0;
+		int Health = 0;
+		int Damage = 0;
+
+		switch (GetBotType())
+		{
+		case BOT_L1MONSTER:
+			m_pCharacter = new(m_ClientID) CMonster(&GameServer()->m_World);
+			Level = m_BigBot ? 15 + rand() % 3 : 10;
+			Health = 1;
+			if (m_BigBot)
 			{
 				Server()->SetMaxAmmo(m_ClientID, INFWEAPON_GUN, 10);
 				Server()->SetAmmoRegenTime(m_ClientID, INFWEAPON_GUN, 100);
 				Server()->SetFireDelay(m_ClientID, INFWEAPON_GUN, 800);
 			}
-		}
-		else if(m_BotType == BOT_L2MONSTER)
-		{
+			break;
+		case BOT_L2MONSTER:
 			m_pCharacter = new(m_ClientID) CKwah(&GameServer()->m_World);
-			/*if (g_Config.m_SvCityStart == 2)
-			{
-				AccData.Level = m_BigBot ? 1677+rand()%3 : 1560+rand()%3;
-				AccUpgrade.Health = 100+(AccData.Level*5);
-				AccUpgrade.Damage = AccData.Level+200;
-			}
-			else if(g_Config.m_SvCityStart == 1)
-			{
-				AccData.Level = m_BigBot ? 370+rand()%3 : 350+rand()%3;
-				AccUpgrade.Health = 300+(AccData.Level*4);
-				AccUpgrade.Damage = AccData.Level+200;
-			}*/
-			AccData.Level = m_BigBot ? 100 : 85+rand()%3;
-			AccUpgrade.Health = AccData.Level;
-			AccUpgrade.Damage = AccData.Level/2;
-		}
-		else if(m_BotType == BOT_L3MONSTER)
-		{
+			Level = m_BigBot ? 100 : 85 + rand() % 3;
+			Health = Level;
+			Damage = Level / 2;
+			break;
+		case BOT_L3MONSTER:
 			m_pCharacter = new(m_ClientID) CBoomer(&GameServer()->m_World);
-
-			/*if (g_Config.m_SvCityStart == 2)
-			{
-				AccData.Level = m_BigBot ? 2050+rand()%3 : 1915+rand()%15;
-				AccUpgrade.Health = 100+(int)(AccData.Level*5);
-				AccUpgrade.Damage = (int)(AccData.Level+250);
-			}
-			else if(g_Config.m_SvCityStart == 1)
-			{
-				AccData.Level = m_BigBot ? 510+rand()%3 : 490+rand()%15;
-				AccUpgrade.Health = 300+(int)(AccData.Level*5);
-				AccUpgrade.Damage = (int)(AccData.Level+250);
-			}*/
-			AccData.Level = m_BigBot ? 170+rand()%3 : 130+rand()%3;
-			AccUpgrade.Health = 50+AccData.Level;
-			AccUpgrade.Damage = AccData.Level;
-		}
-		else if (m_BotType == BOT_L4MONSTER)
-		{
+			Level = m_BigBot ? 170 + rand() % 3 : 130 + rand() % 3;
+			Health = 50 + Level;
+			Damage = Level;
+			break;
+		case BOT_L4MONSTER:
 			m_pCharacter = new(m_ClientID) CMonster(&GameServer()->m_World);
-
-			AccData.Level = m_BigBot ? 230 + rand() % 3 : 170 + rand() % 3;
-			AccUpgrade.Health = 60 + AccData.Level;
-			AccUpgrade.Damage = AccData.Level;
-		}
-		else if (m_BotType == BOT_L5MONSTER)
-		{
+			Level = m_BigBot ? 230 + rand() % 3 : 170 + rand() % 3;
+			Health = 60 + Level;
+			Damage = Level;
+			break;
+		case BOT_L5MONSTER:
 			m_pCharacter = new(m_ClientID) CKwah(&GameServer()->m_World);
-
-			AccData.Level = m_BigBot ? 310 + rand() % 3 : 270 + rand() % 3;
-			AccUpgrade.Health = 70 + AccData.Level;
-			AccUpgrade.Damage = AccData.Level;
-		}
-		else if(m_BotType == BOT_BOSSSLIME)
-		{
+			Level = m_BigBot ? 310 + rand() % 3 : 270 + rand() % 3;
+			Health = 70 + Level;
+			Damage = Level;
+			break;
+		case BOT_BOSSSLIME:
 			m_pCharacter = new(m_ClientID) CBossSlime(&GameServer()->m_World);
-			AccData.Level = 300+rand()%3;
+			Level = 300 + rand() % 20;
+			Health = Level;
+			Damage = 10;
 
 			m_BigBot = true;
-
-			AccUpgrade.Health = (int)(AccData.Level);
-			AccUpgrade.Damage = 10;
-			if(g_Config.m_SvCityStart == 1)
-			{
-				AccUpgrade.Damage = 180;
-				AccUpgrade.Health = (int)(AccData.Level);
-			}
-			if(g_Config.m_SvCityStart == 2)
-			{
-				AccUpgrade.Damage = 500;
-				AccUpgrade.Health = (int)(AccData.Level*3);
-			}
-		}
-		else if(m_BotType == BOT_NPC)
-		{
+			break;
+		case BOT_NPC:
 			m_pCharacter = new(m_ClientID) CNpcSold(&GameServer()->m_World);
-			AccData.Level = 500+rand()%10;
-			AccUpgrade.Damage = (int)(AccData.Level*10);
-			AccUpgrade.Health = (int)(AccData.Level*500);
+			Level = 500 + rand() % 20;
+			Health = Level * 500;
+			Damage = Level * 10;
+
 			m_BigBot = true;
+			break;
 		}
-		else if(m_BotType == BOT_NPCW)
-		{
-			m_pCharacter = new(m_ClientID) CNpcWSold(&GameServer()->m_World);
-			AccData.Level = 3;
-			AccUpgrade.Damage = (int)(AccData.Level*5);
-			AccUpgrade.Health = (int)(AccData.Level*2);
-			m_BigBot = true;
-		}
-		Server()->SetMaxAmmo(m_ClientID, INFWEAPON_HAMMER, -1);
-		Server()->SetAmmoRegenTime(m_ClientID, INFWEAPON_HAMMER, 0);
-		Server()->SetFireDelay(m_ClientID, INFWEAPON_HAMMER, 1);
-	}
-	else
-	{
+
+		AccData.Level = Level;
+		AccUpgrade.Health = Health;
+		AccUpgrade.Damage = Damage;
+	} else
 		m_pCharacter = new(m_ClientID) CCharacter(&GameServer()->m_World);
-	}
 
 	m_pCharacter->Spawn(this, SpawnPos);
 	if(GetClass() != PLAYERCLASS_NONE)

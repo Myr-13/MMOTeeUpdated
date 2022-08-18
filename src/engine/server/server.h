@@ -6,6 +6,8 @@
 #include <engine/server.h>
 #include <game/server/classes.h>
 
+#include "multi_world.h"
+
 /* DDNET MODIFICATION START *******************************************/
 #include "sql_connector.h"
 #include "sql_server.h"
@@ -64,16 +66,18 @@ public:
 
 class CServer : public IServer
 {
-	class IGameServer *m_pGameServer;
+	class IGameServer *m_apGameServers[NUM_WORLDS];
 	class IConsole *m_pConsole;
 	class IStorage2 *m_pStorage;
+	class CMultiWorlds *m_pMultiWorlds;
 	CSqlServer* m_apSqlReadServers[MAX_SQLSERVERS];
 	CSqlServer* m_apSqlWriteServers[MAX_SQLSERVERS];
 	
 public:
-	class IGameServer *GameServer() { return m_pGameServer; }
+	class IGameServer *GameServer(int Type) { return m_apGameServers[Type]; }
 	class IConsole *Console() { return m_pConsole; }
 	class IStorage2 *Storage() { return m_pStorage; }
+	class CMultiWorlds *MultiWorlds() { return m_pMultiWorlds; }
 
 	enum
 	{
@@ -104,7 +108,7 @@ public:
 			int m_GameTick; // the tick that was chosen for the input
 		};
 
-		// connection state info
+		// Connection state info
 		int m_State;
 		int m_Latency;
 		int m_SnapRate;
@@ -139,7 +143,7 @@ public:
 
 		char m_SelectPlayer[64][25];
 
-		//Login
+		// Login
 		int m_LogInstance;
 		int m_UserID;
 		int m_ClanID;
@@ -170,7 +174,7 @@ public:
 		int m_HammerRange;
 		int m_Pasive2;
 		
-		//upgrade
+		// Upgrade
 		int Health;
 		int Damage;
 		int Speed;
@@ -183,6 +187,9 @@ public:
 		char m_aUsername[MAX_NAME_LENGTH];
 		int m_SelectItem;
 		bool m_CustClt;
+
+		// MultiWorld
+		int m_World;
 	};
 
 	struct _m_stClan
@@ -274,7 +281,7 @@ public:
 	CEcon m_Econ;
 	CServerBan m_ServerBan;
 
-	IEngineMap *m_pMap;
+	IEngineMap *m_pMap[NUM_WORLDS];
 
 	int64 m_GameStartTime;
 	int m_RunServer;
@@ -284,11 +291,11 @@ public:
 	int m_PrintCBIndex;
 
 	int64 m_Lastheartbeat;
-	char m_aCurrentMap[64];
+	char m_aCurrentMap[NUM_WORLDS][64];
 	
-	unsigned m_CurrentMapCrc;
-	unsigned char *m_pCurrentMapData;
-	unsigned int m_CurrentMapSize;
+	unsigned m_CurrentMapCrc[NUM_WORLDS];
+	unsigned char *m_pCurrentMapData[NUM_WORLDS];
+	unsigned int m_CurrentMapSize[NUM_WORLDS];
 
 	CRegister m_Register;
 	CMapChecker m_MapChecker;
@@ -329,8 +336,8 @@ public:
 
 	static int ClientRejoinCallback(int ClientID, void *pUser);
 
-	void SendMap(int ClientID);
-	void SendMapData(int ClientID, int Chunk);
+	void SendMap(int ClientID, int Type);
+	void SendMapData(int ClientID, int Chunk, int Type);
 	
 	void SendConnectionReady(int ClientID);
 	void SendRconLine(int ClientID, const char *pLine);
@@ -347,8 +354,8 @@ public:
 
 	void PumpNetwork();
 
-	char *GetMapName();
-	int LoadMap(const char *pMapName);
+	char *GetMapName(int Type);
+	int LoadMap(const char *pMapName, int Type);
 
 	void InitRegister(CNetServer *pNetServer, IEngineMasterServer *pMasterServer, IConsole *pConsole);
 	int Run();
@@ -439,6 +446,9 @@ public:
 	virtual void InitClan();
 	virtual void InitClanID(int ClanID, bool Need, const char* SubType, int Price, bool Save);
 	virtual void UpdClanCount(int ClanID);
+
+	// ----- Мульти-миры
+	virtual void MoveClientToWorld(int ClientID, int WorldID);
 
 	virtual void Ban(int ClientID, int Seconds, const char* pReason);
 	

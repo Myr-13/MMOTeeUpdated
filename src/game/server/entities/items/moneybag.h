@@ -30,6 +30,7 @@ private:
 	int m_Type;
 	int m_SubType;
 	int m_TimeActive;
+	int m_Kek;
 };
 
 #endif
