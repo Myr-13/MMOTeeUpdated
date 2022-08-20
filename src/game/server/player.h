@@ -151,9 +151,6 @@ public:
 		}
 	}
 
-	// мульти-миры
-	int m_WorldID;
-
 	// TODO: clean this up
 	struct
 	{
@@ -190,10 +187,9 @@ public:
 	int m_Authed;
 	bool m_knownClass[NB_PLAYERCLASS];
 	
-	int GetClass();
+	int GetClass() { return AccData.Class; }
 	void SetClassSkin(int newClass, int State = 0);
 	void SetClass(int newClass);
-	//void RandomBoxTick();
 	void BasicAuthedTick();
 	bool IsKownClass(int c);
 	

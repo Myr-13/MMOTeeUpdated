@@ -188,6 +188,9 @@ void CPlayer::Tick()
 	if (m_InfMana)
 		m_Mana = 100;
 
+	if (!Server()->IsClientLogged(m_ClientID))
+		m_Team = TEAM_SPECTATORS;
+
 	if (m_Mana < GetNeedMana())
 	{
 		if (!m_ManaTick)
@@ -574,10 +577,6 @@ void CPlayer::Snap(int SnappingClient)
 
 	int id = m_ClientID;
 	if (SnappingClient > -1 && !Server()->Translate(id, SnappingClient)) return;
-	if (m_pCharacter && IsBot())
-		if (m_pCharacter->NetworkClipped(SnappingClient))
-			if (id > 63)
-				id = id % 64;
 
 	CNetObj_ClientInfo *pClientInfo = static_cast<CNetObj_ClientInfo *>(Server()->SnapNewItem(NETOBJTYPE_CLIENTINFO, id, sizeof(CNetObj_ClientInfo)));
 	if(!pClientInfo)
@@ -867,11 +866,6 @@ void CPlayer::TryRespawn()
 	m_pCharacter->Spawn(this, SpawnPos);
 	if(GetClass() != PLAYERCLASS_NONE)
 		GameServer()->CreatePlayerSpawn(SpawnPos);
-}
-
-int CPlayer::GetClass()
-{
-	return AccData.Class;
 }
 
 void CPlayer::SetClassSkin(int newClass, int State)

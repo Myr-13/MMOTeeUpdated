@@ -621,11 +621,10 @@ int CServer::SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System)
 
 void CServer::MoveClientToWorld(int ClientID, int WorldID)
 {
-	dbg_msg("multi-world", "client %d move to world %d", ClientID, WorldID);
+	dbg_msg("multi-world", "client %d move from world %d to world %d", ClientID, m_aClients[ClientID].m_World, WorldID);
 
 	GameServer(m_aClients[ClientID].m_World)->OnClientChangeWorld(ClientID, WorldID);
-	m_aClients[ClientID].m_World = WorldID;
-	GameServer(m_aClients[ClientID].m_World)->OnClientChangeWorld(ClientID, WorldID);
+	GameServer(WorldID)->OnClientChangeWorld(ClientID, WorldID);
 
 	m_aClients[ClientID].Reset();
 	m_aClients[ClientID].m_World = WorldID;
@@ -858,6 +857,11 @@ int CServer::DelClientCallback(int ClientID, const char *pReason, void *pUser)
 	}
 
 	return 0;
+}
+
+int CServer::GetClientWorld(int ClientID)
+{
+	return m_aClients[ClientID].m_World;
 }
 
 void CServer::Logout(int ClientID)

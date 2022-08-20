@@ -1005,9 +1005,9 @@ void CGameContext::OnTick()
 	m_pController->Tick();
 
 	int NumActivePlayers = 0;
-	for(int i = 0; i < MAX_CLIENTS; i++)
+	for(int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if(m_apPlayers[i] && m_apPlayers[i]->m_WorldID == m_GameServerID)
+		if(m_apPlayers[i] && Server()->GetClientWorld(i) == m_GameServerID)
 		{
 			if(m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
 				NumActivePlayers++;
@@ -2470,16 +2470,6 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			GetUpgrade(ClientID);
 
 			CPlayer *pPlayer = m_apPlayers[ClientID];
-			if(g_Config.m_SvCityStart == 1 && pPlayer->AccData.Level < 250)
-			{
-				SendBroadcast_Localization(ClientID, BROADCAST_PRIORITY_GAMEANNOUNCE, BROADCAST_DURATION_GAMEANNOUNCE, _("You need 250 level"), NULL);
-				return;
-			}
-			if(g_Config.m_SvCityStart == 2 && pPlayer->AccData.Level < 1000)
-			{
-				SendBroadcast_Localization(ClientID, BROADCAST_PRIORITY_GAMEANNOUNCE, BROADCAST_DURATION_GAMEANNOUNCE, _("You need 1000 level"), NULL);
-				return;
-			}
 
 			if(!Server()->GetItemCount(ClientID, CUSTOMSKIN))
 				pPlayer->SetClassSkin(m_apPlayers[ClientID]->GetClass());
@@ -4359,11 +4349,8 @@ void CGameContext::OnClientChangeWorld(int ClientID, int WorldID)
 		m_apPlayers[ClientID] = nullptr;
 	}
 
-	OnClientConnected(ClientID);
-	m_apPlayers[ClientID]->m_WorldID = WorldID;
+	m_apPlayers[ClientID] = new CPlayer(this, ClientID, TEAM_SPECTATORS);
 	m_apPlayers[ClientID]->m_IsInGame = true;
-	m_apPlayers[ClientID]->Respawn();
-	m_apPlayers[ClientID]->SetTeam(TEAM_SPECTATORS, false);
 	ResetVotes(ClientID, NOAUTH);
 }
 

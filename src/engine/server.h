@@ -461,6 +461,7 @@ public:
 	virtual void RemItem(int ClientID, int ItemID, int Count, int Type) = 0;
 	virtual void SetItemPrice(int ClientID, int ItemID, int Level, int Price) = 0;
 	virtual int GetItemPrice(int ClientID, int ItemID, int Type) = 0;
+	virtual int GetClientWorld(int ClientID) = 0;
 	virtual void Logout(int ClientID) = 0;
 
 	virtual int MaxClients() const = 0;

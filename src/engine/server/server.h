@@ -262,6 +262,7 @@ public:
 	virtual int GetItemPrice(int ClientID, int ItemID, int Type);
 	virtual int GetItemEnchant(int ClientID, int ItemID);
 	virtual void SetItemEnchant(int ClientID, int ItemID, int Price);
+	virtual int GetClientWorld(int ClientID);
 	virtual void Logout(int ClientID);
 
 	virtual void SetRewardMail(int ClientID, int ID, int ItemID, int ItemNum);
