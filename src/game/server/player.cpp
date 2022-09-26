@@ -804,7 +804,7 @@ void CPlayer::TryRespawn()
 		switch (GetBotType())
 		{
 		case BOT_L1MONSTER:
-			m_pCharacter = new(m_ClientID) CMonster(&GameServer()->m_World);
+			m_pCharacter = new CMonster(&GameServer()->m_World);
 			Level = m_BigBot ? 15 + rand() % 3 : 10;
 			Health = 1;
 			if (m_BigBot)
@@ -815,31 +815,31 @@ void CPlayer::TryRespawn()
 			}
 			break;
 		case BOT_L2MONSTER:
-			m_pCharacter = new(m_ClientID) CKwah(&GameServer()->m_World);
+			m_pCharacter = new CKwah(&GameServer()->m_World);
 			Level = m_BigBot ? 100 : 85 + rand() % 3;
 			Health = Level;
 			Damage = Level / 2;
 			break;
 		case BOT_L3MONSTER:
-			m_pCharacter = new(m_ClientID) CBoomer(&GameServer()->m_World);
+			m_pCharacter = new CBoomer(&GameServer()->m_World);
 			Level = m_BigBot ? 170 + rand() % 3 : 130 + rand() % 3;
 			Health = 50 + Level;
 			Damage = Level;
 			break;
 		case BOT_L4MONSTER:
-			m_pCharacter = new(m_ClientID) CMonster(&GameServer()->m_World);
+			m_pCharacter = new CMonster(&GameServer()->m_World);
 			Level = m_BigBot ? 230 + rand() % 3 : 170 + rand() % 3;
 			Health = 60 + Level;
 			Damage = Level;
 			break;
 		case BOT_L5MONSTER:
-			m_pCharacter = new(m_ClientID) CKwah(&GameServer()->m_World);
+			m_pCharacter = new CKwah(&GameServer()->m_World);
 			Level = m_BigBot ? 310 + rand() % 3 : 270 + rand() % 3;
 			Health = 70 + Level;
 			Damage = Level;
 			break;
 		case BOT_BOSSSLIME:
-			m_pCharacter = new(m_ClientID) CBossSlime(&GameServer()->m_World);
+			m_pCharacter = new CBossSlime(&GameServer()->m_World);
 			Level = 300 + rand() % 20;
 			Health = Level;
 			Damage = 10;
@@ -847,7 +847,7 @@ void CPlayer::TryRespawn()
 			m_BigBot = true;
 			break;
 		case BOT_NPC:
-			m_pCharacter = new(m_ClientID) CNpcSold(&GameServer()->m_World);
+			m_pCharacter = new CNpcSold(&GameServer()->m_World);
 			Level = 500 + rand() % 20;
 			Health = Level * 500;
 			Damage = Level * 10;

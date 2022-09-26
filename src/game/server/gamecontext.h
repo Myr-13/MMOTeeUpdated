@@ -157,6 +157,7 @@ public:
 	CTuningParams *Tuning() { return &m_Tuning; }
 	class CAdmin *Admin() { return m_pAdmin; }
 	virtual class CLayers *Layers() { return &m_Layers; }
+	int GetWorldID() { return m_GameServerID; }
 
 	CGameContext();
 	~CGameContext();

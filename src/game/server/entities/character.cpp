@@ -417,6 +417,11 @@ void CCharacter::UpdateTuningParam()
 	{
 		pTuningParams->m_Gravity = 0.0f;
 	}
+
+	if (GameServer()->GetWorldID() == WORLD_MOON)
+	{
+		pTuningParams->m_Gravity = 0.25f;
+	}
 }
 
 void CCharacter::FireWeapon()

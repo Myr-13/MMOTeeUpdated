@@ -8,7 +8,7 @@
 #include "../character.h"
 #include "../projectile.h"
 
-MACRO_ALLOC_POOL_ID_IMPL(CBossSlime, MAX_CLIENTS)
+//MACRO_ALLOC_POOL_ID_IMPL(CBossSlime, MAX_CLIENTS)
 
 CBossSlime::CBossSlime(CGameWorld *pWorld)
 : CCharacter(pWorld)

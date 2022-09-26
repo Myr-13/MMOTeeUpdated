@@ -8,7 +8,7 @@
 #include "../character.h"
 #include "../projectile.h"
 
-MACRO_ALLOC_POOL_ID_IMPL(CBoomer, MAX_CLIENTS)
+//MACRO_ALLOC_POOL_ID_IMPL(CBoomer, MAX_CLIENTS)
 
 CBoomer::CBoomer(CGameWorld *pWorld)
 : CCharacter(pWorld)

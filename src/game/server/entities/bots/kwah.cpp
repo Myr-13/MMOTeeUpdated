@@ -8,7 +8,7 @@
 #include "../character.h"
 #include "../projectile.h"
 
-MACRO_ALLOC_POOL_ID_IMPL(CKwah, MAX_CLIENTS)
+//MACRO_ALLOC_POOL_ID_IMPL(CKwah, MAX_CLIENTS)
 
 CKwah::CKwah(CGameWorld *pWorld)
 : CCharacter(pWorld)

@@ -12,7 +12,8 @@
 
 class CBoomer : public CCharacter
 {
-	MACRO_ALLOC_POOL_ID()
+	//MACRO_ALLOC_POOL_ID()
+	MACRO_ALLOC_HEAP()
 
 public:
 	//character's size

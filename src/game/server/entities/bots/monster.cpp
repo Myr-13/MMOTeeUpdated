@@ -8,7 +8,7 @@
 #include "../character.h"
 #include "../projectile.h"
 
-MACRO_ALLOC_POOL_ID_IMPL(CMonster, MAX_CLIENTS)
+//MACRO_ALLOC_POOL_ID_IMPL(CMonster, MAX_CLIENTS)
 
 CMonster::CMonster(CGameWorld *pWorld)
 : CCharacter(pWorld)
