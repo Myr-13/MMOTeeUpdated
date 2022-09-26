@@ -24,11 +24,15 @@ CMultiWorlds::~CMultiWorlds()
 
 int CMultiWorlds::LoadWorlds()
 {
-	std::ifstream JsonFile("maps/worlds.json");
+	std::ifstream JsonFile("worlds.json");
 	if (!JsonFile)
 	{
-		dbg_msg("server", "failed to load maps/worlds.json");
+		dbg_msg("server", "failed to load worlds.json");
 		return -1;
+	}
+	else
+	{
+		dbg_msg("server", "loading worlds.json");
 	}
 	json_value* pJson = json_parse(std::string((std::istreambuf_iterator<char>(JsonFile)), std::istreambuf_iterator<char>()).c_str());
 

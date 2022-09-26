@@ -188,9 +188,6 @@ void CPlayer::Tick()
 	if (m_InfMana)
 		m_Mana = 100;
 
-	if (!Server()->IsClientLogged(m_ClientID))
-		m_Team = TEAM_SPECTATORS;
-
 	if (m_Mana < GetNeedMana())
 	{
 		if (!m_ManaTick)
@@ -357,6 +354,8 @@ void CPlayer::Tick()
 	}
 	if(!Server()->IsClientLogged(m_ClientID))
 		m_Team = TEAM_SPECTATORS;
+	if (m_Bot)
+		m_Team = TEAM_RED;
 
 	if(m_MapMenu > 0)
 		m_MapMenuTick++;
@@ -639,8 +638,8 @@ void CPlayer::Snap(int SnappingClient)
 	pPlayerInfo->m_Local = 0;
 	pPlayerInfo->m_ClientID = id;
 
-	pPlayerInfo->m_Score = AccData.Level;
-	pPlayerInfo->m_Team = m_Team;
+	pPlayerInfo->m_Score = m_Bot ? -1 : AccData.Level;
+	pPlayerInfo->m_Team = m_Bot ? 10 : m_Team;
 
 	if(m_ClientID == SnappingClient)
 		pPlayerInfo->m_Local = 1;
@@ -861,7 +860,7 @@ void CPlayer::TryRespawn()
 		AccUpgrade.Health = Health;
 		AccUpgrade.Damage = Damage;
 	} else
-		m_pCharacter = new(m_ClientID) CCharacter(&GameServer()->m_World);
+		m_pCharacter = new CCharacter(&GameServer()->m_World);
 
 	m_pCharacter->Spawn(this, SpawnPos);
 	if(GetClass() != PLAYERCLASS_NONE)

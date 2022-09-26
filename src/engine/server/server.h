@@ -70,6 +70,7 @@ class CServer : public IServer
 	class IConsole *m_pConsole;
 	class IStorage2 *m_pStorage;
 	class CMultiWorlds *m_pMultiWorlds;
+	class CItems *m_pItems;
 	CSqlServer* m_apSqlReadServers[MAX_SQLSERVERS];
 	CSqlServer* m_apSqlWriteServers[MAX_SQLSERVERS];
 	
@@ -235,8 +236,6 @@ public:
 	struct _m_stInv
 	{
 		int i_id;
-		char i_name [32];
-		char i_desc [50];
 		int i_count;
 		int i_settings;
 		int i_type;
@@ -270,7 +269,7 @@ public:
 	virtual int GetMailRewardDell(int ClientID, int ID);
 
 	virtual void ResetBotInfo(int ClientID, int BotType, int BotSubType);
-	virtual void InitClientBot(int ClientID);
+	virtual void InitClientBot(int ClientID, int WorldID);
 
 	CClient m_aClients[MAX_CLIENTS];
 	int IdMap[MAX_CLIENTS * VANILLA_MAX_CLIENTS];

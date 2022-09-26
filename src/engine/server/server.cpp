@@ -90,7 +90,6 @@ void CSnapIDPool::Reset()
 	m_InUsage = 0;
 }
 
-
 void CSnapIDPool::RemoveFirstTimeout()
 {
 	int NextTimed = m_aIDs[m_FirstTimed].m_Next;
@@ -330,6 +329,7 @@ CServer::CServer()
 	m_GameServerCmdLock = lock_create();
 
 	m_pMultiWorlds = new CMultiWorlds();
+	m_pItems = new CItems();
 
 	Init();
 }
@@ -339,6 +339,7 @@ CServer::~CServer()
 	lock_destroy(m_GameServerCmdLock);
 
 	delete m_pMultiWorlds;
+	delete m_pItems;
 }
 
 int CServer::TrySetClientName(int ClientID, const char *pName)
@@ -2200,7 +2201,7 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
 		str_copy(m_aClients[ClientID].m_aName, "Keke", MAX_NAME_LENGTH);
 }
 
-void CServer::InitClientBot(int ClientID)
+void CServer::InitClientBot(int ClientID, int WorldID)
 {
 	if (ClientID < MAX_PLAYERS || ClientID >= MAX_CLIENTS)
 		return;
@@ -2488,8 +2489,7 @@ const char *CServer::GetItemName(int ClientID, int ItemID, bool ntlang)
 		return "(nope)";
 	else
 	{
-		if(ntlang) return Localization()->Localize(GetClientLanguage(ClientID), _(m_stInv[ClientID][ItemID].i_name));
-		else return m_stInv[ClientID][ItemID].i_name;
+		return m_pItems->GetItemName(ItemID);
 	}
 }
 int CServer::GetItemCountType(int ClientID, int Type)
@@ -2507,9 +2507,9 @@ void CServer::SetItemEnchant(int ClientID, int ItemID, int Price)
 }
 const char *CServer::GetItemDesc(int ClientID, int ItemID)
 {
-	if(ItemID < 0 || ItemID >= MAX_ITEM)
+	if (ItemID < 0 || ItemID >= MAX_ITEM)
 		return "(invalid)";
-	else return m_stInv[ClientID][ItemID].i_desc;
+	else return m_pItems->GetItemDesc(ItemID);
 }
 int CServer::GetItemCount(int ClientID, int ItemID)
 {
@@ -2904,7 +2904,7 @@ public:
 	{
 		try
 		{
-			if(m_ItemID == -1 && m_ClientID == -1)
+			/*if(m_ItemID == -1 && m_ClientID == -1)
 			{
 				pSqlServer->executeSqlQuery("SELECT * FROM tw_uItemList;");
 				while(pSqlServer->GetResults()->next())
@@ -2919,7 +2919,7 @@ public:
 					}
 				}
 			}
-			else
+			else*/
 			{
 				char aBuf[128];
 				str_format(aBuf, sizeof(aBuf), "SELECT item_count FROM tw_uItems WHERE item_owner = '%d' AND il_id = '%d';", m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);

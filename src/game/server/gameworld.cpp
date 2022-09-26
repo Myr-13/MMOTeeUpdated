@@ -259,7 +259,7 @@ void CGameWorld::Tick()
 
 	RemoveEntities();
 
-	UpdatePlayerMaps();
+	//UpdatePlayerMaps();
 }
 
 // TODO: should be more general

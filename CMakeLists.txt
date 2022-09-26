@@ -540,6 +540,7 @@ file(GLOB_RECURSE ENGINE_SERVER "src/engine/server/*.cpp" "src/engine/server/*.h
 file(GLOB_RECURSE GAME_SERVER "src/game/server/*.cpp" "src/game/server/*.h")
 file(GLOB_RECURSE TEEOTHER_SERVER "src/teeuniverses/*.cpp" "src/teeuniverses/*.h")
 file(GLOB_RECURSE GAME_COMPONENTS_SERVER "src/game/server/components/*.cpp" "src/game/server/components/*.h")
+file(GLOB_RECURSE ENGINE_ITEMS "src/engine/server/items/*.cpp" "src/engine/server/items/*.h")
 set(GAME_GENERATED_SERVER "src/game/generated/server_data.cpp" "src/game/generated/server_data.h")
 set(SERVER_SRC ${ENGINE_SERVER} ${GAME_SERVER} ${GAME_COMPONENTS_SERVER} ${TEEOTHER_SERVER} ${GAME_GENERATED_SERVER})
 

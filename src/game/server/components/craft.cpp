@@ -1,5 +1,7 @@
 #include "craft.h"
 
+#include <engine/server/items/items.h>
+
 CCraft::CCraft(CGameContext* pGameContext, int Result)
 {
 	m_pGameContext = pGameContext;

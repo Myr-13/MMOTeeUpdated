@@ -13,7 +13,9 @@
 #include <game/gamecore.h>
 #include <iostream>
 #include "gamemodes/mod.h"
+
 #include <game/server/entities/loltext.h>
+#include <game/server/entities/moon_door.h>
 
 #include "components/box.h"
 #include "components/craft.h"
@@ -299,6 +301,9 @@ void CGameContext::CreateSoundGlobal(int Sound, int Target)
 
 void CGameContext::SendChatTarget(int To, const char *pText)
 {
+	if (Server()->GetClientWorld(To) != m_GameServerID)
+		return;
+
 	CNetMsg_Sv_Chat Msg;
 	Msg.m_Team = 0;
 	Msg.m_ClientID = -1;
@@ -310,6 +315,9 @@ void CGameContext::SendChatTarget_Localization(int To, int Category, const char*
 {
 	int Start = (To < 0 ? 0 : To);
 	int End = (To < 0 ? MAX_CLIENTS : To+1);
+
+	if (Server()->GetClientWorld(To) != m_GameServerID)
+		return;
 
 	CNetMsg_Sv_Chat Msg;
 	Msg.m_Team = 0;
@@ -1005,9 +1013,9 @@ void CGameContext::OnTick()
 	m_pController->Tick();
 
 	int NumActivePlayers = 0;
-	for(int i = 0; i < MAX_PLAYERS; i++)
+	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		if(m_apPlayers[i] && Server()->GetClientWorld(i) == m_GameServerID)
+		if(m_apPlayers[i] && (m_apPlayers[i]->IsBot() || Server()->GetClientWorld(i) == m_GameServerID))
 		{
 			if(m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
 				NumActivePlayers++;
@@ -4193,6 +4201,36 @@ void CGameContext::OnInit(int ID)
 		}
 	}
 
+	// Init map
+	for (int y = 0; y < m_Collision.GetHeight(); y++)
+	{
+		for (int x = 0; x < m_Collision.GetWidth(); x++)
+		{
+			int Index = m_Collision.GetTile(x * 32, y * 32);
+
+			if (Index == TILE_MOONDOOR)
+			{
+				new CMoonDoor(&m_World, vec2(x * 32, y * 32));
+			}
+		}
+	}
+
+	// Create bots
+	if (m_GameServerID == WORLD_MAIN)
+	{
+		int IDOffset = 0;
+		for (int i = 0; i < 8; i++, IDOffset++)
+			CreateBot(IDOffset, BOT_L1MONSTER);
+		for (int i = 0; i < 8; i++, IDOffset++)
+			CreateBot(IDOffset, BOT_L2MONSTER);
+		for (int i = 0; i < 8; i++, IDOffset++)
+			CreateBot(IDOffset, BOT_L3MONSTER);
+		for (int i = 0; i < 8; i++, IDOffset++)
+			CreateBot(IDOffset, BOT_L4MONSTER);
+		for (int i = 0; i < 8; i++, IDOffset++)
+			CreateBot(IDOffset, BOT_L5MONSTER);
+	}
+
 #ifdef CONF_DEBUG
 	if(g_Config.m_DbgDummies)
 	{
@@ -4406,7 +4444,7 @@ void CGameContext::CreateBot(int ClientID, int BotType, int BotSubType)
 	m_apPlayers[BotClientID]->SetBotType(BotType);
 	m_apPlayers[BotClientID]->SetBotSubType(BotSubType);
 
-	Server()->InitClientBot(BotClientID);
+	Server()->InitClientBot(BotClientID, m_GameServerID);
 }
 
 void CGameContext::DeleteBotBoss() { Server()->Kick(BOSSID, "pizdyi"); }
@@ -4800,7 +4838,7 @@ void CGameContext::StartBoss(int ClientID, int WaitTime, int BossType)
 		m_apPlayers[BOSSID]->SetBotType(BossType);
 		m_apPlayers[BOSSID]->SetBotSubType(g_Config.m_SvCityStart);
 
-		Server()->InitClientBot(BOSSID);
+		Server()->InitClientBot(BOSSID, m_GameServerID);
 	}
 	else
 	{

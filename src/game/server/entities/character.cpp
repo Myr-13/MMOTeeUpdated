@@ -57,8 +57,7 @@ CInputCount CountInput(int Prev, int Cur)
 	return c;
 }
 
-
-MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
+//MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
 
 // Character, "physical" player's part
 CCharacter::CCharacter(CGameWorld *pWorld)
