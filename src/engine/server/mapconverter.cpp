@@ -441,17 +441,7 @@ void CMapConverter::CopyGameLayer()
 	{
 		for(int i = 0; i < m_Width; i++)
 		{
-			switch(m_pPhysicsLayerTiles[j * m_Width + i].m_Index)
-			{
-				case TILE_PHYSICS_SOLID:
-					m_pTiles[j * m_Width + i].m_Index = TILE_PHYSICS_SOLID;
-					break;
-				case TILE_PHYSICS_NOHOOK:
-					m_pTiles[j * m_Width + i].m_Index = TILE_PHYSICS_NOHOOK;
-					break;
-				default:
-					m_pTiles[j * m_Width + i].m_Index = TILE_PHYSICS_AIR;
-			}
+			m_pTiles[j * m_Width + i].m_Index = m_pPhysicsLayerTiles[j * m_Width + i].m_Index;
 			i += m_pPhysicsLayerTiles[j * m_Width + i].m_Skip;
 		}
 	}

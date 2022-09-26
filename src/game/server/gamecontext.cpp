@@ -4210,7 +4210,7 @@ void CGameContext::OnInit(int ID)
 
 			if (Index == TILE_MOONDOOR)
 			{
-				new CMoonDoor(&m_World, vec2(x * 32, y * 32));
+				new CMoonDoor(&m_World, vec2(x * 32 + 16, y * 32));
 			}
 		}
 	}
@@ -4229,6 +4229,10 @@ void CGameContext::OnInit(int ID)
 			CreateBot(IDOffset, BOT_L4MONSTER);
 		for (int i = 0; i < 8; i++, IDOffset++)
 			CreateBot(IDOffset, BOT_L5MONSTER);
+	}
+	if (m_GameServerID == WORLD_MOON)
+	{
+		CreateBot(0, BOT_L1MONSTER);
 	}
 
 #ifdef CONF_DEBUG

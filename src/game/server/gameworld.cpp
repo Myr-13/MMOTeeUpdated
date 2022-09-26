@@ -305,7 +305,7 @@ CCharacter *CGameWorld::ClosestCharacter(vec2 Pos, float Radius, CEntity *pNotTh
 		if(p == pNotThis)
 			continue;
 			
-		if(p->GetPlayer())
+		if(!p->GetPlayer())
 			continue;
 			
 		float Len = distance(Pos, p->m_Pos);

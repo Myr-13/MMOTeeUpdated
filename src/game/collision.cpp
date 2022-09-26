@@ -47,18 +47,7 @@ void CCollision::Init(class CLayers *pLayers)
 
 	for(int i = 0; i < m_PhysicsWidth * m_PhysicsHeight; i++)
 	{
-		switch(pPhysicsTiles[i].m_Index)
-		{
-		case TILE_PHYSICS_SOLID:
-			m_pPhysicsTiles[i] = COLFLAG_SOLID;
-			break;
-		case TILE_PHYSICS_NOHOOK:
-			m_pPhysicsTiles[i] = COLFLAG_SOLID | COLFLAG_NOHOOK;
-			break;
-		default:
-			m_pPhysicsTiles[i] = 0x0;
-			break;
-		}
+		m_pPhysicsTiles[i] = pPhysicsTiles[i].m_Index;
 	}
 }
 
@@ -72,12 +61,22 @@ int CCollision::GetTile(int x, int y)
 
 bool CCollision::IsTileSolid(int x, int y)
 {
-	return GetTile(x, y) & COLFLAG_SOLID;
+	int Index = GetTile(x, y);
+	return Index == TILE_SOLID || Index == TILE_NOHOOK;
 }
 
 bool CCollision::IsTileNoHook(int x, int y)
 {
-	return GetTile(x, y) & COLFLAG_NOHOOK;
+	int Index = GetTile(x, y);
+	return Index == TILE_NOHOOK;
+}
+
+void CCollision::SetCollisionAt(int x, int y, int id)
+{
+	int Nx = clamp(x / 32, 0, m_PhysicsWidth - 1);
+	int Ny = clamp(y / 32, 0, m_PhysicsHeight - 1);
+
+	m_pPhysicsTiles[Ny * m_PhysicsWidth + Nx] = id;
 }
 
 // TODO: rewrite this smarter!

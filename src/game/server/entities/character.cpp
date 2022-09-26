@@ -1035,7 +1035,7 @@ void CCharacter::Tick()
 
 		// Крылья логика
 		if (Server()->GetItemEnquip(m_pPlayer->GetCID(), 19) != -1) {
-			if (m_Core.m_Vel.y < 16 && m_Core.m_Pos > 0)
+			if (m_Core.m_Vel.y < 16 && m_Core.m_Pos.y > 0 && m_IsFrozen)
 				m_Core.m_InvertGravity = m_Input.m_Jump;
 
 			if (!IsGrounded())

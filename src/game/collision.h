@@ -47,6 +47,7 @@ public:
 	void MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity);
 	bool TestBox(vec2 Pos, vec2 Size);
 	bool IsTileNoHook(int x, int y);
+	void SetCollisionAt(int x, int y, int id);
 	
 	void SetTime(double Time) { m_Time = Time; }
 	
