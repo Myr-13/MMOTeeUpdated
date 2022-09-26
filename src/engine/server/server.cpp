@@ -1423,61 +1423,81 @@ int CServer::LoadMap(const char *pMapName, int Type)
 	// reinit snapshot ids
 	m_IDPool.TimeoutIDs();
 
+	//{
+	//	CDataFileReader dfServerMap;
+	//	dfServerMap.Open(Storage(), aBuf, IStorage2::TYPE_ALL);
+	//	unsigned ServerMapCrc = dfServerMap.Crc();
+	//	dfServerMap.Close();
+
+	//	char aClientMapName[256];
+	//	str_format(aClientMapName, sizeof(aClientMapName), "clientmaps/%s_%08x/tw06-highres.map", pMapName, ServerMapCrc);
+
+	//	CMapConverter MapConverter(Storage(), m_pMap[Type], Console());
+	//	if(!MapConverter.Load())
+	//		return 0;
+
+	//	CDataFileReader dfClientMap;
+	//	//The map is already converted
+	//	if(dfClientMap.Open(Storage(), pMapName, IStorage2::TYPE_ALL))
+	//	{
+	//		m_CurrentMapCrc[Type] = dfClientMap.Crc();
+	//		dfClientMap.Close();
+	//	}
+	//	//The map must be converted
+	//	else
+	//	{
+	//		char aClientMapDir[256];
+	//		str_format(aClientMapDir, sizeof(aClientMapDir), "clientmaps/%s_%08x", pMapName, ServerMapCrc);
+
+	//		char aFullPath[512];
+	//		Storage()->GetCompletePath(IStorage2::TYPE_SAVE, aClientMapDir, aFullPath, sizeof(aFullPath));
+	//		if(fs_makedir(aFullPath) != 0)
+	//		{
+	//			dbg_msg("infclass", "Can't create the directory '%s'", aClientMapDir);
+	//		}
+
+	//		if(!MapConverter.CreateMap(aClientMapName))
+	//			return 0;
+
+	//		CDataFileReader dfGeneratedMap;
+	//		dfGeneratedMap.Open(Storage(), aClientMapName, IStorage2::TYPE_ALL);
+	//		m_CurrentMapCrc[Type] = dfGeneratedMap.Crc();
+	//		dfGeneratedMap.Close();
+	//	}
+
+	//	char aBufMsg[128];
+	//	str_format(aBufMsg, sizeof(aBufMsg), "map crc is %08x, generated map crc is %08x", ServerMapCrc, m_CurrentMapCrc);
+	//	Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", aBufMsg);
+
+	//	//Download the generated map in memory to send it to clients
+	//	IOHANDLE File = Storage()->OpenFile(aClientMapName, IOFLAG_READ, IStorage2::TYPE_ALL);
+	//	m_CurrentMapSize[Type] = (int)io_length(File);
+
+	//	free(m_pCurrentMapData[Type]);
+	//	m_pCurrentMapData[Type] = (unsigned char *)malloc(m_CurrentMapSize[Type]);
+	//	io_read(File, m_pCurrentMapData[Type], m_CurrentMapSize[Type]);
+	//	io_close(File);
+	//	Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", "maps/infc_x_current.map loaded in memory");
+	//}
+
 	{
-		CDataFileReader dfServerMap;
-		dfServerMap.Open(Storage(), aBuf, IStorage2::TYPE_ALL);
-		unsigned ServerMapCrc = dfServerMap.Crc();
-		dfServerMap.Close();
-
-		char aClientMapName[256];
-		str_format(aClientMapName, sizeof(aClientMapName), "clientmaps/%s_%08x/tw06-highres.map", pMapName, ServerMapCrc);
-
-		CMapConverter MapConverter(Storage(), m_pMap[Type], Console());
-		if(!MapConverter.Load())
-			return 0;
-
-		CDataFileReader dfClientMap;
-		//The map is already converted
-		if(dfClientMap.Open(Storage(), pMapName, IStorage2::TYPE_ALL))
-		{
-			m_CurrentMapCrc[Type] = dfClientMap.Crc();
-			dfClientMap.Close();
-		}
-		//The map must be converted
-		else
-		{
-			char aClientMapDir[256];
-			str_format(aClientMapDir, sizeof(aClientMapDir), "clientmaps/%s_%08x", pMapName, ServerMapCrc);
-
-			char aFullPath[512];
-			Storage()->GetCompletePath(IStorage2::TYPE_SAVE, aClientMapDir, aFullPath, sizeof(aFullPath));
-			if(fs_makedir(aFullPath) != 0)
-			{
-				dbg_msg("infclass", "Can't create the directory '%s'", aClientMapDir);
-			}
-
-			if(!MapConverter.CreateMap(aClientMapName))
-				return 0;
-
-			CDataFileReader dfGeneratedMap;
-			dfGeneratedMap.Open(Storage(), aClientMapName, IStorage2::TYPE_ALL);
-			m_CurrentMapCrc[Type] = dfGeneratedMap.Crc();
-			dfGeneratedMap.Close();
-		}
+		CDataFileReader Reader;
+		Reader.Open(Storage(), aBuf, IStorage2::TYPE_ALL);
+		m_CurrentMapCrc[Type] = Reader.Crc();
+		Reader.Close();
 
 		char aBufMsg[128];
-		str_format(aBufMsg, sizeof(aBufMsg), "map crc is %08x, generated map crc is %08x", ServerMapCrc, m_CurrentMapCrc);
+		str_format(aBufMsg, sizeof(aBufMsg), "map crc is %08x", m_CurrentMapCrc[Type]);
 		Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", aBufMsg);
 
-		//Download the generated map in memory to send it to clients
-		IOHANDLE File = Storage()->OpenFile(aClientMapName, IOFLAG_READ, IStorage2::TYPE_ALL);
+		// Download the generated map in memory to send it to clients
+		IOHANDLE File = Storage()->OpenFile(aBuf, IOFLAG_READ, IStorage2::TYPE_ALL);
 		m_CurrentMapSize[Type] = (int)io_length(File);
 
 		free(m_pCurrentMapData[Type]);
 		m_pCurrentMapData[Type] = (unsigned char *)malloc(m_CurrentMapSize[Type]);
 		io_read(File, m_pCurrentMapData[Type], m_CurrentMapSize[Type]);
 		io_close(File);
-		Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", "maps/infc_x_current.map loaded in memory");
 	}
 
 	for(int i = 0; i < MAX_CLIENTS; i++)
