@@ -842,8 +842,20 @@ void CPlayer::TryRespawn()
 		case BOT_L6MONSTER:
 			m_pCharacter = new CGhoul(&GameServer()->m_World);
 			Level = m_BigBot ? 460 + rand() % 3 : 400 + rand() % 3;
-			Health = 100 + Level;
+			Health = Level + 100;
 			Damage = Level - 50;
+			break;
+		case BOT_L7MONSTER:
+			m_pCharacter = new CBoomer(&GameServer()->m_World);
+			Level = m_BigBot ? 540 + rand() % 3 : 480 + rand() % 3;
+			Health = Level + 70;
+			Damage = Level - 75;
+			break;
+		case BOT_L8MONSTER:
+			m_pCharacter = new CBoomer(&GameServer()->m_World);
+			Level = m_BigBot ? 600 + rand() % 3 : 550 + rand() % 3;
+			Health = Level + 25;
+			Damage = Level - 75;
 			break;
 		case BOT_BOSSSLIME:
 			m_pCharacter = new CBossSlime(&GameServer()->m_World);

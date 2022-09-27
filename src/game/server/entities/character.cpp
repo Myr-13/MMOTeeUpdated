@@ -193,8 +193,6 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_pPlayer->m_HealthStart = m_Health;
 	m_pPlayer->m_Mana = 0;
 
-	m_Core.m_BonusXSpeed = Server()->GetItemCount(m_pPlayer->GetCID(), ACCESSORY_ADD_SPEED);
-
 	return true;
 }
 
@@ -370,15 +368,15 @@ void CCharacter::UpdateTuningParam()
 		FixedPosition = true;
 	}
 
-	if(m_IsFrozen)
+	if (m_IsFrozen)
 		NoActions = true;
 
-	if(m_HookMode == 1)
+	if (m_HookMode == 1)
 	{
 		pTuningParams->m_HookDragSpeed = 0.0f;
 		pTuningParams->m_HookDragAccel = 1.0f;
 	}
-	if(m_InWater == 1)
+	if (m_InWater == 1)
 	{
 		pTuningParams->m_Gravity = -0.05f;
 		pTuningParams->m_GroundFriction = 0.95f;
@@ -390,10 +388,8 @@ void CCharacter::UpdateTuningParam()
 		pTuningParams->m_AirControlAccel = 1.5f;
 		//pTuningParams->m_AirJumpImpulse = 0.0f;
 	}
-	if(m_SlipperyTick > 0)
-	{
+	if (m_SlipperyTick > 0)
 		pTuningParams->m_GroundFriction = 1.0f;
-	}
 
 	if(NoActions)
 	{
@@ -404,24 +400,24 @@ void CCharacter::UpdateTuningParam()
 		pTuningParams->m_HookLength = 0.0f;
 	}
 	if(FixedPosition)
-	{
 		pTuningParams->m_Gravity = 0.0f;
-	}
 
-	if(Server()->GetItemSettings(m_pPlayer->GetCID(), JUMPIMPULS))
-	{
+	// Items
+	if (Server()->GetItemSettings(m_pPlayer->GetCID(), JUMPIMPULS))
 		pTuningParams->m_GroundJumpImpulse = 20.0f;
-	}
+	if (Server()->GetItemCount(m_pPlayer->GetCID(), ACCESSORY_ADD_SPEED))
+		pTuningParams->m_GroundControlSpeed = 10.f + Server()->GetItemCount(m_pPlayer->GetCID(), ACCESSORY_ADD_SPEED);
 
-	if(m_pPlayer->GetBotType() == BOT_L3MONSTER)
-	{
-		pTuningParams->m_Gravity = 0.0f;
-	}
-
+	// Worlds
 	if (GameServer()->GetWorldID() == WORLD_MOON)
-	{
 		pTuningParams->m_Gravity = 0.25f;
-	}
+
+	if (m_pPlayer->GetBotType() == BOT_L3MONSTER)
+		pTuningParams->m_Gravity = 0.0f;
+	if (m_pPlayer->GetBotType() == BOT_L8MONSTER)
+		pTuningParams->m_Gravity = 0.0f;
+	if (m_pPlayer->GetBotType() == BOT_L7MONSTER)
+		pTuningParams->m_GroundFriction = 0.15f;
 }
 
 void CCharacter::FireWeapon()
@@ -1057,19 +1053,6 @@ void CCharacter::Tick()
 				m_SendCore = m_Core;
 				m_ReckoningCore = m_Core;
 			}
-		}
-
-		// Акксессуар скорости
-		// Насильно отправляем инфу на клиент
-		if (Server()->GetItemCount(m_pPlayer->GetCID(), ACCESSORY_ADD_SPEED) && m_Input.m_Direction)
-		{
-			CNetObj_Character Current;
-			mem_zero(&Current, sizeof(Current));
-			m_Core.Write(&Current);
-
-			m_ReckoningTick = Server()->Tick();
-			m_SendCore = m_Core;
-			m_ReckoningCore = m_Core;
 		}
 
 		if((m_pPlayer->m_AngryWroth > 120 || Server()->GetItemCount(m_pPlayer->GetCID(), X2MONEYEXPVIP)) && Server()->Tick() % (1 * Server()->TickSpeed()) == 0)

@@ -160,6 +160,18 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 		pP->m_TeeInfos.m_ColorBody = 255;
 		pP->m_TeeInfos.m_ColorFeet = 255;
 	}
+	if (pP->GetBotType() == BOT_L7MONSTER)
+	{
+		pP->m_TeeInfos.m_UseCustomColor = 1;
+		pP->m_TeeInfos.m_ColorBody = 255;
+		pP->m_TeeInfos.m_ColorFeet = 255;
+	}
+	if (pP->GetBotType() == BOT_L8MONSTER)
+	{
+		pP->m_TeeInfos.m_UseCustomColor = 1;
+		pP->m_TeeInfos.m_ColorBody = 255;
+		pP->m_TeeInfos.m_ColorFeet = 0;
+	}
 		
 	// Тело броня
 	if(Server()->GetItemSettings(pP->GetCID(), LEATHERBODY)) 

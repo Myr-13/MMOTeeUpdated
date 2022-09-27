@@ -4235,6 +4235,10 @@ void CGameContext::OnInit(int ID)
 		int IDOffset = 0;
 		for (int i = 0; i < 8; i++, IDOffset++)
 			CreateBot(IDOffset, BOT_L6MONSTER);
+		for (int i = 0; i < 8; i++, IDOffset++)
+			CreateBot(IDOffset, BOT_L7MONSTER);
+		for (int i = 0; i < 8; i++, IDOffset++)
+			CreateBot(IDOffset, BOT_L8MONSTER);
 	}
 
 #ifdef CONF_DEBUG
@@ -4422,6 +4426,10 @@ void CGameContext::UpdateBotInfo(int ClientID)
 		str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
 	else if (BotType == BOT_L6MONSTER)
 		str_copy(NameSkin, "beast", sizeof(NameSkin));
+	else if (BotType == BOT_L7MONSTER)
+		str_copy(NameSkin, "cammo", sizeof(NameSkin));
+	else if (BotType == BOT_L8MONSTER)
+		str_copy(NameSkin, "bluestripes", sizeof(NameSkin));
 	else if(BotType == BOT_NPC)
 	{
 		if(!BotSubType)	str_copy(NameSkin, "cammo", sizeof(NameSkin));

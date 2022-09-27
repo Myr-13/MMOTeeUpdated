@@ -2203,6 +2203,10 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
 		str_copy(m_aClients[ClientID].m_aName, "Skeleton", MAX_NAME_LENGTH);
 	else if (BotType == BOT_L6MONSTER)
 		str_copy(m_aClients[ClientID].m_aName, "Ghoul", MAX_NAME_LENGTH);
+	else if (BotType == BOT_L7MONSTER)
+		str_copy(m_aClients[ClientID].m_aName, "LiveRock", MAX_NAME_LENGTH);
+	else if (BotType == BOT_L7MONSTER)
+		str_copy(m_aClients[ClientID].m_aName, "MoonWalker", MAX_NAME_LENGTH);
 	else if(BotType == BOT_NPC)
 		str_copy(m_aClients[ClientID].m_aName, "Guard", MAX_NAME_LENGTH);
 	else if(BotType == BOT_BOSSSLIME)
