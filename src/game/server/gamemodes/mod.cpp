@@ -320,6 +320,12 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 			Type = 19;
 		else if(pPlayer->GetBotType() == BOT_L5MONSTER)
 			Type = 20;
+		else if (pPlayer->GetBotType() == BOT_L6MONSTER)
+			Type = 21;
+		else if (pPlayer->GetBotType() == BOT_L7MONSTER)
+			Type = 22;
+		else if (pPlayer->GetBotType() == BOT_L8MONSTER)
+			Type = 23;
 		else if(pPlayer->GetBotType() == BOT_BOSSSLIME)
 			Type = 8;
 		else if(pPlayer->GetBotType() == BOT_NPC)

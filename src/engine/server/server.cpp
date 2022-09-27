@@ -461,6 +461,11 @@ int CServer::Init()
 		m_aClients[i].m_Snapshots.Init();
 		m_aClients[i].m_WaitingTime = 0;
         m_aClients[i].m_Latency = 0;
+
+		for (int ItemID = 0; ItemID < MAX_ITEM; ItemID++)
+		{
+			m_stInv[i][ItemID].i_type = m_pItems->GetItemType(ItemID);
+		}
 	}
 
 	m_CurrentGameTick = 0;
@@ -2196,6 +2201,8 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
 		str_copy(m_aClients[ClientID].m_aName, "Zombie", MAX_NAME_LENGTH);
 	else if (BotType == BOT_L5MONSTER)
 		str_copy(m_aClients[ClientID].m_aName, "Skeleton", MAX_NAME_LENGTH);
+	else if (BotType == BOT_L6MONSTER)
+		str_copy(m_aClients[ClientID].m_aName, "Ghoul", MAX_NAME_LENGTH);
 	else if(BotType == BOT_NPC)
 		str_copy(m_aClients[ClientID].m_aName, "Guard", MAX_NAME_LENGTH);
 	else if(BotType == BOT_BOSSSLIME)
@@ -2204,17 +2211,11 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
 	{
 		char aName[MAX_NAME_LENGTH];
 		if(BotSubType == 0)
-		{
 			str_copy(aName, "NPC:John", MAX_NAME_LENGTH);
-		}
 		else if(BotSubType == 1)
-		{
 			str_copy(aName, "NPC:Lusi", MAX_NAME_LENGTH);
-		}
 		else
-		{
 			str_copy(aName, "NPC:Miki", MAX_NAME_LENGTH);
-		}
 		str_copy(m_aClients[ClientID].m_aName, aName, MAX_NAME_LENGTH);
 	}
 	else

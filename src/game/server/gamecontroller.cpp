@@ -81,6 +81,12 @@ bool IGameController::OnEntity(const char* pName, vec2 Pivot, vec2 P0, vec2 P1, 
 		m_SpawnPoints[17].add(Pos);
 	else if (str_comp(pName, "AdminBase") == 0)
 		m_SpawnPoints[18].add(Pos);
+	else if (str_comp(pName, "Bot6Type") == 0)
+		m_SpawnPoints[21].add(Pos);
+	else if (str_comp(pName, "Bot7Type") == 0)
+		m_SpawnPoints[22].add(Pos);
+	else if (str_comp(pName, "Bot8Type") == 0)
+		m_SpawnPoints[23].add(Pos);
 
 	return false;
 }

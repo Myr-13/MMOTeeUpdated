@@ -4232,7 +4232,9 @@ void CGameContext::OnInit(int ID)
 	}
 	if (m_GameServerID == WORLD_MOON)
 	{
-		CreateBot(0, BOT_L1MONSTER);
+		int IDOffset = 0;
+		for (int i = 0; i < 8; i++, IDOffset++)
+			CreateBot(IDOffset, BOT_L6MONSTER);
 	}
 
 #ifdef CONF_DEBUG
@@ -4418,6 +4420,8 @@ void CGameContext::UpdateBotInfo(int ClientID)
 		str_copy(NameSkin, "cammo", sizeof(NameSkin));
 	else if (BotType == BOT_L5MONSTER)
 		str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
+	else if (BotType == BOT_L6MONSTER)
+		str_copy(NameSkin, "beast", sizeof(NameSkin));
 	else if(BotType == BOT_NPC)
 	{
 		if(!BotSubType)	str_copy(NameSkin, "cammo", sizeof(NameSkin));

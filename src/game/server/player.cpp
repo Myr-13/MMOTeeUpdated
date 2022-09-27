@@ -15,6 +15,7 @@
 #include <game/server/entities/bots/kwah.h>
 #include <game/server/entities/bots/boomer.h>
 #include <game/server/entities/bots/bossslime.h>
+#include <game/server/entities/bots/ghoul.h>
 
 //MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS * NUM_WORLDS + MAX_CLIENTS)
 
@@ -837,6 +838,12 @@ void CPlayer::TryRespawn()
 			Level = m_BigBot ? 310 + rand() % 3 : 270 + rand() % 3;
 			Health = 70 + Level;
 			Damage = Level;
+			break;
+		case BOT_L6MONSTER:
+			m_pCharacter = new CGhoul(&GameServer()->m_World);
+			Level = m_BigBot ? 460 + rand() % 3 : 400 + rand() % 3;
+			Health = 100 + Level;
+			Damage = Level - 50;
 			break;
 		case BOT_BOSSSLIME:
 			m_pCharacter = new CBossSlime(&GameServer()->m_World);
