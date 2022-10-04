@@ -627,6 +627,9 @@ int CServer::SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System)
 
 void CServer::MoveClientToWorld(int ClientID, int WorldID)
 {
+	if (WorldID < 0 || WorldID >= NUM_WORLDS)
+		return;
+
 	dbg_msg("multi-world", "client %d move from world %d to world %d", ClientID, m_aClients[ClientID].m_World, WorldID);
 
 	GameServer(m_aClients[ClientID].m_World)->OnClientChangeWorld(ClientID, WorldID);
@@ -2189,8 +2192,10 @@ const char *CServer::GetClanName(int ClanID)
 		return "";
 }
 
-void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
+void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType, int WorldID)
 {
+	ClientID += MAX_CLIENTS * WorldID;
+
 	if(BotType == BOT_L1MONSTER)
 		str_copy(m_aClients[ClientID].m_aName, "Pig", MAX_NAME_LENGTH);
 	else if(BotType == BOT_L2MONSTER)
@@ -2205,7 +2210,7 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
 		str_copy(m_aClients[ClientID].m_aName, "Ghoul", MAX_NAME_LENGTH);
 	else if (BotType == BOT_L7MONSTER)
 		str_copy(m_aClients[ClientID].m_aName, "LiveRock", MAX_NAME_LENGTH);
-	else if (BotType == BOT_L7MONSTER)
+	else if (BotType == BOT_L8MONSTER)
 		str_copy(m_aClients[ClientID].m_aName, "MoonWalker", MAX_NAME_LENGTH);
 	else if(BotType == BOT_NPC)
 		str_copy(m_aClients[ClientID].m_aName, "Guard", MAX_NAME_LENGTH);
@@ -2228,7 +2233,7 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
 
 void CServer::InitClientBot(int ClientID, int WorldID)
 {
-	if (ClientID < MAX_PLAYERS || ClientID >= MAX_CLIENTS)
+	if (ClientID < MAX_PLAYERS || ClientID >= MAX_CLIENTS * NUM_WORLDS)
 		return;
 
 	m_aClients[ClientID].m_State = CServer::CClient::STATE_INGAME;

@@ -93,6 +93,9 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 	m_InvisibleEndTick = 0;
 	m_DontMoveTick = 0;
 	m_BerserkRageEndTick = 0;
+
+	m_MarkedForTransferToWorld = false;
+	m_TransferToWorld = 0;
 }
 
 bool CCharacter::FindPortalPosition(vec2 Pos, vec2& Res)
@@ -1060,210 +1063,7 @@ void CCharacter::Tick()
 
 		m_pPlayer->m_Health = m_Health;
 
-		int Index0 = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Damage, m_Pos.x+m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f);
-		int Index1 = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Damage, m_Pos.x+m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f);
-		int Index2 = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Damage, m_Pos.x+m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f);
-		int Index3 = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Damage, m_Pos.x+m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f);
-		int IndexShit = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Bonus, m_Pos.x, m_Pos.y);
-
-		// ------------------- Стулья с опытом и т.д
-		if(IndexShit == ZONE_INCLAN1)
-		{
-			if(!Server()->GetTopHouse(0))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("This house empty."), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-			}
-
-			if(!Server()->GetOpenHouse(0) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(0))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("Door in this clan closed."), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-			}
-		}
-		if(IndexShit == ZONE_INCLAN2)
-		{
-			if(!Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("This house empty."), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-			}
-
-			if(!Server()->GetOpenHouse(1) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("Door in this clan closed."), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-			}
-		}
-
-		if(IndexShit == ZONE_INCLAN3)
-		{
-			if(!Server()->GetTopHouse(2))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("This house empty."), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-			}
-
-			if(!Server()->GetOpenHouse(2) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(2))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("Door in this clan closed."), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-			}
-		}
-
-		if (IndexShit == ZONE_STOOL || IndexShit == ZONE_STOOL1 || IndexShit == ZONE_CHAIRCLAN1 || IndexShit == ZONE_CHAIRCLAN2 || IndexShit == ZONE_CHAIRCLAN3)
-		{
-			m_pPlayer->m_ActiveChair = (IndexShit == ZONE_STOOL || IndexShit == ZONE_STOOL1);
-
-			if (!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 0;
-				int Money = 0;
-				switch (IndexShit)
-				{
-				case ZONE_STOOL1:
-					Exp = 15;
-					Money = 400;
-					break;
-				case ZONE_CHAIRCLAN1:
-					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0)) * 2;
-					Money = 500 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0)) * 50;
-					break;
-				case ZONE_CHAIRCLAN2:
-					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1)) * 2;
-					Money = 500 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1)) * 50;
-					break;
-				case ZONE_CHAIRCLAN3:
-					Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2)) * 2;
-					Money = 500 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2)) * 50;
-					break;
-				default:
-					Exp = 10;
-					Money = 200;
-					break;
-				}
-
-				int Mult = 0;
-				if (Server()->GetItemCount(m_pPlayer->GetCID(), PREMIUM_GOVNO))
-					Mult += 2;
-				else if (Server()->GetItemCount(m_pPlayer->GetCID(), X2MONEYEXPVIP))
-					Mult += 2;
-
-				Mult = (Mult == 0) ? 1 : Mult;
-
-				Exp *= Mult;
-				Money *= Mult;
-
-				m_pPlayer->AccData.Exp += Exp;
-				m_pPlayer->AccData.Money += Money;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-			}
-		}
-
-		else if(IndexShit != ZONE_STOOL && IndexShit != ZONE_STOOL1 && m_pPlayer->m_ActiveChair)
-		{
-			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 106, 20, -1);
-			m_pPlayer->m_ActiveChair = false;
-		}
-
-		// ------------------- ПВП Урон ЗОНЫ
-		if(IndexShit == ZONE_ANTIPVP && !m_AntiPVP) {
-			m_AntiPVP = true;
-			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 100, INANTIPVP);
-		}
-
-		if(IndexShit == ZONE_PVP && m_AntiPVP){
-			m_AntiPVP = false;
-			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITANTIPVP);
-		}
-		if(IndexShit == ZONE_PVP && m_pPlayer->IsBot() && m_pPlayer->GetBotType() != BOT_NPC)
-		{
-			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-		}
-
-		// ------------------- Места Магазин и т.д
-		if(IndexShit == ZONE_SHOP && !InShop) {
-			InShop = true;
-			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 100, INSHOP);
-			GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-		}
-		else if(IndexShit != ZONE_SHOP && InShop){
-			InShop = false;
-			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
-			GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-		}
-		if(IndexShit == ZONE_CRAFT && !m_InCrafted) {
-			m_InCrafted = true;
-			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, INCRAFT);
-			GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-		}
-		else if(IndexShit != ZONE_CRAFT && m_InCrafted){
-			m_InCrafted = false;
-			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
-			GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-		}
-		if(IndexShit == ZONE_QUESTROOM && !m_InQuest) {
-			m_InQuest = true;
-			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, INQUEST);
-			GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-		}
-		else if(IndexShit != ZONE_QUESTROOM && m_InQuest){
-			m_InQuest = false;
-			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
-			GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-		}
-
-		if(IndexShit == ZONE_WATER && !m_InWater) {
-			GameServer()->CreateSound(m_Pos, 11);
-			GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
-			m_InWater = true;
-		}
-		else if(IndexShit != ZONE_WATER && m_InWater){
-			GameServer()->CreateSound(m_Pos, 11);
-			GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
-			m_InWater = false;
-		}
-
-		// -------------------- Босс вход
-		if(IndexShit == ZONE_BONUS_BONUS)
-		{
-			GameServer()->EnterBoss(m_pPlayer->GetCID(), BOT_BOSSSLIME);
-		}
-
-		if(IndexShit == ZONE_GAMEROOM)
-		{
-			GameServer()->EnterArea(m_pPlayer->GetCID());
-		}
-
-		if(IndexShit == ZONE_WHITEROOM)
-		{
-			if(!Server()->GetItemCount(m_pPlayer->GetCID(), WHITETICKET))
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-			else
-				GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), 200, 100, _("Welcome in White Room."), NULL);
-		}
-
-		if(IndexShit == ZONE_DEATH)
-		{
-			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-		}
-
-		// ------------------- Хуйня которую ебут и т.д
-		if(Index0 == ZONE_DAMAGE_DEATH || Index1 == ZONE_DAMAGE_DEATH || Index2 == ZONE_DAMAGE_DEATH || Index3 == ZONE_DAMAGE_DEATH)
-		{
-			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-		}
-		else if(Index0 == ZONE_DAMAGE_DEATH_NOUNDEAD || Index1 == ZONE_DAMAGE_DEATH_NOUNDEAD || Index2 == ZONE_DAMAGE_DEATH_NOUNDEAD || Index3 == ZONE_DAMAGE_DEATH_NOUNDEAD)
-		{
-			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-		}
-		else if(Index0 == ZONE_DAMAGE_DEATH_INFECTED || Index1 == ZONE_DAMAGE_DEATH_INFECTED || Index2 == ZONE_DAMAGE_DEATH_INFECTED || Index3 == ZONE_DAMAGE_DEATH_INFECTED)
-		{
-			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-		}
+		TilesHandle();
 	}
 
 	if(m_PositionLockTick > 0)
@@ -2926,4 +2726,205 @@ void CCharacter::SetEmote(int Emote)
 	}
 
 	m_EmoteStop = Server()->Tick() + (Server()->TickSpeed() * 1.75f);
+}
+
+void CCharacter::TilesHandle()
+{
+	int Index0 = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Damage, m_Pos.x + m_ProximityRadius / 3.f, m_Pos.y - m_ProximityRadius / 3.f);
+	int Index1 = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Damage, m_Pos.x + m_ProximityRadius / 3.f, m_Pos.y - m_ProximityRadius / 3.f);
+	int Index2 = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Damage, m_Pos.x + m_ProximityRadius / 3.f, m_Pos.y - m_ProximityRadius / 3.f);
+	int Index3 = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Damage, m_Pos.x + m_ProximityRadius / 3.f, m_Pos.y - m_ProximityRadius / 3.f);
+	int IndexShit = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Bonus, m_Pos.x, m_Pos.y);
+
+	// ------------------- Стулья с опытом и т.д
+	if (IndexShit == ZONE_INCLAN1)
+	{
+		if (!Server()->GetTopHouse(0))
+		{
+			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("This house empty."), NULL);
+			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+		}
+
+		if (!Server()->GetOpenHouse(0) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(0))
+		{
+			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("Door in this clan closed."), NULL);
+			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+		}
+	}
+	if (IndexShit == ZONE_INCLAN2)
+	{
+		if (!Server()->GetTopHouse(1))
+		{
+			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("This house empty."), NULL);
+			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+		}
+
+		if (!Server()->GetOpenHouse(1) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
+		{
+			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("Door in this clan closed."), NULL);
+			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+		}
+	}
+
+	if (IndexShit == ZONE_INCLAN3)
+	{
+		if (!Server()->GetTopHouse(2))
+		{
+			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("This house empty."), NULL);
+			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+		}
+
+		if (!Server()->GetOpenHouse(2) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(2))
+		{
+			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("Door in this clan closed."), NULL);
+			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+		}
+	}
+
+	if (IndexShit == ZONE_STOOL || IndexShit == ZONE_STOOL1 || IndexShit == ZONE_CHAIRCLAN1 || IndexShit == ZONE_CHAIRCLAN2 || IndexShit == ZONE_CHAIRCLAN3)
+	{
+		m_pPlayer->m_ActiveChair = (IndexShit == ZONE_STOOL || IndexShit == ZONE_STOOL1);
+
+		if (!m_ReloadOther)
+		{
+			m_ReloadOther = Server()->TickSpeed();
+
+			int Exp = 0;
+			int Money = 0;
+			switch (IndexShit)
+			{
+			case ZONE_STOOL1:
+				Exp = 15;
+				Money = 400;
+				break;
+			case ZONE_CHAIRCLAN1:
+				Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0)) * 2;
+				Money = 500 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(0)) * 50;
+				break;
+			case ZONE_CHAIRCLAN2:
+				Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1)) * 2;
+				Money = 500 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(1)) * 50;
+				break;
+			case ZONE_CHAIRCLAN3:
+				Exp = 20 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2)) * 2;
+				Money = 500 + Server()->GetClan(DCHAIRHOUSE, Server()->GetTopHouse(2)) * 50;
+				break;
+			default:
+				Exp = 10;
+				Money = 200;
+				break;
+			}
+
+			int Mult = 0;
+			if (Server()->GetItemCount(m_pPlayer->GetCID(), PREMIUM_GOVNO))
+				Mult += 2;
+			else if (Server()->GetItemCount(m_pPlayer->GetCID(), X2MONEYEXPVIP))
+				Mult += 2;
+
+			Mult = (Mult == 0) ? 1 : Mult;
+
+			Exp *= Mult;
+			Money *= Mult;
+
+			m_pPlayer->AccData.Exp += Exp;
+			m_pPlayer->AccData.Money += Money;
+
+			GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
+		}
+	}
+
+	else if (IndexShit != ZONE_STOOL && IndexShit != ZONE_STOOL1 && m_pPlayer->m_ActiveChair)
+	{
+		GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 106, 20, -1);
+		m_pPlayer->m_ActiveChair = false;
+	}
+
+	// ------------------- ПВП Урон ЗОНЫ
+	if (IndexShit == ZONE_ANTIPVP && !m_AntiPVP) {
+		m_AntiPVP = true;
+		GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 100, INANTIPVP);
+	}
+
+	if (IndexShit == ZONE_PVP && m_AntiPVP) {
+		m_AntiPVP = false;
+		GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITANTIPVP);
+	}
+	if (IndexShit == ZONE_PVP && m_pPlayer->IsBot() && m_pPlayer->GetBotType() != BOT_NPC)
+	{
+		Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+	}
+
+	// ------------------- Места Магазин и т.д
+	if (IndexShit == ZONE_SHOP && !InShop) {
+		InShop = true;
+		GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 100, INSHOP);
+		GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+	}
+	else if (IndexShit != ZONE_SHOP && InShop) {
+		InShop = false;
+		GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
+		GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+	}
+	if (IndexShit == ZONE_CRAFT && !m_InCrafted) {
+		m_InCrafted = true;
+		GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, INCRAFT);
+		GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+	}
+	else if (IndexShit != ZONE_CRAFT && m_InCrafted) {
+		m_InCrafted = false;
+		GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
+		GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+	}
+	if (IndexShit == ZONE_QUESTROOM && !m_InQuest) {
+		m_InQuest = true;
+		GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, INQUEST);
+		GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+	}
+	else if (IndexShit != ZONE_QUESTROOM && m_InQuest) {
+		m_InQuest = false;
+		GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
+		GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+	}
+
+	if (IndexShit == ZONE_WATER && !m_InWater) {
+		GameServer()->CreateSound(m_Pos, 11);
+		GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+		m_InWater = true;
+	}
+	else if (IndexShit != ZONE_WATER && m_InWater) {
+		GameServer()->CreateSound(m_Pos, 11);
+		GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+		m_InWater = false;
+	}
+
+	// -------------------- Босс вход
+	if (IndexShit == ZONE_BONUS_BONUS)
+		GameServer()->EnterBoss(m_pPlayer->GetCID(), BOT_BOSSSLIME);
+
+	if (IndexShit == ZONE_GAMEROOM)
+		GameServer()->EnterArea(m_pPlayer->GetCID());
+
+	if (IndexShit == ZONE_WHITEROOM)
+	{
+		if (!Server()->GetItemCount(m_pPlayer->GetCID(), WHITETICKET))
+			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+		else
+			GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), 200, 100, _("Welcome in White Room."), NULL);
+	}
+
+	if (IndexShit == ZONE_DEATH)
+		Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+
+	// -------------------- Мульти-миры
+	if (IndexShit == ZONE_TO_MOON)
+	{
+		Server()->MoveClientToWorld(m_pPlayer->GetCID(), WORLD_MOON);
+		Die(-1, WEAPON_WORLD);
+	}
+
+	if (IndexShit == ZONE_TO_EARTH)
+	{
+		Server()->MoveClientToWorld(m_pPlayer->GetCID(), WORLD_MAIN);
+		Die(-1, WEAPON_WORLD);
+	}
 }

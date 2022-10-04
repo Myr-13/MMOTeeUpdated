@@ -2236,7 +2236,7 @@ void remove_spaces(char *str)
 	for(read = write = str; *read != '\0'; ++read)
 	{
 		/* edit: or if(!isspace(*read)), see swoopy's suggestion below */
-		if(*read != ' ' && !ispunct(*read))
+		if(*read != ' ' && *read != '"' && *read != '\'' && *read != '/' && *read != '.' && *read != ',' && *read != ';' && *read != ':' && *read != '(' && *read != ')')
 		{
 			*(write++) = *read;
 		}

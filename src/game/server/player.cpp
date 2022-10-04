@@ -178,6 +178,9 @@ void CPlayer::Tick()
 	if(!GameServer()->IsClientValid(m_ClientID))
 		return;
 
+	if (!Server()->IsClientLogged(m_ClientID))
+		m_Team = TEAM_SPECTATORS;
+
 	if(Server()->IsClientLogged(m_ClientID) && AccData.Level == -1)
 	{
 		AccData.Level = 1;
@@ -585,7 +588,7 @@ void CPlayer::Snap(int SnappingClient)
 	if (Server()->IsClientLogged(m_ClientID) && GetTeam() != TEAM_SPECTATORS)
 	{
 		char pSendName[32];
-		str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID));
+		str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID + MAX_CLIENTS * GameServer()->GetWorldID()));
 		StrToInts(&pClientInfo->m_Name0, 4, pSendName);
 
 		if (m_pCharacter)
@@ -593,25 +596,25 @@ void CPlayer::Snap(int SnappingClient)
 			float getlv = ((m_Health * 100.0) / m_HealthStart) - 1;
 			switch (GetBotType())
 			{
-			default: str_format(pSendName, sizeof(pSendName), "%d:%s[%d%%]", AccData.Level, Server()->ClientName(m_ClientID), (int)getlv); break;
+			default: str_format(pSendName, sizeof(pSendName), "%d:%s[%d%%]", AccData.Level, Server()->ClientName(m_ClientID + MAX_CLIENTS * GameServer()->GetWorldID()), (int)getlv); break;
 			case BOT_NPC:
-			case BOT_BOSSSLIME: str_format(pSendName, sizeof(pSendName), "%s[%d%%]", Server()->ClientName(m_ClientID), (int)getlv);	break;
-			case BOT_NPCW: str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID)); break;
+			case BOT_BOSSSLIME: str_format(pSendName, sizeof(pSendName), "%s[%d%%]", Server()->ClientName(m_ClientID + MAX_CLIENTS * GameServer()->GetWorldID()), (int)getlv);	break;
+			case BOT_NPCW: str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID + MAX_CLIENTS * GameServer()->GetWorldID())); break;
 			}
 			StrToInts(&pClientInfo->m_Name0, 4, pSendName);
 		}
 	}
 	else
-		StrToInts(&pClientInfo->m_Name0, 4, Server()->ClientName(m_ClientID));
+		StrToInts(&pClientInfo->m_Name0, 4, Server()->ClientName(m_ClientID + MAX_CLIENTS * GameServer()->GetWorldID()));
 
 	if(Server()->IsClientLogged(m_ClientID) && GetTeam() != TEAM_SPECTATORS)
 	{
 		char pSendName[32];
-		str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID));
+		str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID + MAX_CLIENTS * GameServer()->GetWorldID()));
 		StrToInts(&pClientInfo->m_Name0, 4, pSendName);
 	}
 	else
-		StrToInts(&pClientInfo->m_Name0, 4, Server()->ClientName(m_ClientID));
+		StrToInts(&pClientInfo->m_Name0, 4, Server()->ClientName(m_ClientID + MAX_CLIENTS * GameServer()->GetWorldID()));
 
 	if(Server()->IsClientLogged(m_ClientID) && tickstr) StrToInts(&pClientInfo->m_Clan0, 3, pTitle);
 	else StrToInts(&pClientInfo->m_Clan0, 3, Server()->ClientClan(m_ClientID));

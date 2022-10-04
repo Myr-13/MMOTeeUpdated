@@ -12,6 +12,9 @@
 #include <game/collision.h>
 #include <game/gamecore.h>
 #include <iostream>
+#include <engine/external/json-parser/json.h>
+#include <fstream>
+#include <streambuf>
 #include "gamemodes/mod.h"
 
 #include <game/server/entities/loltext.h>
@@ -49,8 +52,6 @@ void CGameContext::Construct(int Resetting)
 
 	m_pAdmin = new CAdmin(this);
 	m_pAuction = new CAuction(this);
-//	if (g_Config.m_SvDiscordBridge)
-//		m_pDiscord = new CDiscord(this);
 
 	// боссецкий чистка
 	m_BossStart = false;
@@ -67,6 +68,8 @@ void CGameContext::Construct(int Resetting)
 		m_CurrentDailyQuest2 = rand() % QUEST_COUNT;
 	while (m_CurrentDailyQuest3 == m_CurrentDailyQuest1 || m_CurrentDailyQuest3 == m_CurrentDailyQuest2)
 		m_CurrentDailyQuest3 = rand() % QUEST_COUNT;
+
+	InitSpamMessages();
 }
 
 CGameContext::CGameContext(int Resetting)
@@ -301,7 +304,7 @@ void CGameContext::CreateSoundGlobal(int Sound, int Target)
 
 void CGameContext::SendChatTarget(int To, const char *pText)
 {
-	if (Server()->GetClientWorld(To) != m_GameServerID)
+	if (To != -1 && Server()->GetClientWorld(To) != m_GameServerID)
 		return;
 
 	CNetMsg_Sv_Chat Msg;
@@ -1094,57 +1097,57 @@ void CGameContext::OnTick()
 		}
 	}
 
-	if(Server()->Tick() % (1 * Server()->TickSpeed() * 520) == 0)
+	/*if(Server()->Tick() % (1 * Server()->TickSpeed() * 520) == 0)
 	{
 		Server()->GetTopClanHouse();
-	}
-	if (Server()->Tick() % (1 * Server()->TickSpeed() * 610) == 0)
-	{
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("### Server Information:"), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Warning!! New Rules:"), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Check /rules"), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Play only one server, if play 1-250 and play 250-500"), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Account deleted, and if you leader clan reform."), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Join our discord server: https://discord.gg/jwDP6anpKP"), NULL);
-		
-	}
+	}*/
+	//if (Server()->Tick() % (1 * Server()->TickSpeed() * 610) == 0)
+	//{
+	//	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("### Server Information:"), NULL);
+	//	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Warning!! New Rules:"), NULL);
+	//	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Check /rules"), NULL);
+	//	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Play only one server, if play 1-250 and play 250-500"), NULL);
+	//	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Account deleted, and if you leader clan reform."), NULL);
+	//	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Join our discord server: https://discord.gg/jwDP6anpKP"), NULL);
+	//	
+	//}
 
-	if (Server()->Tick() % (1 * Server()->TickSpeed() * 700) == 0)
-	{
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("### Our Team:"), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("champloo - Owner"), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Myr - Coder"), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Time Pause - Mapper"), NULL);
-	}
+	//if (Server()->Tick() % (1 * Server()->TickSpeed() * 700) == 0)
+	//{
+	//	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("### Our Team:"), NULL);
+	//	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("champloo - Owner"), NULL);
+	//	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Myr - Coder"), NULL);
+	//	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Time Pause - Mapper"), NULL);
+	//}
 
-	// вывод топ листа раз в 5 минут
-	if(Server()->Tick() % (1 * Server()->TickSpeed() * 440) == 0)
-	{
-		switch(rand()%7)
-		{
-			case 0:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Level", NULL);
-				Server()->ShowTop10(25, "Level", 2); break;
-			case 1:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Gold", NULL);
-				Server()->ShowTop10(25, "Gold", 2); break;
-			case 2:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Win Area", NULL);
-				Server()->ShowTop10(25, "WinArea", 2); break;
-			case 3:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Killing", NULL);
-				Server()->ShowTop10(25, "Killing", 2); break;
-			case 4:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 clans sorted {str:name}:"), "name", "Level", NULL);
-				Server()->ShowTop10Clans(25, "Level", 2); break;
-			case 5:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 clans sorted {str:name}:"), "name", "Relevance", NULL);
-				Server()->ShowTop10Clans(25, "Relevance", 2); break;
-			default:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 clans sorted {str:name}:"), "name", "Gold", NULL);
-				Server()->ShowTop10Clans(25, "Money", 2); break;
-		}
-	}
+	//// вывод топ листа раз в 5 минут
+	//if(Server()->Tick() % (1 * Server()->TickSpeed() * 440) == 0)
+	//{
+	//	switch(rand()%7)
+	//	{
+	//		case 0:
+	//			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Level", NULL);
+	//			Server()->ShowTop10(25, "Level", 2); break;
+	//		case 1:
+	//			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Gold", NULL);
+	//			Server()->ShowTop10(25, "Gold", 2); break;
+	//		case 2:
+	//			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Win Area", NULL);
+	//			Server()->ShowTop10(25, "WinArea", 2); break;
+	//		case 3:
+	//			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Killing", NULL);
+	//			Server()->ShowTop10(25, "Killing", 2); break;
+	//		case 4:
+	//			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 clans sorted {str:name}:"), "name", "Level", NULL);
+	//			Server()->ShowTop10Clans(25, "Level", 2); break;
+	//		case 5:
+	//			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 clans sorted {str:name}:"), "name", "Relevance", NULL);
+	//			Server()->ShowTop10Clans(25, "Relevance", 2); break;
+	//		default:
+	//			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 clans sorted {str:name}:"), "name", "Gold", NULL);
+	//			Server()->ShowTop10Clans(25, "Money", 2); break;
+	//	}
+	//}
 
 	/*if (Server()->Tick() % (Server()->TickSpeed() * 86400) == 0)
 	{
@@ -1157,6 +1160,7 @@ void CGameContext::OnTick()
 	AreaTick();
 	BossTick();
 	SeasonTick();
+	TickSpam();
 
 	if (Server()->Tick() % (Server()->TickSpeed() * 5) == 0) {
 		for (int i = 0; i < MAX_CLIENTS; i++)
@@ -4444,7 +4448,7 @@ void CGameContext::UpdateBotInfo(int ClientID)
 		else str_copy(NameSkin, "coala", sizeof(NameSkin));
 	}
 
-	Server()->ResetBotInfo(ClientID, BotType, BotSubType);
+	Server()->ResetBotInfo(ClientID, BotType, BotSubType, m_GameServerID);
 	str_copy(m_apPlayers[ClientID]->m_TeeInfos.m_SkinName, NameSkin, sizeof(m_apPlayers[ClientID]->m_TeeInfos.m_SkinName));
 	m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor = false;
 	m_pController->OnPlayerInfoChange(m_apPlayers[ClientID]);
@@ -4460,7 +4464,7 @@ void CGameContext::CreateBot(int ClientID, int BotType, int BotSubType)
 	m_apPlayers[BotClientID]->SetBotType(BotType);
 	m_apPlayers[BotClientID]->SetBotSubType(BotSubType);
 
-	Server()->InitClientBot(BotClientID, m_GameServerID);
+	Server()->InitClientBot(BotClientID + MAX_CLIENTS * m_GameServerID, m_GameServerID);
 }
 
 void CGameContext::DeleteBotBoss() { Server()->Kick(BOSSID, "pizdyi"); }
@@ -4989,5 +4993,108 @@ int CGameContext::GetNeededForDailyQuest(int Quest)
 	case QUEST_COLLECT200CARROTS: return 200;
 	case QUEST_COLLECT100COPPER: return 100;
 	case QUEST_USE2000MONEYBAGS: return 2000;
+	}
+}
+
+void CGameContext::InitSpamMessages()
+{
+	std::ifstream JsonFile("spam.json");
+	if (!JsonFile)
+	{
+		dbg_msg("server", "failed to load spam.json");
+		return;
+	}
+	else
+	{
+		dbg_msg("server", "loading spam.json");
+	}
+
+	json_value* pJson = json_parse(std::string((std::istreambuf_iterator<char>(JsonFile)), std::istreambuf_iterator<char>()).c_str());
+
+	const json_value& Start = (*pJson)["messages"];
+	if (Start.type == json_array)
+	{
+		for (int i = 0; i < Start.u.array.length; i++)
+		{
+			long Secs = Start[i]["secs"];
+			std::vector<std::string> vMessages;
+
+			const json_value& Msgs = Start[i]["msgs"];
+			if (Msgs.type == json_array)
+			{
+				for (int j = 0; j < Msgs.u.array.length; j++)
+				{
+					const char* pText = Msgs[j];
+					vMessages.push_back(pText);
+				}
+			}
+			else if (Msgs.type == json_string)
+			{
+				const char* pText = Msgs;
+				vMessages.push_back(pText);
+			}
+
+			SSpamMessage Msg;
+			Msg.m_Secs = Secs;
+			Msg.m_vMessages = vMessages;
+			m_vSpamMessages.push_back(Msg);
+		}
+	}
+}
+
+void CGameContext::TickSpam()
+{
+	for (SSpamMessage Msg : m_vSpamMessages)
+	{
+		if (Server()->Tick() % (Msg.m_Secs * Server()->TickSpeed()) == 0)
+		{
+			for (std::string Text : Msg.m_vMessages)
+			{
+				if (Text == std::string("sys_top_players"))
+				{
+					switch (rand() % 4)
+					{
+					case 0:
+						SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Level", NULL);
+						Server()->ShowTop10(25, "Level", 2);
+						break;
+					case 1:
+						SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Gold", NULL);
+						Server()->ShowTop10(25, "Gold", 2);
+						break;
+					case 2:
+						SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Win Area", NULL);
+						Server()->ShowTop10(25, "WinArea", 2);
+						break;
+					case 3:
+						SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 players sorted {str:name}:"), "name", "Killing", NULL);
+						Server()->ShowTop10(25, "Killing", 2);
+						break;
+					}
+				}
+				else if (Text == std::string("sys_top_clans"))
+				{
+					switch (rand() % 3)
+					{
+					case 0:
+						SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 clans sorted {str:name}:"), "name", "Level", NULL);
+						Server()->ShowTop10Clans(25, "Level", 2);
+						break;
+					case 1:
+						SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 clans sorted {str:name}:"), "name", "Relevance", NULL);
+						Server()->ShowTop10Clans(25, "Relevance", 2);
+						break;
+					case 2:
+						SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) Top 5 clans sorted {str:name}:"), "name", "Gold", NULL);
+						Server()->ShowTop10Clans(25, "Money", 2);
+						break;
+					}
+				}
+				else if (Text == std::string("sys_clans_houses"))
+					Server()->GetTopClanHouse();
+				else
+					SendChatTarget(-1, Text.c_str());
+			}
+		}
 	}
 }

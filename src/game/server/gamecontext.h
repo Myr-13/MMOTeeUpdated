@@ -22,7 +22,6 @@
 
 #include "components/admin.h"
 #include "components/auction.h"
-//#include "components/discord.h"
 
 #include <engine/server/multi_world.h>
 
@@ -117,7 +116,6 @@ enum
 	HAMMERRANGE=15
 };
 
-
 class CGameContext : public IGameServer
 {
 	IServer *m_pServer;
@@ -148,8 +146,6 @@ class CGameContext : public IGameServer
 	int m_GameServerID;
 
 public:
-//	class CDiscord* m_pDiscord;
-
 	IServer *Server() const { return m_pServer; }
 	IStorage2 *Storage() const { return m_pStorage; }
 	class IConsole *Console() { return m_pConsole; }
@@ -157,6 +153,7 @@ public:
 	CTuningParams *Tuning() { return &m_Tuning; }
 	class CAdmin *Admin() { return m_pAdmin; }
 	virtual class CLayers *Layers() { return &m_Layers; }
+
 	int GetWorldID() { return m_GameServerID; }
 
 	CGameContext();
@@ -364,6 +361,7 @@ public:
 
 private:
 	bool PrivateMessage(const char* pStr, int ClientID, bool TeamChat);
+
 	class CBroadcastState
 	{
 	public:
@@ -378,6 +376,15 @@ private:
 		char m_TimedMessage[1024];
 	};
 	CBroadcastState m_BroadcastStates[MAX_CLIENTS];
+
+	struct SSpamMessage
+	{
+		long m_Secs;
+		std::vector<std::string> m_vMessages;
+	};
+	std::vector<SSpamMessage> m_vSpamMessages;
+	void InitSpamMessages();
+	void TickSpam();
 };
 
 inline int64_t CmaskAll() { return -1LL; }

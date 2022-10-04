@@ -90,9 +90,13 @@ public:
 	
 	void GiveNinjaBuf();
 	bool ItemSucc();
+	void TilesHandle();
 
 	int EmoteNormal;
 	int m_ActiveWeapon;
+
+	bool m_MarkedForTransferToWorld;
+	int m_TransferToWorld;
 
 private:
 
